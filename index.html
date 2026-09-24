@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>BARAKARSA - Advanced Task Management</title>
 
+    <!-- Supabase client (sync antar perangkat) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- PWA -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#1a1a1a">
@@ -1415,6 +1418,9 @@
                             <div style="padding: 0.7rem 0.75rem 0.4rem; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Lainnya</div>
                             <div class="tools-menu-item" onclick="toolsAction('stress')">🧪 Stress Test</div>
                             <div class="tools-menu-item" onclick="toolsAction('help')">❓ Help &amp; resources</div>
+
+                            <div style="padding: 0.7rem 0.75rem 0.4rem; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Akun</div>
+                            <div class="tools-menu-item" id="authMenuItem" onclick="toolsAction('auth')">🔑 Masuk untuk sinkron</div>
                         </div>
                     </div>
                 </div>
@@ -1679,6 +1685,35 @@
         </div>
     </div>
 
+    <!-- Auth Modal -->
+    <div class="modal" id="authModal">
+        <div class="modal-content" style="grid-template-columns: 1fr; max-width: 420px;">
+            <div style="padding: 2rem;">
+                <button class="modal-close" onclick="closeAuthModal()">&#10005;</button>
+                <h2 class="modal-title">🔑 Masuk</h2>
+                <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0.5rem 0 1.5rem;">
+                    Masuk dengan akun yang sama di setiap perangkat agar task tersinkron.
+                    Tanpa masuk, aplikasi tetap bisa dipakai — hanya tidak sinkron.
+                </p>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="authEmail" placeholder="nama@email.com" autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="authPassword" placeholder="Minimal 6 karakter" autocomplete="current-password">
+                </div>
+
+                <div id="authError" style="color: var(--accent-red); font-size: 0.85rem; min-height: 1.2rem; margin-bottom: 0.75rem;"></div>
+
+                <button class="btn btn-primary" id="authSignIn" style="width: 100%;" onclick="doSignIn()">Masuk</button>
+                <button class="btn btn-secondary" id="authSignUp" style="width: 100%; margin-top: 0.6rem;" onclick="doSignUp()">Daftar akun baru</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Help Modal -->
     <div class="modal" id="helpModal">
         <div class="modal-content" style="grid-template-columns: 1fr; max-width: 640px;">
@@ -1834,6 +1869,8 @@
             render();
         }
 
+        let tombstones = [];
+
         function loadData() {
             const saved = localStorage.getItem('barakarsa_v6');
             if (saved) {
@@ -1843,13 +1880,30 @@
                 labels = data.labels || [];
                 nextProjectId = data.nextProjectId || 4;
                 nextLabelId = data.nextLabelId || 1;
+                tombstones = data.tombstones || [];
+            }
+            normalizeOrder();
+            if (typeof initSyncSnapshot === 'function') initSyncSnapshot();
+            if (typeof primeLastStamp === 'function') primeLastStamp();
+        }
+
+        // Every task carries an "order" number so its position survives a round
+        // trip through the database, where rows have no inherent order.
+        function normalizeOrder() {
+            let needsNumbering = tasks.some(t => typeof t.order !== 'number');
+            if (needsNumbering) {
+                tasks.forEach((t, i) => { t.order = (i + 1) * 1000; });
+            } else {
+                tasks.sort((a, b) => a.order - b.order);
             }
         }
 
         function saveData() {
+            if (typeof stampChanges === 'function') stampChanges();
             localStorage.setItem('barakarsa_v6', JSON.stringify({
-                tasks, projects, labels, nextProjectId, nextLabelId
+                tasks, projects, labels, nextProjectId, nextLabelId, tombstones
             }));
+            if (typeof scheduleSync === 'function') scheduleSync();
         }
 
         function setDefaultDate() {
@@ -2695,6 +2749,7 @@
             else if (action === 'import') openPasteImportModal();
             else if (action === 'stress') openStressTestModal();
             else if (action === 'help') openHelpModal();
+            else if (action === 'auth') { currentUser ? doSignOut() : openAuthModal(); }
         }
 
         function openHelpModal() {
@@ -2780,7 +2835,28 @@
                 return;
             }
 
-            tasks.splice(placeBefore ? targetIndex : targetIndex + 1, 0, moved);
+            const insertAt = placeBefore ? targetIndex : targetIndex + 1;
+            tasks.splice(insertAt, 0, moved);
+
+            // Give the moved task an order value between its new neighbours, so
+            // only this one row needs to be pushed to the server.
+            const before = tasks[insertAt - 1];
+            const after = tasks[insertAt + 1];
+
+            if (!before && !after) {
+                moved.order = 1000;
+            } else if (!before) {
+                moved.order = after.order - 1000;
+            } else if (!after) {
+                moved.order = before.order + 1000;
+            } else {
+                moved.order = (before.order + after.order) / 2;
+                // Gaps get too small after many drags — renumber everything.
+                if (Math.abs(after.order - before.order) < 0.001) {
+                    tasks.forEach((t, i) => { t.order = (i + 1) * 1000; });
+                }
+            }
+
             saveData();
             render();
         }
@@ -3193,5 +3269,424 @@
             deferredInstallPrompt = null;
         });
     </script>
+    <!-- ============================================================
+         SINKRONISASI ANTAR PERANGKAT (Supabase)
+
+         Rancangan: local-first. localStorage tetap sumber utama, jadi
+         aplikasi tetap jalan penuh tanpa internet, tanpa login, atau
+         kalau server sedang bermasalah. Supabase hanya lapisan
+         sinkronisasi di atasnya.
+         ============================================================ -->
+    <script>
+        const SUPABASE_URL = 'https://kvfbauntwcvhacwlikno.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_KmiEBcLEpbJ7ZIMuB4nsPQ_Hqmj32aL';
+        const SYNC_TABLE = 'barakarsa_items';
+
+        let sb = null;
+        let currentUser = null;
+        let syncTimer = null;
+        let syncing = false;
+        let syncPending = false;
+
+        // Snapshot of every item as last saved, used to detect what changed
+        // without having to touch each mutation function individually.
+        let syncSnapshot = { task: {}, project: {}, label: {} };
+
+        function collectionFor(kind) {
+            if (kind === 'task') return tasks;
+            if (kind === 'project') return projects;
+            return labels;
+        }
+
+        function fingerprint(item) {
+            const copy = { ...item };
+            delete copy.updatedAt;
+            return JSON.stringify(copy);
+        }
+
+        // Two edits inside the same millisecond would otherwise get identical
+        // timestamps, and the second one would look "not newer" and never sync.
+        // Every stamp from this device is therefore strictly increasing.
+        let lastStamp = 0;
+
+        function stampTime() {
+            let now = Date.now();
+            if (now <= lastStamp) now = lastStamp + 1;
+            lastStamp = now;
+            return new Date(now).toISOString();
+        }
+
+        function primeLastStamp() {
+            const times = [];
+            ['task', 'project', 'label'].forEach(kind => {
+                collectionFor(kind).forEach(i => { if (i.updatedAt) times.push(new Date(i.updatedAt).getTime()); });
+            });
+            tombstones.forEach(t => times.push(new Date(t.updatedAt).getTime()));
+            if (times.length) lastStamp = Math.max(lastStamp, Math.max(...times));
+        }
+
+        function initSyncSnapshot() {
+            syncSnapshot = { task: {}, project: {}, label: {} };
+            ['task', 'project', 'label'].forEach(kind => {
+                collectionFor(kind).forEach(item => {
+                    syncSnapshot[kind][String(item.id)] = fingerprint(item);
+                });
+            });
+        }
+
+        // Called from saveData(). Stamps updatedAt on anything that changed and
+        // records a tombstone for anything that disappeared, so deletions
+        // propagate instead of being resurrected by another device.
+        function stampChanges() {
+            ['task', 'project', 'label'].forEach(kind => {
+                const arr = collectionFor(kind);
+                const present = new Set();
+
+                arr.forEach(item => {
+                    const key = String(item.id);
+                    present.add(key);
+                    const fp = fingerprint(item);
+                    if (syncSnapshot[kind][key] !== fp) {
+                        item.updatedAt = stampTime();
+                        syncSnapshot[kind][key] = fp;
+                    }
+                    if (!item.updatedAt) item.updatedAt = stampTime();
+                });
+
+                Object.keys(syncSnapshot[kind]).forEach(key => {
+                    if (!present.has(key)) {
+                        delete syncSnapshot[kind][key];
+                        const existing = tombstones.find(t => t.kind === kind && String(t.id) === key);
+                        if (existing) existing.updatedAt = stampTime();
+                        else tombstones.push({ kind, id: key, updatedAt: stampTime() });
+                    }
+                });
+            });
+
+            // Drop tombstones older than 90 days to keep storage tidy
+            const cutoff = Date.now() - 90 * 86400000;
+            tombstones = tombstones.filter(t => new Date(t.updatedAt).getTime() > cutoff);
+        }
+
+        // ---------- Status indicator ----------
+
+        function setSyncStatus(state, detail) {
+            const el = document.getElementById('syncStatus');
+            if (!el) return;
+
+            const config = {
+                'offline':  { icon: '○', text: 'Lokal',        color: 'var(--text-secondary)' },
+                'signedout':{ icon: '○', text: 'Belum masuk',  color: 'var(--text-secondary)' },
+                'syncing':  { icon: '◍', text: 'Menyinkron…',  color: '#fb923c' },
+                'synced':   { icon: '●', text: 'Tersinkron',   color: '#10b981' },
+                'error':    { icon: '▲', text: 'Gagal sinkron', color: 'var(--accent-red)' }
+            }[state] || { icon: '○', text: '', color: 'var(--text-secondary)' };
+
+            el.style.color = config.color;
+            el.textContent = `${config.icon} ${config.text}`;
+            el.title = detail || config.text;
+        }
+
+        function injectSyncStatus() {
+            if (document.getElementById('syncStatus')) return;
+            const toolsBtn = document.getElementById('toolsMenuBtn');
+            if (!toolsBtn) return;
+
+            const el = document.createElement('span');
+            el.id = 'syncStatus';
+            el.style.cssText = `
+                font-size: 0.82rem;
+                white-space: nowrap;
+                cursor: pointer;
+                user-select: none;
+                padding: 0.3rem 0.5rem;
+                border-radius: 0.4rem;
+            `;
+            el.onclick = () => { if (currentUser) syncNow(true); else openAuthModal(); };
+            toolsBtn.parentElement.parentElement.insertBefore(el, toolsBtn.parentElement);
+        }
+
+        // ---------- Auth ----------
+
+        function openAuthModal() {
+            document.getElementById('authModal').classList.add('active');
+            document.getElementById('authError').textContent = '';
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        async function doSignIn() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            if (!email || !password) {
+                document.getElementById('authError').textContent = 'Email dan password harus diisi.';
+                return;
+            }
+
+            setAuthBusy(true);
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+            setAuthBusy(false);
+
+            if (error) {
+                document.getElementById('authError').textContent = translateAuthError(error.message);
+                return;
+            }
+
+            currentUser = data.user;
+            closeAuthModal();
+            updateAuthUI();
+            syncNow(true);
+        }
+
+        async function doSignUp() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            if (!email || password.length < 6) {
+                document.getElementById('authError').textContent = 'Email wajib diisi dan password minimal 6 karakter.';
+                return;
+            }
+
+            setAuthBusy(true);
+            const { data, error } = await sb.auth.signUp({ email, password });
+            setAuthBusy(false);
+
+            if (error) {
+                document.getElementById('authError').textContent = translateAuthError(error.message);
+                return;
+            }
+
+            if (!data.session) {
+                document.getElementById('authError').textContent =
+                    'Akun dibuat. Cek email untuk konfirmasi, lalu masuk.';
+                return;
+            }
+
+            currentUser = data.user;
+            closeAuthModal();
+            updateAuthUI();
+            syncNow(true);
+        }
+
+        async function doSignOut() {
+            if (!confirm('Keluar dari akun? Task tetap tersimpan di perangkat ini, tapi berhenti sinkron.')) return;
+            await sb.auth.signOut();
+            currentUser = null;
+            updateAuthUI();
+            closeToolsMenu();
+        }
+
+        function setAuthBusy(busy) {
+            document.getElementById('authSignIn').disabled = busy;
+            document.getElementById('authSignUp').disabled = busy;
+            document.getElementById('authSignIn').textContent = busy ? 'Memproses…' : 'Masuk';
+        }
+
+        function translateAuthError(msg) {
+            const m = (msg || '').toLowerCase();
+            if (m.includes('invalid login')) return 'Email atau password salah.';
+            if (m.includes('already registered')) return 'Email ini sudah terdaftar. Silakan masuk.';
+            if (m.includes('password')) return 'Password minimal 6 karakter.';
+            if (m.includes('email')) return 'Format email tidak valid.';
+            if (m.includes('fetch') || m.includes('network')) return 'Tidak ada koneksi ke server.';
+            return msg;
+        }
+
+        function updateAuthUI() {
+            const item = document.getElementById('authMenuItem');
+            if (item) {
+                item.textContent = currentUser
+                    ? `🚪 Keluar (${currentUser.email})`
+                    : '🔑 Masuk untuk sinkron';
+            }
+            if (!currentUser) setSyncStatus('signedout', 'Klik untuk masuk dan menyinkronkan antar perangkat');
+        }
+
+        // ---------- Sync engine ----------
+
+        function scheduleSync() {
+            if (!currentUser || !sb) return;
+            clearTimeout(syncTimer);
+            syncTimer = setTimeout(() => syncNow(), 1500);
+        }
+
+        async function syncNow(showBusy) {
+            if (!sb || !currentUser) return;
+            if (!navigator.onLine) { setSyncStatus('offline', 'Tidak ada koneksi — perubahan disimpan lokal'); return; }
+
+            if (syncing) { syncPending = true; return; }
+            syncing = true;
+            if (showBusy) setSyncStatus('syncing');
+
+            try {
+                const { data: rows, error } = await sb.from(SYNC_TABLE).select('*');
+                if (error) throw error;
+
+                const remote = new Map();
+                (rows || []).forEach(r => remote.set(r.kind + ':' + r.id, r));
+
+                const toPush = [];
+                let localChanged = false;
+
+                // --- Local -> remote, and remote -> local, per item ---
+                ['task', 'project', 'label'].forEach(kind => {
+                    const arr = collectionFor(kind);
+
+                    arr.forEach(item => {
+                        const key = kind + ':' + item.id;
+                        const r = remote.get(key);
+                        const localTime = new Date(item.updatedAt || 0).getTime();
+
+                        if (!r) {
+                            toPush.push(rowFor(kind, item));
+                        } else if (localTime > new Date(r.updated_at).getTime()) {
+                            toPush.push(rowFor(kind, item));
+                        }
+                        remote.delete(key);
+                    });
+
+                    // Anything still in `remote` has no local counterpart
+                });
+
+                tombstones.forEach(t => {
+                    const key = t.kind + ':' + t.id;
+                    const r = remote.get(key);
+                    const tombTime = new Date(t.updatedAt).getTime();
+
+                    let shouldPush;
+                    if (!r) {
+                        shouldPush = true;
+                    } else if (r.deleted) {
+                        // Already deleted on the server — nothing to do unless ours is newer
+                        shouldPush = tombTime > new Date(r.updated_at).getTime();
+                    } else {
+                        // Still alive on the server. Push the deletion unless another
+                        // device re-created it AFTER we deleted it.
+                        shouldPush = tombTime >= new Date(r.updated_at).getTime();
+                    }
+
+                    if (shouldPush) {
+                        toPush.push({
+                            id: String(t.id), kind: t.kind, data: {},
+                            deleted: true, updated_at: t.updatedAt
+                        });
+                    }
+                    remote.delete(key);
+                });
+
+                // --- Apply remote rows that are newer or unknown locally ---
+                (rows || []).forEach(r => {
+                    const arr = collectionFor(r.kind);
+                    const idx = arr.findIndex(i => String(i.id) === String(r.id));
+                    const remoteTime = new Date(r.updated_at).getTime();
+
+                    if (r.deleted) {
+                        if (idx !== -1 && remoteTime >= new Date(arr[idx].updatedAt || 0).getTime()) {
+                            arr.splice(idx, 1);
+                            localChanged = true;
+                        }
+                        return;
+                    }
+
+                    if (idx === -1) {
+                        const tomb = tombstones.find(t => t.kind === r.kind && String(t.id) === String(r.id));
+                        if (tomb && new Date(tomb.updatedAt).getTime() >= remoteTime) return;
+                        arr.push({ ...r.data, id: castId(r.id), updatedAt: r.updated_at });
+                        localChanged = true;
+                    } else if (remoteTime > new Date(arr[idx].updatedAt || 0).getTime()) {
+                        arr[idx] = { ...r.data, id: castId(r.id), updatedAt: r.updated_at };
+                        localChanged = true;
+                    }
+                });
+
+                if (toPush.length) {
+                    const { error: pushErr } = await sb.from(SYNC_TABLE)
+                        .upsert(toPush, { onConflict: 'user_id,id' });
+                    if (pushErr) throw pushErr;
+                }
+
+                if (localChanged) {
+                    normalizeOrder();
+                    keepIdCountersAhead();
+                    initSyncSnapshot();
+                    primeLastStamp();
+                    localStorage.setItem('barakarsa_v6', JSON.stringify({
+                        tasks, projects, labels, nextProjectId, nextLabelId, tombstones
+                    }));
+                    render();
+                }
+
+                setSyncStatus('synced', 'Terakhir sinkron ' + new Date().toLocaleTimeString('id-ID'));
+            } catch (err) {
+                console.error('Sync gagal:', err);
+                const msg = (err && err.message) || 'penyebab tidak diketahui';
+                setSyncStatus('error', 'Gagal sinkron: ' + msg + '. Data aman di perangkat ini.');
+            } finally {
+                syncing = false;
+                if (syncPending) { syncPending = false; setTimeout(() => syncNow(), 500); }
+            }
+        }
+
+        function rowFor(kind, item) {
+            const data = { ...item };
+            delete data.updatedAt;
+            return {
+                id: String(item.id),
+                kind,
+                data,
+                deleted: false,
+                updated_at: item.updatedAt || new Date().toISOString()
+            };
+        }
+
+        // Ids are numbers locally but text in the database
+        function castId(id) {
+            const n = Number(id);
+            return Number.isFinite(n) && String(n) === String(id) ? n : id;
+        }
+
+        // After pulling rows made on another device, make sure new items here
+        // won't reuse an id that already exists.
+        function keepIdCountersAhead() {
+            projects.forEach(p => { if (typeof p.id === 'number' && p.id >= nextProjectId) nextProjectId = p.id + 1; });
+            labels.forEach(l => { if (typeof l.id === 'number' && l.id >= nextLabelId) nextLabelId = l.id + 1; });
+        }
+
+        // ---------- Startup ----------
+
+        async function initSync() {
+            injectSyncStatus();
+
+            if (typeof window.supabase === 'undefined') {
+                setSyncStatus('offline', 'Pustaka sinkronisasi gagal dimuat — aplikasi tetap jalan secara lokal');
+                return;
+            }
+
+            sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            const { data } = await sb.auth.getSession();
+            currentUser = data.session ? data.session.user : null;
+            updateAuthUI();
+
+            if (currentUser) syncNow(true);
+
+            sb.auth.onAuthStateChange((event, session) => {
+                currentUser = session ? session.user : null;
+                updateAuthUI();
+            });
+
+            // Re-sync when coming back to the app, and periodically
+            window.addEventListener('online', () => syncNow(true));
+            window.addEventListener('offline', () => setSyncStatus('offline', 'Tidak ada koneksi'));
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) syncNow();
+            });
+            setInterval(() => { if (!document.hidden) syncNow(); }, 60000);
+        }
+
+        window.addEventListener('load', () => setTimeout(initSync, 300));
+    </script>
+
 </body>
 </html>
