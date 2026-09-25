@@ -1267,6 +1267,25 @@
                 --sidebar-width: 300px;
             }
         }
+
+        /* ===== Bukti dukung (foto) ===== */
+        .ev-hint { font-weight: 400; font-size: 0.78rem; color: var(--text-secondary); margin-left: 0.35rem; }
+        .ev-drop { border: 1.5px dashed var(--border-color); border-radius: 0.6rem; padding: 0.75rem; transition: border-color .15s, background .15s; }
+        .ev-drop.dragover { border-color: var(--status-done); background: rgba(16,185,129,0.07); }
+        .ev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 0.5rem; margin-bottom: 0.6rem; }
+        .ev-grid:empty { display: none; }
+        .ev-thumb { position: relative; aspect-ratio: 4 / 3; border-radius: 0.4rem; overflow: hidden; background: var(--dark-hover); cursor: zoom-in; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--text-secondary); }
+        .ev-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .ev-del { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; border: none; background: rgba(0,0,0,0.7); color: #fff; font-size: 0.8rem; cursor: pointer; line-height: 24px; padding: 0; }
+        .ev-flag { position: absolute; left: 4px; bottom: 4px; font-size: 0.68rem; background: rgba(0,0,0,0.7); color: #fff; padding: 1px 6px; border-radius: 4px; }
+        .ev-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+        .ev-status { font-size: 0.8rem; color: var(--text-secondary); }
+        .badge.ev-missing { color: #fb923c; border-color: #fb923c; }
+        .ev-banner { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; background: rgba(251,146,60,0.1); border: 1px solid rgba(251,146,60,0.45); color: var(--text-primary); border-radius: 0.6rem; padding: 0.7rem 1rem; margin-bottom: 1rem; font-size: 0.9rem; }
+        .ev-banner button { margin-left: auto; }
+        .ev-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem; cursor: zoom-out; }
+        .ev-lightbox img { max-width: 100%; max-height: 100%; border-radius: 0.4rem; }
+        .ev-toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%); background: var(--dark-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.6rem 1rem; border-radius: 0.5rem; z-index: 3100; font-size: 0.88rem; box-shadow: 0 6px 20px rgba(0,0,0,0.4); max-width: 90vw; }
     </style>
 </head>
 <body>
@@ -1555,6 +1574,21 @@
                         <textarea id="taskDesc" placeholder="Add more details..."></textarea>
                     </div>
                 </form>
+
+                <!-- Bukti dukung (foto) — Tahap A integrasi CKP -->
+                <div class="form-group" id="evidenceSection">
+                    <label>📷 Bukti Dukung <span class="ev-hint">tempel (Ctrl+V), seret ke sini, atau pilih foto</span></label>
+                    <div class="ev-drop" id="evDrop">
+                        <div class="ev-grid" id="evGrid"></div>
+                        <div class="ev-actions">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('evFileInput').click()">📁 Pilih foto</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('evCameraInput').click()">📷 Kamera</button>
+                            <span id="evStatus" class="ev-status"></span>
+                        </div>
+                        <input type="file" id="evFileInput" accept="image/*" multiple hidden onchange="evOnPick(this)">
+                        <input type="file" id="evCameraInput" accept="image/*" capture="environment" hidden onchange="evOnPick(this)">
+                    </div>
+                </div>
             </div>
 
             <div class="modal-right">
@@ -2129,6 +2163,7 @@
             document.getElementById('taskDate').value = task.date;
             document.getElementById('taskTime').value = task.time;
             document.getElementById('taskQuadrant').value = task.quadrant;
+            renderProjectSelect(); // isi opsi dulu, supaya nilai project tidak hilang saat edit pertama setelah halaman dibuka
             document.getElementById('taskProject').value = task.project || '';
             document.getElementById('taskStatus').value = task.status;
             document.getElementById('taskAttachment').value = task.attachment;
@@ -3687,6 +3722,560 @@
 
         window.addEventListener('load', () => setTimeout(initSync, 300));
     </script>
+
+    <!-- ============================================================
+         BUKTI DUKUNG (FOTO) — Tahap A integrasi CKP
+
+         Alur: foto ditempel/dipilih -> dikompres di browser (maks 1600px,
+         JPEG) -> disimpan dulu di IndexedDB perangkat ini -> diunggah ke
+         Supabase Storage (bucket privat "bukti-dukung") saat login & online.
+         Task hanya menyimpan metadata foto, jadi localStorage tetap ringan.
+         Semua kaitan ke kode lama dibuat dengan membungkus fungsi yang
+         sudah ada, sehingga kode lama hampir tidak diubah.
+         ============================================================ -->
+    <script>
+        const EVIDENCE_BUCKET = 'bukti-dukung';
+        const PHOTO_MAX_EDGE = 1600;
+        const PHOTO_QUALITY = 0.75;
+        const THUMB_EDGE = 320;
+
+        // ---------- IndexedDB: blob foto yang belum terunggah + thumbnail ----------
+        const photoDB = (() => {
+            let dbp = null;
+            function open() {
+                if (dbp) return dbp;
+                dbp = new Promise((resolve, reject) => {
+                    const req = indexedDB.open('barakarsa_photos', 1);
+                    req.onupgradeneeded = () => {
+                        const db = req.result;
+                        db.createObjectStore('blobs');
+                        db.createObjectStore('thumbs');
+                    };
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+                return dbp;
+            }
+            async function run(store, mode, fn) {
+                const db = await open();
+                return new Promise((resolve, reject) => {
+                    const t = db.transaction(store, mode);
+                    const req = fn(t.objectStore(store));
+                    t.oncomplete = () => resolve(req ? req.result : undefined);
+                    t.onerror = () => reject(t.error);
+                    t.onabort = () => reject(t.error);
+                });
+            }
+            return {
+                put: (store, key, val) => run(store, 'readwrite', s => s.put(val, key)),
+                get: (store, key) => run(store, 'readonly', s => s.get(key)),
+                del: (store, key) => run(store, 'readwrite', s => s.delete(key))
+            };
+        })();
+
+        async function evForgetLocal(photoId) {
+            await photoDB.del('blobs', photoId).catch(() => {});
+            await photoDB.del('thumbs', photoId).catch(() => {});
+            const url = evUrls.get(photoId);
+            if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+            evUrls.delete(photoId);
+        }
+
+        // ---------- Kompresi ----------
+        async function evLoadBitmap(file) {
+            if ('createImageBitmap' in window) {
+                try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { /* fallback */ }
+            }
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Gambar tidak bisa dibaca')); };
+                img.src = url;
+            });
+        }
+
+        function evDraw(src, maxEdge, quality) {
+            const scale = Math.min(1, maxEdge / Math.max(src.width, src.height));
+            const w = Math.max(1, Math.round(src.width * scale));
+            const h = Math.max(1, Math.round(src.height * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';            // PNG transparan -> latar putih
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(src, 0, 0, w, h);
+            return new Promise((resolve, reject) => canvas.toBlob(
+                b => b ? resolve({ blob: b, w, h }) : reject(new Error('Kompresi gagal')),
+                'image/jpeg', quality
+            ));
+        }
+
+        async function evCompress(file) {
+            const bmp = await evLoadBitmap(file);
+            const full = await evDraw(bmp, PHOTO_MAX_EDGE, PHOTO_QUALITY);
+            const thumb = await evDraw(bmp, THUMB_EDGE, 0.7);
+            if (bmp.close) bmp.close();
+            return { full, thumb };
+        }
+
+        // ---------- Helper umum ----------
+        function evPhotos(task) { return Array.isArray(task && task.photos) ? task.photos : []; }
+
+        function evIsASN(task) {
+            if (!task || task.project == null || task.project === '') return false;
+            const asn = projects.find(p => (p.name || '').trim().toUpperCase() === 'ASN');
+            return asn ? task.project == asn.id : task.project == 1;
+        }
+
+        function evIsMissing(task) {
+            return evIsASN(task) && task.status === 'completed' && evPhotos(task).length === 0;
+        }
+
+        function evNewId() {
+            return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+        }
+
+        let evToastTimer = null;
+        function evToast(msg) {
+            let el = document.getElementById('evToast');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'evToast';
+                el.className = 'ev-toast';
+                document.body.appendChild(el);
+            }
+            el.textContent = msg;
+            el.style.display = 'block';
+            clearTimeout(evToastTimer);
+            evToastTimer = setTimeout(() => { el.style.display = 'none'; }, 3500);
+        }
+
+        // Path file yang perlu dihapus dari server (bertahan walau offline)
+        function evGetTrash() {
+            try { return JSON.parse(localStorage.getItem('barakarsa_photo_trash') || '[]'); } catch (e) { return []; }
+        }
+        function evTrash(paths) {
+            const list = evGetTrash();
+            paths.filter(Boolean).forEach(p => { if (!list.includes(p)) list.push(p); });
+            localStorage.setItem('barakarsa_photo_trash', JSON.stringify(list));
+        }
+
+        // ---------- Status modal (draft foto) ----------
+        let evDraft = [];               // salinan foto untuk task di modal
+        let evAddedIds = new Set();     // foto yang baru ditambah di sesi modal ini
+        let evRemoved = [];             // foto lama yang dibuang di sesi modal ini
+        let evCommitting = false;
+        let evBusy = 0;
+        const evUrls = new Map();       // photo id -> URL tampilan (blob: / signed)
+
+        function evLoad(task) {
+            evDraft = evPhotos(task).map(p => ({ ...p }));
+            evAddedIds = new Set();
+            evRemoved = [];
+            evSetStatus('');
+            evRenderGrid();
+        }
+
+        function evSetStatus(text) {
+            const el = document.getElementById('evStatus');
+            if (el) el.textContent = text;
+        }
+
+        function evRenderGrid() {
+            const grid = document.getElementById('evGrid');
+            if (!grid) return;
+            grid.innerHTML = evDraft.map(p => `
+                <div class="ev-thumb" data-ev-id="${p.id}" onclick="evOpen('${p.id}')" title="Klik untuk memperbesar">
+                    <span>📷</span>
+                    ${p.pending ? '<span class="ev-flag" title="Belum terunggah ke server">⏳</span>' : ''}
+                    <button type="button" class="ev-del" title="Hapus foto" onclick="event.stopPropagation(); evRemove('${p.id}')">✕</button>
+                </div>
+            `).join('');
+            evDraft.forEach(p => evFillThumb(p));
+        }
+
+        async function evThumbUrl(p) {
+            if (evUrls.has(p.id)) return evUrls.get(p.id);
+            const thumb = await photoDB.get('thumbs', p.id).catch(() => null);
+            if (thumb) {
+                const url = URL.createObjectURL(thumb);
+                evUrls.set(p.id, url);
+                return url;
+            }
+            // Foto dari perangkat lain: ambil dari server
+            if (p.path && typeof sb !== 'undefined' && sb && currentUser) {
+                const { data } = await sb.storage.from(EVIDENCE_BUCKET).createSignedUrl(p.path, 3600);
+                if (data && data.signedUrl) {
+                    evUrls.set(p.id, data.signedUrl);
+                    return data.signedUrl;
+                }
+            }
+            return null;
+        }
+
+        async function evFillThumb(p) {
+            const url = await evThumbUrl(p);
+            if (!url) return;
+            const box = document.querySelector(`.ev-thumb[data-ev-id="${p.id}"]`);
+            if (!box) return;
+            const span = box.querySelector('span:not(.ev-flag)');
+            if (span) span.remove();
+            if (!box.querySelector('img')) {
+                const img = document.createElement('img');
+                img.alt = 'Bukti dukung';
+                img.src = url;
+                box.prepend(img);
+            }
+        }
+
+        async function evAddFiles(fileList) {
+            const files = Array.from(fileList || []).filter(f => f && f.type && f.type.startsWith('image/'));
+            if (!files.length) { evToast('File yang dipilih bukan gambar.'); return; }
+
+            evBusy++;
+            evSetStatus(`Memproses ${files.length} foto…`);
+            let ok = 0;
+            for (const file of files) {
+                try {
+                    const { full, thumb } = await evCompress(file);
+                    const id = evNewId();
+                    await photoDB.put('blobs', id, full.blob);
+                    await photoDB.put('thumbs', id, thumb.blob);
+                    evDraft.push({
+                        id,
+                        w: full.w, h: full.h,
+                        size: full.blob.size,
+                        createdAt: new Date().toISOString(),
+                        pending: true
+                    });
+                    evAddedIds.add(id);
+                    ok++;
+                } catch (err) {
+                    console.error('Foto gagal diproses:', err);
+                    evToast('Satu foto gagal diproses: ' + err.message);
+                }
+            }
+            evBusy--;
+            evRenderGrid();
+            evSetStatus(ok ? `${ok} foto ditambahkan — klik Save untuk menyimpan` : '');
+        }
+
+        function evOnPick(input) {
+            evAddFiles(input.files);
+            input.value = '';
+        }
+
+        function evRemove(id) {
+            const idx = evDraft.findIndex(p => p.id === id);
+            if (idx === -1) return;
+            const [photo] = evDraft.splice(idx, 1);
+            if (evAddedIds.has(id)) {
+                evAddedIds.delete(id);
+                evForgetLocal(id);
+            } else {
+                evRemoved.push(photo);
+            }
+            evRenderGrid();
+        }
+
+        async function evOpen(id) {
+            const p = evDraft.find(x => x.id === id);
+            if (!p) return;
+            let url = null;
+            const blob = await photoDB.get('blobs', id).catch(() => null);
+            if (blob) url = URL.createObjectURL(blob);
+            else if (p.path && sb && currentUser) {
+                const { data } = await sb.storage.from(EVIDENCE_BUCKET).createSignedUrl(p.path, 3600);
+                url = data && data.signedUrl;
+            }
+            if (!url) url = await evThumbUrl(p);
+            if (!url) { evToast('Foto belum tersedia di perangkat ini.'); return; }
+
+            const box = document.createElement('div');
+            box.className = 'ev-lightbox';
+            box.innerHTML = `<img src="${url}" alt="Bukti dukung">`;
+            box.onclick = () => { box.remove(); if (blob) URL.revokeObjectURL(url); };
+            document.body.appendChild(box);
+        }
+
+        // Simpan draft ke task (dipanggil setelah saveTask berhasil)
+        function evCommit(task, previousPhotos) {
+            // Kalau sebuah foto selesai terunggah SAAT modal terbuka, pakai status terbarunya
+            const live = new Map((previousPhotos || []).map(p => [p.id, p]));
+            task.photos = evDraft.map(p => {
+                const l = live.get(p.id);
+                return (l && l.path && !l.pending) ? { ...p, pending: false, path: l.path } : p;
+            });
+            evRemoved.forEach(p => {
+                if (p.path) evTrash([p.path]);
+                evForgetLocal(p.id);
+            });
+            evAddedIds = new Set();
+            evRemoved = [];
+        }
+
+        // Batal: buang foto baru yang belum disimpan
+        function evDiscard() {
+            evAddedIds.forEach(id => evForgetLocal(id));
+            evAddedIds = new Set();
+            evRemoved = [];
+            evDraft = [];
+        }
+
+        // ---------- Antrean unggah ----------
+        let evQueueRunning = false;
+
+        async function evProcessQueue() {
+            if (evQueueRunning) return;
+            if (typeof sb === 'undefined' || !sb || !currentUser || !navigator.onLine) return;
+            evQueueRunning = true;
+            let changed = false;
+
+            try {
+                // 1) Hapus file yang sudah dibuang
+                const trash = evGetTrash();
+                if (trash.length) {
+                    const { error } = await sb.storage.from(EVIDENCE_BUCKET).remove(trash);
+                    if (!error) {
+                        const rest = evGetTrash().filter(p => !trash.includes(p));
+                        localStorage.setItem('barakarsa_photo_trash', JSON.stringify(rest));
+                    } else {
+                        console.warn('Hapus foto di server gagal:', error.message);
+                    }
+                }
+
+                // 2) Unggah foto yang tertunda
+                const jobs = [];
+                tasks.forEach(t => evPhotos(t).forEach(p => { if (p.pending) jobs.push({ taskId: t.id, photoId: p.id }); }));
+
+                for (const job of jobs) {
+                    const blob = await photoDB.get('blobs', job.photoId).catch(() => null);
+                    if (!blob) continue; // foto dari perangkat lain yang belum sempat terunggah
+                    const path = `${currentUser.id}/${job.taskId}/${job.photoId}.jpg`;
+                    const { error } = await sb.storage.from(EVIDENCE_BUCKET)
+                        .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+                    if (error) {
+                        console.warn('Unggah foto gagal:', error.message);
+                        evToast('Unggah foto gagal: ' + error.message);
+                        break; // kemungkinan masalah bucket/izin — jangan spam
+                    }
+                    // Cari ulang objeknya: task bisa saja sudah diedit selama unggah
+                    const task = tasks.find(t => t.id === job.taskId);
+                    const photo = evPhotos(task).find(p => p.id === job.photoId);
+                    if (photo) {
+                        photo.pending = false;
+                        photo.path = path;
+                        changed = true;
+                        await photoDB.del('blobs', job.photoId).catch(() => {}); // thumbnail tetap disimpan
+                    } else {
+                        evTrash([path]); // fotonya sudah dihapus selama unggah
+                    }
+                }
+            } catch (err) {
+                console.error('Antrean foto error:', err);
+            } finally {
+                evQueueRunning = false;
+            }
+
+            if (changed) {
+                saveData();
+                debouncedRender();
+            }
+        }
+
+        // ---------- Banner "belum ada bukti" & filter ----------
+        let evMissingOnly = false;
+
+        function evShowMissing() {
+            switchView('completed');
+            evMissingOnly = true;
+            render();
+        }
+
+        function evClearFilter() {
+            evMissingOnly = false;
+            render();
+        }
+
+        function evUpdateBanners() {
+            const missing = tasks.filter(evIsMissing).length;
+
+            const dash = document.getElementById('dashboardList');
+            if (dash) {
+                let banner = document.getElementById('evBanner');
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'evBanner';
+                    banner.className = 'ev-banner';
+                    dash.parentElement.insertBefore(banner, dash);
+                }
+                banner.style.display = missing ? 'flex' : 'none';
+                banner.innerHTML = `<span>⚠️ <strong>${missing}</strong> kegiatan ASN sudah selesai tapi belum ada bukti dukung.</span>
+                    <button class="btn btn-secondary btn-sm" onclick="evShowMissing()">Lihat</button>`;
+            }
+
+            const done = document.getElementById('completedList');
+            if (done) {
+                let chip = document.getElementById('evChip');
+                if (!chip) {
+                    chip = document.createElement('div');
+                    chip.id = 'evChip';
+                    chip.className = 'ev-banner';
+                    done.parentElement.insertBefore(chip, done);
+                }
+                chip.style.display = evMissingOnly ? 'flex' : 'none';
+                chip.innerHTML = `<span>Menampilkan kegiatan ASN tanpa bukti dukung (${missing})</span>
+                    <button class="btn btn-secondary btn-sm" onclick="evClearFilter()">✕ Tampilkan semua</button>`;
+            }
+        }
+
+        function evBadgeHTML(task) {
+            const photos = evPhotos(task);
+            if (photos.length) {
+                const pending = photos.some(p => p.pending);
+                return `<span class="badge" title="${pending ? 'Ada foto yang belum terunggah' : 'Bukti dukung tersimpan'}">📷 ${photos.length}${pending ? ' ⏳' : ''}</span>`;
+            }
+            if (evIsMissing(task)) return '<span class="badge ev-missing">⚠️ Bukti belum ada</span>';
+            return '';
+        }
+
+        // ---------- Membungkus fungsi lama ----------
+        (function wireEvidence() {
+            const _openTaskModal = openTaskModal;
+            openTaskModal = function () {
+                _openTaskModal.apply(this, arguments);
+                evLoad(null);
+            };
+
+            const _editTask = editTask;
+            editTask = function (id) {
+                _editTask.apply(this, arguments);
+                evLoad(tasks.find(t => t.id === id));
+            };
+
+            const _closeTaskModal = closeTaskModal;
+            closeTaskModal = function () {
+                if (!evCommitting) evDiscard();
+                _closeTaskModal.apply(this, arguments);
+            };
+
+            const _saveTask = saveTask;
+            saveTask = function (e) {
+                if (evBusy > 0) {
+                    if (e) e.preventDefault();
+                    evToast('Tunggu sebentar, foto masih diproses…');
+                    return;
+                }
+                const editingId = editingTaskId;
+                const before = editingId ? tasks.find(t => t.id === editingId) : null;
+                const beforeCopy = before ? { ...before } : null;
+                const lengthBefore = tasks.length;
+
+                evCommitting = true;
+                try { _saveTask.apply(this, arguments); } finally { evCommitting = false; }
+
+                const modalStillOpen = document.getElementById('taskModal').classList.contains('active');
+                if (modalStillOpen) return; // gagal validasi, belum tersimpan
+
+                const task = editingId
+                    ? tasks.find(t => t.id === editingId)
+                    : (tasks.length > lengthBefore ? tasks[tasks.length - 1] : null);
+                if (!task) return;
+
+                // saveTask lama membuat objek baru dan membuang field tambahan
+                // (order, photos, dll). Kembalikan field yang tidak diisi form.
+                if (beforeCopy) {
+                    Object.keys(beforeCopy).forEach(k => { if (!(k in task)) task[k] = beforeCopy[k]; });
+                }
+
+                evCommit(task, beforeCopy ? evPhotos(beforeCopy) : []);
+                saveData();
+                debouncedRender();
+                evProcessQueue();
+            };
+
+            const _deleteTask = deleteTask;
+            deleteTask = function (id) {
+                const task = tasks.find(t => t.id === id);
+                const photos = evPhotos(task);
+                _deleteTask.apply(this, arguments);
+                if (photos.length) {
+                    evTrash(photos.map(p => p.path));
+                    photos.forEach(p => evForgetLocal(p.id));
+                    evProcessQueue();
+                }
+            };
+
+            const _createTaskHTML = createTaskHTML;
+            createTaskHTML = function (task) {
+                const html = _createTaskHTML.apply(this, arguments);
+                const badge = evBadgeHTML(task);
+                return badge ? html.replace('<div class="task-meta">', '<div class="task-meta">' + badge) : html;
+            };
+
+            const _createBoardCard = createBoardCard;
+            createBoardCard = function (task) {
+                const html = _createBoardCard.apply(this, arguments);
+                const n = evPhotos(task).length;
+                const mark = n ? `<span title="${n} foto bukti dukung">📷${n}</span>` : (evIsMissing(task) ? '<span title="Bukti belum ada">⚠️</span>' : '');
+                return mark ? html.replace('<div class="board-card-meta">', '<div class="board-card-meta">' + mark) : html;
+            };
+
+            const _getFilteredTasks = getFilteredTasks;
+            getFilteredTasks = function (list) {
+                const result = _getFilteredTasks.apply(this, arguments);
+                return (evMissingOnly && currentView === 'completed') ? result.filter(evIsMissing) : result;
+            };
+
+            const _switchView = switchView;
+            switchView = function (view) {
+                if (view !== 'completed') evMissingOnly = false;
+                return _switchView.apply(this, arguments);
+            };
+
+            const _render = render;
+            render = function () {
+                const r = _render.apply(this, arguments);
+                evUpdateBanners();
+                return r;
+            };
+
+            const _syncNow = syncNow;
+            syncNow = async function () {
+                const r = await _syncNow.apply(this, arguments);
+                evProcessQueue();
+                return r;
+            };
+
+            // Tempel (Ctrl+V) saat modal task terbuka
+            document.addEventListener('paste', (e) => {
+                if (!document.getElementById('taskModal').classList.contains('active')) return;
+                const items = Array.from((e.clipboardData && e.clipboardData.items) || []);
+                const files = items.filter(i => i.kind === 'file' && i.type.startsWith('image/')).map(i => i.getAsFile()).filter(Boolean);
+                if (!files.length) return; // tempel teks biasa tetap jalan
+                e.preventDefault();
+                evAddFiles(files);
+            });
+
+            // Seret & lepas
+            const drop = document.getElementById('evDrop');
+            if (drop) {
+                ['dragenter', 'dragover'].forEach(type => drop.addEventListener(type, (e) => {
+                    e.preventDefault();
+                    drop.classList.add('dragover');
+                }));
+                ['dragleave', 'drop'].forEach(type => drop.addEventListener(type, () => drop.classList.remove('dragover')));
+                drop.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    evAddFiles(e.dataTransfer && e.dataTransfer.files);
+                });
+            }
+
+            window.addEventListener('online', () => evProcessQueue());
+        })();
+    </script>
+
 
 </body>
 </html>
