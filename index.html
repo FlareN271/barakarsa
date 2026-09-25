@@ -1286,6 +1286,72 @@
         .ev-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem; cursor: zoom-out; }
         .ev-lightbox img { max-width: 100%; max-height: 100%; border-radius: 0.4rem; }
         .ev-toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%); background: var(--dark-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.6rem 1rem; border-radius: 0.5rem; z-index: 3100; font-size: 0.88rem; box-shadow: 0 6px 20px rgba(0,0,0,0.4); max-width: 90vw; }
+
+        /* ===== CKP Triwulan (hub, IKI di task, laporan cetak) ===== */
+        .iki-suggest { margin-top: 0.4rem; font-size: 0.8rem; color: var(--text-secondary); }
+        .iki-suggest button { background: none; border: 1px dashed #fb923c; color: #fb923c; border-radius: 0.4rem; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; text-align: left; }
+        .iki-full { margin-top: 0.35rem; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.35; }
+        .badge.iki-badge { color: #93c5fd; border-color: rgba(147,197,253,0.5); }
+        #ckpHubModal .modal-content.ckp-hub { display: block; grid-template-columns: none; max-width: 1080px; padding: 1.75rem; overflow-y: auto; max-height: 92vh; }
+        .ckp-hub h3 { font-size: 1rem; margin: 1.4rem 0 0.6rem; }
+        .ckp-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+        .ckp-hub select, .ckp-hub input, .ckp-hub textarea { background: var(--dark-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 0.4rem; padding: 0.45rem 0.6rem; font-size: 0.9rem; font-family: inherit; }
+        .ckp-hub textarea { width: 100%; min-height: 3.2rem; resize: vertical; }
+        .ckp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.6rem 1rem; }
+        .ckp-grid label, .ckp-field label { display: block; font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.2rem; }
+        .ckp-grid input, .ckp-field input, .ckp-field textarea { width: 100%; }
+        .ckp-card { background: var(--dark-card); border: 1px solid var(--border-color); border-radius: 0.6rem; padding: 0.85rem 1rem; margin-bottom: 0.6rem; }
+        .ckp-card.muted { opacity: 0.6; }
+        .ckp-card-head { display: flex; gap: 0.75rem; align-items: flex-start; flex-wrap: wrap; }
+        .ckp-card-title { flex: 1 1 320px; }
+        .ckp-card-title strong { display: block; font-size: 0.95rem; }
+        .ckp-card-title small { color: var(--text-secondary); font-size: 0.78rem; line-height: 1.35; display: block; margin-top: 0.15rem; }
+        .ckp-stats { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; }
+        .ckp-stats .warn { color: #fb923c; }
+        .ckp-editor { margin-top: 0.9rem; border-top: 1px solid var(--border-color); padding-top: 0.9rem; }
+        .ckp-editor .ckp-field { margin-bottom: 0.6rem; }
+        .ckp-note { font-size: 0.8rem; color: var(--text-secondary); margin: 0.3rem 0 0.8rem; line-height: 1.45; }
+        .ckp-warnlist { font-size: 0.85rem; margin: 0.3rem 0 0 1.1rem; }
+        .ckp-warnlist a { color: #93c5fd; cursor: pointer; text-decoration: underline; }
+        .ckp-hub details summary { cursor: pointer; font-weight: 600; margin: 1.2rem 0 0.6rem; }
+
+        #ckpPrint { position: fixed; inset: 0; z-index: 2500; background: #525659; overflow: auto; padding: 0 0 2rem; }
+        #ckpPrint .ckp-toolbar { position: sticky; top: 0; z-index: 2; display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; background: #2d2d2d; padding: 0.7rem 1rem; padding-top: calc(0.7rem + env(safe-area-inset-top, 0px)); border-bottom: 1px solid #404040; color: #e0e0e0; font-size: 0.85rem; }
+        #ckpPrint .ckp-sheet { background: #fff; color: #000; margin: 1.2rem auto; box-shadow: 0 2px 12px rgba(0,0,0,0.5); padding: 1in; font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.15; box-sizing: border-box; }
+        #ckpPrint .ckp-cover { width: 8.5in; min-height: 11in; }
+        #ckpPrint .ckp-land { width: 11in; min-height: 8.5in; }
+        #ckpPrint table { border-collapse: collapse; width: 100%; font-size: 12pt; color: #000; }
+        #ckpPrint td, #ckpPrint th { border: 1px solid #000; padding: 0.07in; vertical-align: top; font-weight: normal; text-align: left; }
+        #ckpPrint .ckp-title { text-align: center; font-weight: bold; margin-bottom: 0.35in; }
+        #ckpPrint .ckp-title div { margin: 0; }
+        #ckpPrint .ckp-ident td { vertical-align: middle; height: 0.45in; }
+        #ckpPrint .ckp-ident td.sep { border-left: none; border-right: none; width: 3%; text-align: center; padding: 0; }
+        #ckpPrint .ckp-ident td.lbl { width: 40%; border-right: none; }
+        #ckpPrint .ckp-ident td.val { border-left: none; }
+        #ckpPrint .fill { background: #fbe4d5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #ckpPrint .ckp-main th { text-align: center; }
+        #ckpPrint .ckp-main tr { break-inside: avoid; page-break-inside: avoid; }
+        #ckpPrint .ckp-main td.no { text-align: center; vertical-align: middle; }
+        #ckpPrint .ckp-main img { display: block; width: 100%; max-height: 2.4in; object-fit: contain; margin: 0 auto 0.05in; }
+        #ckpPrint .ckp-main .nophoto { color: #999; font-style: italic; font-size: 10pt; }
+        #ckpPrint .ckp-kendala { margin-top: 0.45in; }
+        #ckpPrint .ckp-kendala th { text-align: center; }
+        #ckpPrint .ckp-kendala td { height: 0.6in; vertical-align: middle; }
+        #ckpPrint .ckp-ttd { width: 92%; margin: 0.45in auto 0; break-inside: avoid; page-break-inside: avoid; }
+        #ckpPrint .ckp-ttd td { text-align: center; vertical-align: top; width: 50%; line-height: 1.2; padding-bottom: 0.3in; }
+        #ckpPrint .ckp-ttd .space { height: 0.75in; }
+        @page { size: letter landscape; margin: 2.54cm; }
+        @page cover { size: letter portrait; margin: 2.54cm; }
+        @media print {
+            html { background: #fff !important; }
+            body.ckp-printing > *:not(#ckpPrint) { display: none !important; }
+            body.ckp-printing { background: #fff !important; }
+            body.ckp-printing #ckpPrint { position: static; overflow: visible; background: none; padding: 0; }
+            body.ckp-printing #ckpPrint .ckp-toolbar { display: none; }
+            body.ckp-printing #ckpPrint .ckp-sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+            body.ckp-printing #ckpPrint .ckp-cover { page: cover; break-after: page; page-break-after: always; }
+            body.ckp-printing #ckpPrint .ckp-land { page: auto; }
+        }
     </style>
 </head>
 <body>
@@ -1427,7 +1493,7 @@
                             padding: 0.4rem;
                         ">
                             <div style="padding: 0.5rem 0.75rem 0.4rem; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Laporan</div>
-                            <div class="tools-menu-item" onclick="toolsAction('ckp')">📄 CKP Preview</div>
+                            <div class="tools-menu-item" onclick="toolsAction('ckp')">📋 CKP Triwulan</div>
 
                             <div style="padding: 0.7rem 0.75rem 0.4rem; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Backup</div>
                             <div class="tools-menu-item" onclick="toolsAction('json')">💾 Export JSON</div>
@@ -1768,7 +1834,7 @@
                     Tahan ikon ⠿ di kiri task, lalu geser ke atas atau bawah untuk mengatur urutan pengerjaan.</p>
 
                     <p style="margin-bottom: 1rem;"><strong style="color: var(--accent-red);">CKP</strong><br>
-                    Hanya task dengan project ASN yang masuk ke CKP Preview. Hasilnya berupa tabel siap tempel ke Google Docs.</p>
+                    Task dengan project ASN yang sudah dipilih IKI-nya masuk ke menu ⋯ → CKP Triwulan. Dari sana bisa dibuat Laporan PDF per IKI (lengkap dengan foto bukti dukung) dan Excel rekap CKP.</p>
 
                     <p><strong style="color: var(--accent-red);">Backup</strong><br>
                     Data tersimpan di browser perangkat ini saja. Export JSON secara berkala agar aman kalau cache browser terhapus.</p>
@@ -2778,7 +2844,7 @@
 
         function toolsAction(action) {
             closeToolsMenu();
-            if (action === 'ckp') openCKPModal();
+            if (action === 'ckp') openCkpHub();
             else if (action === 'json') exportToJSON();
             else if (action === 'csv') exportToCSV();
             else if (action === 'import') openPasteImportModal();
@@ -4189,6 +4255,7 @@
                     Object.keys(beforeCopy).forEach(k => { if (!(k in task)) task[k] = beforeCopy[k]; });
                 }
 
+                if (typeof ckpApplyToTask === 'function') ckpApplyToTask(task);
                 evCommit(task, beforeCopy ? evPhotos(beforeCopy) : []);
                 saveData();
                 debouncedRender();
@@ -4276,6 +4343,766 @@
         })();
     </script>
 
+
+    <!-- ============================================================
+         CKP TRIWULAN — Tahap B (katalog IKI & tautan task) dan
+         Tahap C (Laporan PDF per IKI + Excel rekap CKP)
+
+         Katalog IKI TIDAK ditanam di kode (repo GitHub Pages publik):
+         diimpor dari file pohon_kinerja_*.json milik pengguna, lalu
+         disimpan di perangkat + tabel Supabase `barakarsa_settings`.
+         ============================================================ -->
+    <script>
+        const CKP_KEY = 'barakarsa_ckp_v1';
+        const CKP_SETTINGS_TABLE = 'barakarsa_settings';
+        const CKP_PARTS = ['katalog', 'profil', 'catatan'];
+        const BULAN_ID = ['JANUARI','FEBRUARI','MARET','APRIL','MEI','JUNI','JULI','AGUSTUS','SEPTEMBER','OKTOBER','NOVEMBER','DESEMBER'];
+        const ROMAWI = ['', 'I', 'II', 'III', 'IV'];
+
+        // ---------- Penyimpanan pengaturan CKP ----------
+        let ckpStore = (() => { try { return JSON.parse(localStorage.getItem(CKP_KEY)) || {}; } catch (e) { return {}; } })();
+
+        function ckpGet(part) { return (ckpStore[part] && ckpStore[part].data) || {}; }
+        function ckpSet(part, data) {
+            ckpStore[part] = { data, updatedAt: new Date().toISOString() };
+            localStorage.setItem(CKP_KEY, JSON.stringify(ckpStore));
+            ckpScheduleSettingsSync();
+        }
+        function ckpCatalog() { return ckpGet('katalog').entries || []; }
+        function ckpEntry(id) { return id ? ckpCatalog().find(e => e.id === id) : null; }
+        function ckpPegawai() {
+            return Object.assign({ nama: '', nip: '', pangkat: '', jabatan: '', kota: 'Paringin', idPegawai: '', wilayah: 'Balangan', unit: 'BPS Kabupaten/Kota' },
+                ckpGet('profil').pegawai || {});
+        }
+        function ckpOverrides() { return ckpGet('profil').overrides || {}; }
+        function ckpSavePegawai(field, value) {
+            const p = ckpGet('profil');
+            ckpSet('profil', { ...p, pegawai: { ...ckpPegawai(), [field]: value } });
+        }
+        function ckpSaveOverride(id, field, value) {
+            const p = ckpGet('profil');
+            const ov = { ...(p.overrides || {}) };
+            ov[id] = { ...(ov[id] || {}), [field]: value };
+            ckpSet('profil', { ...p, overrides: ov });
+        }
+        function ckpPeriodKey(y, q) { return `${y}-TW${q}`; }
+        function ckpNote(y, q, id) { return ((ckpGet('catatan')[ckpPeriodKey(y, q)] || {})[id]) || {}; }
+        function ckpSaveNote(y, q, id, field, value) {
+            const all = { ...ckpGet('catatan') };
+            const key = ckpPeriodKey(y, q);
+            all[key] = { ...(all[key] || {}) };
+            all[key][id] = { ...(all[key][id] || {}), [field]: value };
+            ckpSet('catatan', all);
+        }
+
+        // ---------- Sinkron pengaturan (tabel terpisah, aman untuk versi lama) ----------
+        let ckpSyncTimer = null;
+        let ckpSettingsUnavailable = false;
+        function ckpScheduleSettingsSync() {
+            clearTimeout(ckpSyncTimer);
+            ckpSyncTimer = setTimeout(ckpSyncSettings, 1500);
+        }
+        async function ckpSyncSettings() {
+            if (ckpSettingsUnavailable || typeof sb === 'undefined' || !sb || !currentUser || !navigator.onLine) return;
+            try {
+                const { data: rows, error } = await sb.from(CKP_SETTINGS_TABLE).select('id,data,updated_at');
+                if (error) {
+                    console.warn('Sinkron pengaturan CKP gagal:', error.message);
+                    if (/does not exist|schema cache|relation/i.test(error.message)) ckpSettingsUnavailable = true;
+                    return;
+                }
+                const remote = new Map((rows || []).map(r => [r.id, r]));
+                const push = [];
+                let changed = false;
+                CKP_PARTS.forEach(part => {
+                    const l = ckpStore[part];
+                    const r = remote.get(part);
+                    const lt = l ? Date.parse(l.updatedAt) : 0;
+                    const rt = r ? Date.parse(r.updated_at) : 0;
+                    if (r && rt > lt) { ckpStore[part] = { data: r.data, updatedAt: r.updated_at }; changed = true; }
+                    else if (l && lt > rt) push.push({ user_id: currentUser.id, id: part, data: l.data, updated_at: l.updatedAt });
+                });
+                if (push.length) {
+                    const { error: e2 } = await sb.from(CKP_SETTINGS_TABLE).upsert(push, { onConflict: 'user_id,id' });
+                    if (e2) console.warn('Simpan pengaturan CKP ke server gagal:', e2.message);
+                }
+                if (changed) {
+                    localStorage.setItem(CKP_KEY, JSON.stringify(ckpStore));
+                    debouncedRender();
+                    ckpRefreshHubIfIdle();
+                }
+            } catch (err) { console.warn('Sinkron pengaturan CKP error:', err); }
+        }
+
+        // ---------- Util ----------
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        function hashId(str) {
+            let h = 5381;
+            for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+            return 'iki_' + h.toString(36);
+        }
+        function stripCode(s) { return String(s || '').replace(/^\s*[IVX]+(\.\d+)*\.?\s+/, '').trim(); }
+        function fmtTanggal(iso) {
+            if (!iso) return '';
+            const d = new Date(iso + 'T00:00:00');
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        function todayISO() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+        function quarterRange(y, q) {
+            const m0 = (q - 1) * 3;
+            const pad = n => String(n).padStart(2, '0');
+            const last = new Date(y, m0 + 3, 0).getDate();
+            return { start: `${y}-${pad(m0 + 1)}-01`, end: `${y}-${pad(m0 + 3)}-${pad(last)}`, m0, last };
+        }
+
+        // ---------- Impor pohon kinerja -> katalog IKI ----------
+        function ckpBuildCatalog(pk) {
+            const rkRows = pk.rk_iki || [];
+            const tw = pk.ckp_tw2 || [];
+            const entries = [];
+            (pk.penugasan_naufal || pk.penugasan || []).forEach(p => {
+                const r = rkRows.find(x => norm(x.kegiatan) === norm(p.kegiatan) && String(x.ik || '').startsWith(p.kode_ik))
+                       || rkRows.find(x => norm(x.kegiatan) === norm(p.kegiatan));
+                if (!r) return;
+                const rincian = r.rincian || [];
+                const rkList = r.rk_anggota || [];
+                const seen = new Set();
+                (r.iki_anggota || []).forEach(pair => {
+                    const iki = String(pair.iki || '').replace(/^\d+\.\s*/, '').trim();
+                    if (!iki || seen.has(norm(iki))) return;
+                    seen.add(norm(iki));
+                    const rkIdx = rkList.indexOf(pair.rk);
+                    const rinc = rincian.length === rkList.length && rkIdx >= 0 ? rincian[rkIdx] : rincian.join('; ');
+                    const twRow = tw.find(t => norm(t.capaian) === norm(iki));
+                    entries.push({
+                        id: hashId(norm(p.kegiatan) + '|' + norm(iki)),
+                        kode_ik: p.kode_ik || '',
+                        kelompok: p.kelompok || '',
+                        tim: p.tim || r.tim || '',
+                        peran: p.peran || 'Anggota',
+                        ketua_tim: r.ketua_tim || '',
+                        tujuan: stripCode(r.tujuan),
+                        sasaran: stripCode(r.sasaran),
+                        ik: stripCode(r.ik),
+                        rk_ketua: r.rk_ketua || '',
+                        iki_ketua: r.iki_ketua || '',
+                        kegiatan: p.kegiatan,
+                        rk_anggota: pair.rk || rkList[0] || '',
+                        iki_anggota: iki,
+                        rincian: rinc || '',
+                        rk_ringkas: twRow ? twRow.rencana_kinerja : '',
+                        dipakai_tw2: !!twRow
+                    });
+                });
+            });
+            // Nama pendek untuk kegiatan yang punya lebih dari satu IKI
+            entries.forEach(e => {
+                const sibs = entries.filter(x => x.kegiatan === e.kegiatan);
+                if (sibs.length < 2) { e.short = e.kegiatan; return; }
+                const stage = (e.iki_anggota.match(/Persiapan|Pengumpulan|Pengolahan|keprotokolan|penyusun laporan|kehumasan|Permintaan Dokumen|pemenuhan dokumen/i) || [])[0];
+                e.short = e.kegiatan + ' · ' + (stage ? stage.charAt(0).toUpperCase() + stage.slice(1).toLowerCase() : (sibs.indexOf(e) + 1));
+            });
+            return entries;
+        }
+
+        function ckpImportFile(input) {
+            const file = input.files && input.files[0];
+            input.value = '';
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const pk = JSON.parse(reader.result);
+                    const entries = ckpBuildCatalog(pk);
+                    if (!entries.length) throw new Error('Tidak ada penugasan/IKI yang dikenali di file ini.');
+                    ckpSet('katalog', { entries, source: file.name, importedAt: new Date().toISOString() });
+                    // Isi profil pegawai dari file bila masih kosong
+                    const peg = ckpPegawai();
+                    const hdr = (pk.ckp_format && pk.ckp_format.header) || {};
+                    const upd = {};
+                    if (!peg.nama && pk.pegawai) upd.nama = pk.pegawai;
+                    if (!peg.idPegawai && hdr.pegawai) { const m = String(hdr.pegawai).match(/\[(\d+)\]/); if (m) upd.idPegawai = m[1]; }
+                    if (hdr.wilayah && !ckpGet('profil').pegawai) upd.wilayah = hdr.wilayah;
+                    if (hdr.unit && !ckpGet('profil').pegawai) upd.unit = hdr.unit;
+                    if (Object.keys(upd).length) {
+                        const p = ckpGet('profil');
+                        ckpSet('profil', { ...p, pegawai: { ...peg, ...upd } });
+                    }
+                    evToast(`Katalog terisi: ${entries.length} IKI dari ${file.name}`);
+                    ckpRenderHub();
+                    debouncedRender();
+                } catch (err) {
+                    evToast('Impor gagal: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // ---------- Saran IKI dari judul task ----------
+        const CKP_SYNONYMS = [
+            [/sakip/i, ['sakip', 'akip', 'lkip', 'renstra', 'perjanjian kinerja', 'pk', 'kertas kerja', 'capaian output']],
+            [/humas/i, ['humas', 'kehumasan', 'medsos', 'media sosial', 'instagram', 'konten', 'desain', 'protokol', 'keprotokolan', 'rapat pimpinan', 'liputan']],
+            [/sensus ekonomi/i, ['se2026', 'se 2026', 'sensus ekonomi', 'sensus']],
+            [/ksa/i, ['ksa', 'kerangka sampel area']],
+            [/ubinan/i, ['ubinan']],
+            [/hortikultura/i, ['horti', 'hortibun', 'hortikultura', 'perkebunan']],
+            [/podes/i, ['podes', 'potensi desa']],
+            [/desa cinta/i, ['desa cantik', 'desa cinta', 'dcs', 'pembinaan desa']],
+            [/pelayanan statistik terpadu/i, ['pst', 'pelayanan statistik', 'skd', 'pekppp', 'konsultasi data', 'layanan data']],
+            [/ketahanan sosial/i, ['polkam', 'gc pbi', 'gc pln', 'ground check', 'ketahanan sosial']],
+            [/industri/i, ['imk', 'ibs', 'industri']],
+            [/mineral/i, ['sktr', 'skth', 'air bersih', 'galian', 'konstruksi', 'urt']],
+            [/statkesra|kesejahteraan/i, ['susenas', 'seruti', 'snlik', 'kesra']],
+            [/^dda$/i, ['dda', 'kcda', 'dalam angka']]
+        ];
+        const CKP_STAGES = [
+            [/persiapan/i, /persiapan|pelatihan|rekrut|briefing|sosialisasi|pemutakhiran/],
+            [/pengumpulan/i, /pencacahan|cacah|lapangan|pendataan|listing|pengumpulan/],
+            [/pengolahan/i, /pengolahan|olah|entri|entry|validasi|evaluasi|cleaning/],
+            [/keprotokolan/i, /protokol|rapat pimpinan|agenda pimpinan|mc\b|pembawa acara/],
+            [/kehumasan yang kreatif/i, /konten|medsos|media sosial|instagram|rilis|desain|liputan|website/]
+        ];
+        const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const hasWord = (text, w) => new RegExp('(^|[^a-z0-9])' + reEsc(w) + '($|[^a-z0-9])').test(text);
+
+        function ckpKeywords(e) {
+            if (e._kw) return e._kw;
+            const STOP = ['dokumen', 'pengisian', 'kegiatan', 'laporan', 'statistik', 'pendataan', 'pelaksanaan', 'triwulanan', 'keluar', 'masuk'];
+            const own = [], words = [];
+            String(e.rincian || '').split(/[;,&()]|\bdsb\b|\bdll\b/i).map(s => s.trim().toLowerCase())
+                .filter(s => s.length >= 2 && !/^(dsb|dll|-)$/.test(s))
+                .forEach(s => {
+                    own.push(s);
+                    s.split(/\s+/).forEach(w => { if (w.length >= 6 && !STOP.includes(w) && !words.includes(w)) words.push(w); });
+                });
+            const syn = [...words];
+            CKP_SYNONYMS.forEach(([re, words]) => { if (re.test(e.kegiatan)) syn.push(...words); });
+            syn.push(e.kegiatan.toLowerCase());
+            e._kw = { own, syn };
+            return e._kw;
+        }
+
+        function ckpSuggest(text) {
+            const t = ' ' + String(text || '').toLowerCase() + ' ';
+            if (t.trim().length < 3) return null;
+            let best = null, bestScore = 0;
+            ckpCatalog().forEach(e => {
+                const kw = ckpKeywords(e);
+                let score = 0;
+                kw.own.forEach(w => { if (hasWord(t, w)) score += 2; });
+                kw.syn.forEach(w => { if (hasWord(t, w)) score += 1; });
+                if (!score) return;
+                CKP_STAGES.forEach(([ikiRe, textRe]) => { if (ikiRe.test(e.iki_anggota) && textRe.test(t)) score += 2; });
+                if (e.dipakai_tw2) score += 0.1;
+                if (score > bestScore) { best = e; bestScore = score; }
+            });
+            return best;
+        }
+
+        // ---------- IKI di form task ----------
+        function ckpInjectTaskField() {
+            if (document.getElementById('ikiGroup')) return;
+            const projGroup = document.getElementById('taskProject').closest('.form-group');
+            const div = document.createElement('div');
+            div.className = 'form-group';
+            div.id = 'ikiGroup';
+            div.innerHTML = `
+                <label>🎯 IKI (untuk CKP)</label>
+                <select id="taskIki" onchange="ckpOnIkiChange()"></select>
+                <div id="ikiFull" class="iki-full"></div>
+                <div id="ikiSuggest" class="iki-suggest"></div>`;
+            projGroup.after(div);
+            document.getElementById('taskProject').addEventListener('change', ckpToggleIkiGroup);
+            let t = null;
+            ['taskTitle', 'taskDesc'].forEach(id => document.getElementById(id).addEventListener('input', () => {
+                clearTimeout(t); t = setTimeout(ckpUpdateSuggestion, 250);
+            }));
+        }
+
+        function ckpFillIkiSelect(selected) {
+            const sel = document.getElementById('taskIki');
+            const cat = ckpCatalog();
+            if (!cat.length) {
+                sel.innerHTML = '<option value="">— impor pohon kinerja dulu (menu ⋯ → CKP Triwulan)</option>';
+                return;
+            }
+            const groups = [];
+            cat.forEach(e => {
+                let g = groups.find(x => x.tim === e.tim);
+                if (!g) { g = { tim: e.tim, items: [] }; groups.push(g); }
+                g.items.push(e);
+            });
+            let html = '<option value="">— belum dipilih —</option>';
+            if (selected && !ckpEntry(selected)) html += `<option value="${esc(selected)}">(IKI lama, tidak ada di katalog)</option>`;
+            groups.forEach(g => {
+                html += `<optgroup label="${esc(g.tim)}">` + g.items.map(e =>
+                    `<option value="${e.id}" title="${esc(e.iki_anggota)}">${esc(e.short)}</option>`).join('') + '</optgroup>';
+            });
+            sel.innerHTML = html;
+            sel.value = selected || '';
+        }
+
+        function ckpToggleIkiGroup() {
+            const g = document.getElementById('ikiGroup');
+            if (!g) return;
+            const isAsn = evIsASN({ project: document.getElementById('taskProject').value });
+            g.style.display = isAsn ? '' : 'none';
+            ckpUpdateSuggestion();
+        }
+
+        function ckpOnIkiChange() {
+            const e = ckpEntry(document.getElementById('taskIki').value);
+            document.getElementById('ikiFull').textContent = e ? e.iki_anggota : '';
+            ckpUpdateSuggestion();
+        }
+
+        function ckpUpdateSuggestion() {
+            const box = document.getElementById('ikiSuggest');
+            if (!box) return;
+            const sel = document.getElementById('taskIki');
+            const isAsn = evIsASN({ project: document.getElementById('taskProject').value });
+            if (!isAsn || sel.value || !ckpCatalog().length) { box.innerHTML = ''; return; }
+            const text = document.getElementById('taskTitle').value + ' ' + document.getElementById('taskDesc').value;
+            const e = ckpSuggest(text);
+            box.innerHTML = e ? `<button type="button" onclick="ckpPickSuggestion('${e.id}')">💡 Saran: ${esc(e.short)}</button>` : '';
+        }
+
+        function ckpPickSuggestion(id) {
+            document.getElementById('taskIki').value = id;
+            ckpOnIkiChange();
+        }
+
+        function ckpLoadTaskForm(task) {
+            ckpInjectTaskField();
+            ckpFillIkiSelect(task ? task.iki : '');
+            ckpOnIkiChange();
+            ckpToggleIkiGroup();
+        }
+
+        // Dipanggil dari saveTask (bungkusan foto) sebelum data disimpan
+        function ckpApplyToTask(task) {
+            const sel = document.getElementById('taskIki');
+            if (sel) task.iki = sel.value || '';
+        }
+
+        // ---------- Hub CKP Triwulan ----------
+        const now0 = new Date();
+        let ckpYear = now0.getFullYear();
+        let ckpQ = Math.floor(now0.getMonth() / 3) + 1;
+        let ckpIncludeUnfinished = false;
+        let ckpOpenEditor = null;
+
+        function ckpEnsureHub() {
+            if (document.getElementById('ckpHubModal')) return;
+            const m = document.createElement('div');
+            m.className = 'modal';
+            m.id = 'ckpHubModal';
+            m.onclick = (e) => { if (e.target === m) closeCkpHub(); };
+            m.innerHTML = `<div class="modal-content ckp-hub" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="closeCkpHub()">✕</button>
+                <div id="ckpHubBody"></div></div>`;
+            // Diletakkan sebelum modal task supaya modal task tampil di atasnya
+            document.body.insertBefore(m, document.getElementById('taskModal'));
+        }
+
+        function openCkpHub() {
+            ckpEnsureHub();
+            ckpRenderHub();
+            document.getElementById('ckpHubModal').classList.add('active');
+            ckpSyncSettings();
+        }
+        function closeCkpHub() {
+            const m = document.getElementById('ckpHubModal');
+            if (m) m.classList.remove('active');
+        }
+        function ckpHubOpen() {
+            const m = document.getElementById('ckpHubModal');
+            return !!(m && m.classList.contains('active'));
+        }
+        function ckpRefreshHubIfIdle() {
+            if (!ckpHubOpen()) return;
+            const a = document.activeElement;
+            if (a && document.getElementById('ckpHubModal').contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) return;
+            ckpRenderHub();
+        }
+
+        function ckpPeriodTasks() {
+            const { start, end } = quarterRange(ckpYear, ckpQ);
+            return tasks.filter(t => evIsASN(t) && t.date && t.date >= start && t.date <= end);
+        }
+        function ckpTasksFor(entryId) {
+            return ckpPeriodTasks()
+                .filter(t => t.iki === entryId && (ckpIncludeUnfinished || t.status === 'completed'))
+                .sort((a, b) => (a.date || '').localeCompare(b.date || '') || (a.order || 0) - (b.order || 0));
+        }
+
+        function ckpHeader(e) {
+            const o = ckpOverrides()[e.id] || {};
+            const base = {
+                judul: ckpDefaultJudul(e),
+                peranLabel: /pj/i.test(e.peran) ? 'PJ KEGIATAN' : 'ANGGOTA TIM',
+                timKerja: e.tim, tujuan: e.tujuan,
+                sasaranKepala: e.sasaran, indikatorKepala: e.ik,
+                sasaranKetua: e.rk_ketua, indikatorKetua: e.iki_ketua,
+                sasaranAnggota: e.rk_anggota, indikatorAnggota: e.iki_anggota,
+                ketuaNama: e.ketua_tim, ketuaNip: ''
+            };
+            Object.keys(o).forEach(k => { if (o[k] != null && String(o[k]).trim() !== '') base[k] = o[k]; });
+            return base;
+        }
+        function ckpDefaultJudul(e) {
+            return String(e.rk_anggota || e.kegiatan)
+                .replace(/^(Terlaksananya|Terpenuhinya|Terselenggaranya|Tersedianya|Terlayani)\s+/i, '')
+                .replace(/^Tahapan\s+(Pelaksanaan\s+)?Kegiatan\s+/i, '')
+                .replace(/^kegiatan\s+/i, '')
+                .replace(/\s+yang\s+(tepat waktu|sesuai SOP|efektif|sesuai standar).*$/i, '')
+                .toUpperCase();
+        }
+
+        const HEADER_FIELDS = [
+            ['judul', 'Judul laporan (baris ke-3 judul)'], ['peranLabel', 'Peran di judul (mis. ANGGOTA TIM)'],
+            ['timKerja', 'Tim kerja'], ['tujuan', 'Tujuan'],
+            ['sasaranKepala', 'Sasaran kinerja kepala'], ['indikatorKepala', 'Indikator kinerja kepala'],
+            ['sasaranKetua', 'Sasaran kinerja ketua tim'], ['indikatorKetua', 'Indikator kinerja ketua tim'],
+            ['sasaranAnggota', 'Sasaran kinerja anggota tim'], ['indikatorAnggota', 'Indikator kinerja anggota tim'],
+            ['ketuaNama', 'Nama ketua tim (penandatangan)'], ['ketuaNip', 'NIP ketua tim']
+        ];
+
+        function ckpRenderHub() {
+            const body = document.getElementById('ckpHubBody');
+            if (!body) return;
+            const cat = ckpCatalog();
+            const kat = ckpGet('katalog');
+            const peg = ckpPegawai();
+            const years = [];
+            for (let y = now0.getFullYear() + 1; y >= now0.getFullYear() - 3; y--) years.push(y);
+
+            let html = `<h2 class="modal-title">📋 CKP Triwulan</h2>
+                <div class="ckp-row" style="margin:0.6rem 0 0.2rem;">
+                    <select onchange="ckpYear=+this.value; ckpRenderHub()">${years.map(y => `<option ${y === ckpYear ? 'selected' : ''}>${y}</option>`).join('')}</select>
+                    <select onchange="ckpQ=+this.value; ckpRenderHub()">${[1, 2, 3, 4].map(q => `<option value="${q}" ${q === ckpQ ? 'selected' : ''}>Triwulan ${ROMAWI[q]}</option>`).join('')}</select>
+                    <label style="font-size:0.85rem; display:flex; gap:0.35rem; align-items:center;">
+                        <input type="checkbox" ${ckpIncludeUnfinished ? 'checked' : ''} onchange="ckpIncludeUnfinished=this.checked; ckpRenderHub()"> sertakan task yang belum Completed</label>
+                </div>`;
+
+            if (!cat.length) {
+                html += `<div class="ckp-card" style="margin-top:1rem;">
+                    <strong>Mulai dengan mengimpor pohon kinerja</strong>
+                    <p class="ckp-note">Pilih file <code>pohon_kinerja_*.json</code>. Barakarsa akan membuat daftar IKI dari penugasanmu, lengkap dengan tim, ketua tim, sasaran, dan indikatornya.</p>
+                    <label class="btn btn-primary btn-sm" style="cursor:pointer;">📥 Impor pohon kinerja (JSON)
+                        <input type="file" accept=".json,application/json" hidden onchange="ckpImportFile(this)"></label>
+                </div>`;
+                body.innerHTML = html;
+                return;
+            }
+
+            // Peringatan
+            const period = ckpPeriodTasks();
+            const noIki = period.filter(t => !t.iki || !ckpEntry(t.iki));
+            const unfinished = period.filter(t => t.status !== 'completed');
+            const noPhoto = period.filter(t => t.status === 'completed' && evPhotos(t).length === 0);
+            if (noIki.length || noPhoto.length || (!ckpIncludeUnfinished && unfinished.length)) {
+                html += `<div class="ev-banner" style="display:block; margin-top:1rem;">`;
+                if (noIki.length) html += `<div>🎯 <strong>${noIki.length}</strong> task ASN triwulan ini belum dipilih IKI-nya (tidak akan masuk laporan):</div>
+                    <ul class="ckp-warnlist">${noIki.slice(0, 12).map(t => `<li><a onclick="editTask(${t.id})">${esc(t.title)}</a> <span style="color:var(--text-secondary)">${fmtTanggal(t.date)}</span></li>`).join('')}${noIki.length > 12 ? `<li>…dan ${noIki.length - 12} lagi</li>` : ''}</ul>`;
+                if (noPhoto.length) html += `<div style="margin-top:0.4rem;">📷 <strong>${noPhoto.length}</strong> task selesai belum ada foto bukti dukung.</div>`;
+                if (!ckpIncludeUnfinished && unfinished.length) html += `<div style="margin-top:0.4rem;">⏳ <strong>${unfinished.length}</strong> task ASN triwulan ini belum berstatus Completed (tidak ikut dihitung).</div>`;
+                html += `</div>`;
+            }
+
+            // Daftar IKI
+            const withTasks = cat.filter(e => ckpTasksFor(e.id).length);
+            const withoutTasks = cat.filter(e => !ckpTasksFor(e.id).length);
+            html += `<div class="ckp-row" style="justify-content:space-between; margin-top:1.2rem;">
+                    <h3 style="margin:0;">IKI dengan kegiatan di Triwulan ${ROMAWI[ckpQ]} ${ckpYear} (${withTasks.length})</h3>
+                    <button class="btn btn-secondary btn-sm" onclick="ckpExportExcel()" ${withTasks.length ? '' : 'disabled'}>⬇️ Excel rekap CKP</button>
+                </div>`;
+            html += withTasks.length ? withTasks.map(e => ckpCardHTML(e)).join('')
+                : '<p class="ckp-note">Belum ada task ASN yang ditautkan ke IKI pada triwulan ini.</p>';
+            if (withoutTasks.length) {
+                html += `<details><summary>IKI lain tanpa kegiatan triwulan ini (${withoutTasks.length})</summary>
+                    ${withoutTasks.map(e => ckpCardHTML(e, true)).join('')}</details>`;
+            }
+
+            // Profil pegawai
+            html += `<details ${peg.nama && peg.nip ? '' : 'open'}><summary>👤 Profil pegawai (untuk semua laporan)</summary>
+                <div class="ckp-grid">
+                    ${[['nama', 'Nama lengkap + gelar'], ['nip', 'NIP'], ['pangkat', 'Pangkat/Golongan'], ['jabatan', 'Jabatan'],
+                       ['kota', 'Kota tanda tangan'], ['idPegawai', 'ID pegawai (header Excel CKP)'], ['wilayah', 'Wilayah'], ['unit', 'Unit kerja']]
+                      .map(([k, l]) => `<div><label>${l}</label><input value="${esc(peg[k])}" onchange="ckpSavePegawai('${k}', this.value)"></div>`).join('')}
+                </div></details>`;
+
+            html += `<details><summary>📚 Katalog IKI</summary>
+                <p class="ckp-note">${cat.length} IKI dari <strong>${esc(kat.source || 'file')}</strong>, diimpor ${kat.importedAt ? new Date(kat.importedAt).toLocaleString('id-ID') : '-'}.
+                Impor ulang (misalnya pohon kinerja tahun baru) akan mengganti katalog; isian yang sudah kamu ubah per IKI tetap disimpan.</p>
+                <label class="btn btn-secondary btn-sm" style="cursor:pointer;">📥 Impor ulang JSON
+                    <input type="file" accept=".json,application/json" hidden onchange="ckpImportFile(this)"></label></details>`;
+
+            body.innerHTML = html;
+        }
+
+        function ckpCardHTML(e, muted) {
+            const list = ckpTasksFor(e.id);
+            const miss = list.filter(t => evPhotos(t).length === 0).length;
+            const open = ckpOpenEditor === e.id;
+            let html = `<div class="ckp-card ${muted ? 'muted' : ''}">
+                <div class="ckp-card-head">
+                    <div class="ckp-card-title"><strong>${esc(e.short)}</strong>
+                        <small>${esc(e.tim)} · ${esc(e.kode_ik)} · ${esc(e.peran)}</small>
+                        <small>${esc(e.iki_anggota)}</small></div>
+                    <div class="ckp-stats">${list.length} kegiatan${miss ? ` · <span class="warn">${miss} tanpa foto</span>` : ''}</div>
+                    <div class="ckp-row">
+                        <button class="btn btn-primary btn-sm" onclick="ckpOpenReport('${e.id}')" ${list.length ? '' : 'disabled'}>🖨️ Laporan PDF</button>
+                        <button class="btn btn-secondary btn-sm" onclick="ckpToggleEditor('${e.id}')">${open ? 'Tutup' : '✏️ Atur'}</button>
+                    </div>
+                </div>`;
+            if (open) {
+                const h = ckpHeader(e);
+                const n = ckpNote(ckpYear, ckpQ, e.id);
+                html += `<div class="ckp-editor">
+                    <div class="ckp-note"><strong>Triwulan ${ROMAWI[ckpQ]} ${ckpYear}</strong> — isian khusus triwulan ini</div>
+                    <div class="ckp-grid">
+                        <div class="ckp-field"><label>Kendala</label><textarea onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'kendala', this.value)">${esc(n.kendala || '')}</textarea></div>
+                        <div class="ckp-field"><label>Solusi</label><textarea onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'solusi', this.value)">${esc(n.solusi || '')}</textarea></div>
+                        <div class="ckp-field"><label>Bukti dukung pelaksanaan solusi</label><textarea onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'buktiSolusi', this.value)">${esc(n.buktiSolusi || '')}</textarea></div>
+                        <div class="ckp-field"><label>Tanggal laporan (tanda tangan)</label><input type="date" value="${esc(n.tanggal || '')}" onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'tanggal', this.value)"></div>
+                        <div class="ckp-field"><label>Link Data Dukung (untuk Excel rekap)</label><input placeholder="https://drive.google.com/…" value="${esc(n.link || '')}" onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'link', this.value)"></div>
+                    </div>
+                    <div class="ckp-note" style="margin-top:0.8rem;"><strong>Header laporan</strong> — berlaku untuk semua triwulan. Kosongkan kolom untuk kembali ke isi dari pohon kinerja.</div>
+                    ${HEADER_FIELDS.map(([k, l]) => `<div class="ckp-field"><label>${l}</label>
+                        <textarea rows="1" onchange="ckpSaveOverride('${e.id}', '${k}', this.value)">${esc(h[k])}</textarea></div>`).join('')}
+                </div>`;
+            }
+            return html + '</div>';
+        }
+
+        function ckpToggleEditor(id) {
+            ckpOpenEditor = ckpOpenEditor === id ? null : id;
+            ckpRenderHub();
+        }
+
+        // ---------- Excel rekap CKP ----------
+        function ckpLoadXLSX() {
+            if (window.XLSX) return Promise.resolve();
+            return new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+                s.onload = resolve;
+                s.onerror = () => reject(new Error('Pustaka Excel gagal dimuat — cek koneksi internet.'));
+                document.head.appendChild(s);
+            });
+        }
+
+        async function ckpExportExcel() {
+            try {
+                evToast('Menyiapkan Excel…');
+                await ckpLoadXLSX();
+                const peg = ckpPegawai();
+                const { start, end, m0, last } = quarterRange(ckpYear, ckpQ);
+                const bulan = s => s.charAt(0) + s.slice(1).toLowerCase();
+                const periode = `1 ${bulan(BULAN_ID[m0])} - ${last} ${bulan(BULAN_ID[m0 + 2])} (Triwulan ${ROMAWI[ckpQ]})`;
+                const d0 = new Date(start + 'T00:00:00'), d1 = new Date(end + 'T00:00:00');
+                const rows = ckpCatalog().filter(e => ckpTasksFor(e.id).length).map(e => {
+                    const n = ckpNote(ckpYear, ckpQ, e.id);
+                    return [d0, d1, '', '', e.rk_ringkas || e.rk_anggota, e.rk_anggota, 100, e.iki_anggota, n.link || '', 'Ya'];
+                });
+                const aoa = [
+                    ['Pegawai', peg.idPegawai ? `[${peg.idPegawai}] ${peg.nama}` : peg.nama],
+                    ['Tahun', String(ckpYear)],
+                    ['Periode SKP', periode],
+                    ['Wilayah', peg.wilayah],
+                    ['Unit Kerja', peg.unit],
+                    [],
+                    ['Tanggal Mulai', 'Tanggal Selesai', 'Jam Mulai', 'Jam Selesai', 'Rencana Kinerja', 'Kegiatan', 'Progres (%)', 'Capaian', 'Data Dukung', 'Capaian SKP'],
+                    ...rows
+                ];
+                const ws = XLSX.utils.aoa_to_sheet(aoa, { cellDates: true, dateNF: 'dd-mm-yyyy' });
+                ws['!cols'] = [12, 12, 9, 9, 48, 48, 10, 60, 40, 11].map(w => ({ wch: w }));
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'CKP');
+                XLSX.writeFile(wb, `CKP_TW${ckpQ}_${ckpYear}.xlsx`);
+                const noLink = rows.filter(r => !r[8]).length;
+                evToast(noLink ? `Excel tersimpan. ${noLink} baris belum ada Link Data Dukung (isi lewat ✏️ Atur).` : 'Excel tersimpan.');
+            } catch (err) {
+                evToast('Export Excel gagal: ' + err.message);
+            }
+        }
+
+        // ---------- Laporan PDF (halaman cetak) ----------
+        let ckpPrintUrls = [];
+        let ckpPrevTitle = null;
+
+        async function ckpPhotoUrls(photos) {
+            const out = new Map();
+            const needRemote = [];
+            for (const p of photos) {
+                const blob = await photoDB.get('blobs', p.id).catch(() => null);
+                if (blob) { const u = URL.createObjectURL(blob); ckpPrintUrls.push(u); out.set(p.id, u); continue; }
+                if (p.path) needRemote.push(p);
+            }
+            if (needRemote.length && typeof sb !== 'undefined' && sb && currentUser) {
+                const { data } = await sb.storage.from(EVIDENCE_BUCKET).createSignedUrls(needRemote.map(p => p.path), 3600);
+                (data || []).forEach((d, i) => { if (d && d.signedUrl) out.set(needRemote[i].id, d.signedUrl); });
+            }
+            for (const p of photos) {
+                if (out.has(p.id)) continue;
+                const thumb = await photoDB.get('thumbs', p.id).catch(() => null);
+                if (thumb) { const u = URL.createObjectURL(thumb); ckpPrintUrls.push(u); out.set(p.id, u); }
+            }
+            return out;
+        }
+
+        async function ckpOpenReport(entryId) {
+            const e = ckpEntry(entryId);
+            if (!e) return;
+            const list = ckpTasksFor(entryId);
+            const peg = ckpPegawai();
+            const h = ckpHeader(e);
+            const n = ckpNote(ckpYear, ckpQ, entryId);
+            const { m0 } = quarterRange(ckpYear, ckpQ);
+            const tglLapor = n.tanggal || todayISO();
+
+            ckpClosePrint();
+            const root = document.createElement('div');
+            root.id = 'ckpPrint';
+            root.innerHTML = `<div class="ckp-toolbar">
+                    <button class="btn btn-primary btn-sm" id="ckpPrintBtn" onclick="ckpDoPrint()" disabled>🖨️ Simpan PDF / Cetak</button>
+                    <button class="btn btn-secondary btn-sm" onclick="ckpClosePrint()">Tutup</button>
+                    <span id="ckpPrintStatus">Memuat foto…</span>
+                </div>
+                <div class="ckp-sheet ckp-cover">
+                    <div class="ckp-title">
+                        <div>LAPORAN SASARAN KINERJA PEGAWAI (SKP)</div>
+                        <div>TRIWULAN ${ROMAWI[ckpQ]} ${ckpYear} – ${esc(h.peranLabel)}</div>
+                        <div>&nbsp;</div>
+                        <div>${esc(h.judul)}</div>
+                    </div>
+                    <table class="ckp-ident">${[
+                        ['NAMA', peg.nama], ['NIP', peg.nip], ['PANGKAT/GOLONGAN', peg.pangkat], ['JABATAN', peg.jabatan],
+                        ['TUJUAN', h.tujuan], ['TIM KERJA', h.timKerja],
+                        ['SASARAN KINERJA KEPALA', h.sasaranKepala], ['INDIKATOR KINERJA KEPALA', h.indikatorKepala],
+                        ['SASARAN KINERJA KETUA TIM', h.sasaranKetua], ['INDIKATOR KINERJA KETUA TIM', h.indikatorKetua],
+                        ['SASARAN KINERJA ANGGOTA TIM', h.sasaranAnggota], ['INDIKATOR KINERJA ANGGOTA TIM', h.indikatorAnggota]
+                    ].map(([l, v]) => `<tr><td class="lbl">${l}</td><td class="sep">:</td><td class="val">${esc(v)}</td></tr>`).join('')}</table>
+                </div>
+                <div class="ckp-sheet ckp-land">
+                    <table class="ckp-main">
+                        <colgroup><col style="width:3.8%"><col style="width:22.1%"><col style="width:17%"><col style="width:28.8%"><col style="width:28.3%"></colgroup>
+                        <thead>
+                            <tr><th colspan="5" class="fill" style="text-align:left;">BULAN : ${BULAN_ID[m0]} s.d ${BULAN_ID[m0 + 2]} ${ckpYear}</th></tr>
+                            <tr class="fill"><th>No.</th><th>Uraian Kegiatan</th><th>Tanggal Pelaksanaan</th><th>Dokumentasi/ bukti dukung</th><th>Keterangan/catatan</th></tr>
+                        </thead>
+                        <tbody>${list.length ? list.map((t, i) => `<tr>
+                            <td class="no">${i + 1}.</td>
+                            <td>${esc(t.title)}</td>
+                            <td>${esc(fmtTanggal(t.date))}</td>
+                            <td>${evPhotos(t).map(p => `<img data-photo="${p.id}" alt="">`).join('') || '<span class="nophoto">(belum ada foto)</span>'}</td>
+                            <td>${esc(t.description || '')}</td></tr>`).join('')
+                            : '<tr><td class="no">-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>'}</tbody>
+                    </table>
+                    <table class="ckp-kendala">
+                        <colgroup><col style="width:37.9%"><col style="width:31.6%"><col style="width:30.5%"></colgroup>
+                        <tr class="fill"><th>Kendala</th><th>Solusi</th><th>Bukti Dukung Pelaksanaan Solusi</th></tr>
+                        <tr><td>${esc(n.kendala || '-')}</td><td>${esc(n.solusi || '-')}</td><td>${esc(n.buktiSolusi || '-')}</td></tr>
+                    </table>
+                    <table class="ckp-ttd"><tr>
+                        <td>Mengetahui,<br>Ketua Tim,<div class="space"></div>${esc(h.ketuaNama)}<br>NIP. ${esc(h.ketuaNip)}</td>
+                        <td>${esc(peg.kota)}, ${esc(fmtTanggal(tglLapor))}<br>Pegawai Yang Melaporkan,<div class="space"></div>${esc(peg.nama)}<br>NIP. ${esc(peg.nip)}</td>
+                    </tr></table>
+                </div>`;
+            document.body.appendChild(root);
+            document.body.classList.add('ckp-printing');
+
+            ckpPrevTitle = document.title;
+            document.title = `CKP TW${ckpQ} ${ckpYear} - ${e.short}`.replace(/[\\/:*?"<>|]/g, '-');
+
+            // Muat foto
+            const photos = list.flatMap(t => evPhotos(t));
+            const status = document.getElementById('ckpPrintStatus');
+            try {
+                const urls = await ckpPhotoUrls(photos);
+                const imgs = Array.from(root.querySelectorAll('img[data-photo]'));
+                let done = 0, missing = 0;
+                await Promise.all(imgs.map(img => new Promise(resolve => {
+                    const url = urls.get(img.dataset.photo);
+                    const finish = (ok) => { done++; if (!ok) missing++; status.textContent = `Memuat foto ${done}/${imgs.length}…`; resolve(); };
+                    if (!url) {
+                        const span = document.createElement('span');
+                        span.className = 'nophoto';
+                        span.textContent = '(foto belum tersedia di perangkat ini — login & sinkron dulu)';
+                        img.replaceWith(span);
+                        return finish(false);
+                    }
+                    const timer = setTimeout(() => finish(false), 20000);
+                    img.onload = () => { clearTimeout(timer); finish(true); };
+                    img.onerror = () => { clearTimeout(timer); finish(false); };
+                    img.src = url;
+                })));
+                status.textContent = missing ? `Siap — ${missing} foto tidak bisa dimuat.` : `Siap. Pilih "Simpan sebagai PDF" di jendela cetak dan pastikan "Grafik latar belakang" aktif.`;
+            } catch (err) {
+                status.textContent = 'Sebagian foto gagal dimuat: ' + err.message;
+            }
+            const btn = document.getElementById('ckpPrintBtn');
+            if (btn) btn.disabled = false;
+        }
+
+        function ckpDoPrint() { window.print(); }
+
+        function ckpClosePrint() {
+            const root = document.getElementById('ckpPrint');
+            if (root) root.remove();
+            document.body.classList.remove('ckp-printing');
+            ckpPrintUrls.forEach(u => URL.revokeObjectURL(u));
+            ckpPrintUrls = [];
+            if (ckpPrevTitle !== null) { document.title = ckpPrevTitle; ckpPrevTitle = null; }
+        }
+
+        // ---------- Kaitan ke fungsi lama ----------
+        (function wireCkp() {
+            const _openTaskModal = openTaskModal;
+            openTaskModal = function () { _openTaskModal.apply(this, arguments); ckpLoadTaskForm(null); };
+
+            const _editTask = editTask;
+            editTask = function (id) { _editTask.apply(this, arguments); ckpLoadTaskForm(tasks.find(t => t.id === id)); };
+
+            const _createTaskHTML = createTaskHTML;
+            createTaskHTML = function (task) {
+                const html = _createTaskHTML.apply(this, arguments);
+                if (!evIsASN(task) || !ckpCatalog().length) return html;
+                const e = ckpEntry(task.iki);
+                const badge = e ? `<span class="badge iki-badge" title="${esc(e.iki_anggota)}">🎯 ${esc(e.short)}</span>`
+                                : '<span class="badge ev-missing" title="Pilih IKI supaya masuk CKP">🎯 IKI?</span>';
+                return html.replace('<div class="task-meta">', '<div class="task-meta">' + badge);
+            };
+
+            const _render = render;
+            render = function () {
+                const r = _render.apply(this, arguments);
+                ckpRefreshHubIfIdle();
+                return r;
+            };
+
+            const _syncNow = syncNow;
+            syncNow = async function () {
+                const r = await _syncNow.apply(this, arguments);
+                ckpSyncSettings();
+                return r;
+            };
+
+            window.addEventListener('afterprint', () => {
+                // biarkan pratinjau tetap terbuka; pengguna menutup sendiri
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && document.getElementById('ckpPrint')) ckpClosePrint();
+            });
+        })();
+    </script>
 
 </body>
 </html>
