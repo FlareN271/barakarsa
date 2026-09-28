@@ -1324,36 +1324,44 @@
         #ckpPrint td, #ckpPrint th { border: 1px solid #000; padding: 0.07in; vertical-align: top; font-weight: normal; text-align: left; }
         #ckpPrint .ckp-title { text-align: center; font-weight: bold; margin-bottom: 0.35in; }
         #ckpPrint .ckp-title div { margin: 0; }
-        #ckpPrint .ckp-ident td { vertical-align: middle; height: 0.45in; }
-        #ckpPrint .ckp-ident td.sep { border-left: none; border-right: none; width: 3%; text-align: center; padding: 0; }
-        #ckpPrint .ckp-ident td.lbl { width: 40%; border-right: none; }
-        #ckpPrint .ckp-ident td.val { border-left: none; }
+        /* Tabel identitas: 4106 | 278 | 5909 dxa, semua garis (termasuk dua garis di sisi ":") */
+        #ckpPrint .ckp-ident { width: 7.148in; table-layout: fixed; }
+        #ckpPrint .ckp-ident td { vertical-align: middle; }
+        #ckpPrint .ckp-ident td.lbl { width: 2.851in; }
+        #ckpPrint .ckp-ident td.sep { width: 0.193in; text-align: center; padding: 0; }
+        #ckpPrint .ckp-ident td.val { width: 4.103in; }
         #ckpPrint .fill { background: #fbe4d5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         #ckpPrint .ckp-main th { text-align: center; }
         #ckpPrint .ckp-main tr { break-inside: avoid; page-break-inside: avoid; }
         #ckpPrint .ckp-main td.no { text-align: center; vertical-align: middle; }
         #ckpPrint .ckp-main img { display: block; width: 100%; max-height: 2.4in; object-fit: contain; margin: 0 auto 0.05in; }
         #ckpPrint .ckp-main .nophoto { color: #999; font-style: italic; font-size: 10pt; }
-        #ckpPrint .ckp-kendala { margin-top: 0.45in; table-layout: fixed; break-inside: avoid; page-break-inside: avoid; }
-        #ckpPrint .ckp-main { table-layout: fixed; }
+        /* Tabel kegiatan 14610 dxa, menjorok -572; kendala 13462, -431; tanda tangan 12049, +704 */
+        #ckpPrint .ckp-main { table-layout: fixed; width: 10.146in; margin-left: -0.397in; }
+        #ckpPrint .ckp-kendala { margin-top: 0.45in; table-layout: fixed; width: 9.349in; margin-left: -0.299in; break-inside: avoid; page-break-inside: avoid; }
         #ckpPrint .ckp-kendala img { display: block; width: 100%; max-height: 2.2in; object-fit: contain; margin: 0 auto 0.05in; }
         #ckpPrint .ckp-kendala th { text-align: center; }
         #ckpPrint .ckp-kendala td { height: 0.6in; vertical-align: middle; }
-        #ckpPrint .ckp-ttd { width: 92%; margin: 0.45in auto 0; break-inside: avoid; page-break-inside: avoid; }
-        #ckpPrint .ckp-ttd td { text-align: center; vertical-align: top; width: 50%; line-height: 1.2; padding-bottom: 0.3in; }
+        #ckpPrint .ckp-ttd { width: 8.368in; margin: 0.45in 0 0 0.489in; table-layout: fixed; break-inside: avoid; page-break-inside: avoid; }
+        #ckpPrint .ckp-ttd td { text-align: center; vertical-align: top; line-height: 1.2; padding-bottom: 0.3in; }
+        #ckpPrint .ckp-ttd td:first-child { width: 47.9%; }
         #ckpPrint .ckp-ttd .space { height: 0.75in; }
-        @page { size: letter landscape; margin: 2.54cm; }
-        @page cover { size: letter portrait; margin: 2.54cm; }
+        @page { size: letter landscape; margin: 2.54cm 0.2in; }
+        @page cover { size: letter portrait; margin: 2.54cm 0.2in; }
         @media print {
             html { background: #fff !important; }
             body.ckp-printing > *:not(#ckpPrint) { display: none !important; }
             body.ckp-printing { background: #fff !important; }
             body.ckp-printing #ckpPrint { position: static; overflow: visible; background: none; padding: 0; }
             body.ckp-printing #ckpPrint .ckp-toolbar { display: none; }
-            body.ckp-printing #ckpPrint .ckp-sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+            body.ckp-printing #ckpPrint .ckp-sheet { width: auto; min-height: 0; margin: 0; padding: 0 0.8in; box-shadow: none; }
             body.ckp-printing #ckpPrint .ckp-cover { page: cover; break-after: page; page-break-after: always; }
             body.ckp-printing #ckpPrint .ckp-land { page: auto; }
         }
+
+        /* ===== v4: toggle tampilan hanya di atas daftar task (bukan di header) ===== */
+        #viewToggle { display: none !important; }
+        .prio-badge { font-weight: 700; }
 
         /* ===== v3: subjudul CKP, kalender, sort, mobile ===== */
         .task-subtitle-input { margin-top: 0.35rem; background: transparent !important; border: 1px dashed transparent !important; color: var(--text-secondary) !important; font-size: 0.88rem !important; padding: 0.3rem 0.75rem !important; }
@@ -1587,7 +1595,7 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-number" id="statDo">0</div>
-                            <div class="stat-label">Do First</div>
+                            <div class="stat-label">Priority 1</div>
                         </div>
                     </div>
 
@@ -1663,7 +1671,7 @@
                             <div style="color: var(--text-secondary); font-size: 0.85rem;">tasks</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Top Quadrant</div>
+                            <div class="stat-label">Prioritas Terbanyak</div>
                             <div class="stat-number" id="topQuadrant" style="font-size: 2rem;">-</div>
                             <div style="color: var(--text-secondary); font-size: 0.85rem;">most used</div>
                         </div>
@@ -1751,12 +1759,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Quadrant</label>
+                        <label>Priority</label>
                         <select id="taskQuadrant">
-                            <option value="do">🔴 Do First</option>
-                            <option value="schedule">🟢 Schedule</option>
-                            <option value="delegate">🟠 Delegate</option>
-                            <option value="eliminate">⚫ Eliminate</option>
+                            <option value="do">🔴 Priority 1</option>
+                            <option value="schedule">🟠 Priority 2</option>
+                            <option value="delegate">🔵 Priority 3</option>
+                            <option value="eliminate">⚪ Priority 4</option>
                         </select>
                     </div>
 
@@ -1887,8 +1895,8 @@
                     <p style="margin-bottom: 1rem;"><strong style="color: var(--accent-red);">Projects vs Labels</strong><br>
                     Project adalah folder — satu task hanya masuk satu project (ASN, Work, Personal). Label adalah penanda tambahan — satu task boleh punya beberapa label (Urgent, Review).</p>
 
-                    <p style="margin-bottom: 1rem;"><strong style="color: var(--accent-red);">Kuadran Eisenhower</strong><br>
-                    Do First = mendesak &amp; penting. Schedule = penting tapi belum mendesak. Delegate = mendesak tapi bisa diwakilkan. Eliminate = tidak keduanya.</p>
+                    <p style="margin-bottom: 1rem;"><strong style="color: var(--accent-red);">Priority</strong><br>
+                    Priority 1 = paling penting/mendesak, sampai Priority 4 = paling ringan. Task baru otomatis Priority 4 (seperti Todoist). Pakai urutan ⇅ Prioritas untuk menampilkan P1 paling atas.</p>
 
                     <p style="margin-bottom: 1rem;"><strong style="color: var(--accent-red);">Inbox</strong><br>
                     Tempat menangkap ide cepat. Cukup ketik judul lalu Enter — tanggal, status, dan kuadran diisi belakangan lewat klik judul task.</p>
@@ -1991,6 +1999,15 @@
         ];
 
         let tasks = [];
+
+        // Priority 1–4. Nilai yang disimpan tetap memakai kode lama (do/schedule/delegate/eliminate)
+        // supaya data lama, sinkron Supabase, dan versi aplikasi lama tetap cocok.
+        const PRIORITY_LABEL = {
+            do:        { short: 'P1', long: 'Priority 1', color: '#ef4444' },
+            schedule:  { short: 'P2', long: 'Priority 2', color: '#f59e0b' },
+            delegate:  { short: 'P3', long: 'Priority 3', color: '#60a5fa' },
+            eliminate: { short: 'P4', long: 'Priority 4', color: '#9ca3af' }
+        };
         let projects = [
             { id: 1, name: 'ASN', color: '#10b981' },
             { id: 2, name: 'Work', color: '#0ea5e9' },
@@ -2216,12 +2233,12 @@
                     </div>
                 </div>
                 <div class="filter-section">
-                    <div class="filter-section-title">Quadrant</div>
+                    <div class="filter-section-title">Priority</div>
                     <div class="filter-options">
-                        <div class="filter-option ${activeFilters.quadrant.includes('do') ? 'active' : ''}" onclick="toggleFilter('quadrant', 'do')">🔴 Do First</div>
-                        <div class="filter-option ${activeFilters.quadrant.includes('schedule') ? 'active' : ''}" onclick="toggleFilter('quadrant', 'schedule')">🟢 Schedule</div>
-                        <div class="filter-option ${activeFilters.quadrant.includes('delegate') ? 'active' : ''}" onclick="toggleFilter('quadrant', 'delegate')">🟠 Delegate</div>
-                        <div class="filter-option ${activeFilters.quadrant.includes('eliminate') ? 'active' : ''}" onclick="toggleFilter('quadrant', 'eliminate')">⚫ Eliminate</div>
+                        <div class="filter-option ${activeFilters.quadrant.includes('do') ? 'active' : ''}" onclick="toggleFilter('quadrant', 'do')">🔴 Priority 1</div>
+                        <div class="filter-option ${activeFilters.quadrant.includes('schedule') ? 'active' : ''}" onclick="toggleFilter('quadrant', 'schedule')">🟠 Priority 2</div>
+                        <div class="filter-option ${activeFilters.quadrant.includes('delegate') ? 'active' : ''}" onclick="toggleFilter('quadrant', 'delegate')">🔵 Priority 3</div>
+                        <div class="filter-option ${activeFilters.quadrant.includes('eliminate') ? 'active' : ''}" onclick="toggleFilter('quadrant', 'eliminate')">⚪ Priority 4</div>
                     </div>
                 </div>
                 ${labels.length > 0 ? `
@@ -2253,6 +2270,7 @@
             document.getElementById('taskDetailsForm').reset();
             document.getElementById('taskModalTitle').textContent = '✏️ Add Task';
             document.getElementById('taskStatus').value = 'in-progress';
+            document.getElementById('taskQuadrant').value = 'eliminate'; // Priority 4 sebagai bawaan (seperti Todoist)
             setDefaultDate();
             renderTaskLabels();
             renderProjectSelect();
@@ -2291,7 +2309,7 @@
             document.getElementById('taskDesc').value = task.description;
             document.getElementById('taskDate').value = task.date;
             document.getElementById('taskTime').value = task.time;
-            document.getElementById('taskQuadrant').value = task.quadrant;
+            document.getElementById('taskQuadrant').value = PRIORITY_LABEL[task.quadrant] ? task.quadrant : 'eliminate';
             renderProjectSelect(); // isi opsi dulu, supaya nilai project tidak hilang saat edit pertama setelah halaman dibuka
             document.getElementById('taskProject').value = task.project || '';
             document.getElementById('taskStatus').value = task.status;
@@ -2696,7 +2714,7 @@
         }
 
         function buildCSV() {
-            let csv = 'Title,Description,Date,Time,Project,Status,Quadrant,Labels,Attachment\n';
+            let csv = 'Title,Description,Date,Time,Project,Status,Priority,Labels,Attachment\n';
 
             const escape = (val) => {
                 if (!val) return '""';
@@ -2707,7 +2725,7 @@
             tasks.forEach(task => {
                 const project = projects.find(p => p.id == task.project)?.name || '';
                 const labels_str = task.labels.map(lid => labels.find(l => l.id === lid)?.name || '').join(';');
-                csv += `${escape(task.title)},${escape(task.description)},${escape(task.date || '')},${escape(task.time || '')},${escape(project)},${escape(task.status)},${escape(task.quadrant)},${escape(labels_str)},${escape(task.attachment)}\n`;
+                csv += `${escape(task.title)},${escape(task.description)},${escape(task.date || '')},${escape(task.time || '')},${escape(project)},${escape(task.status)},${escape(PRIORITY_LABEL[task.quadrant] ? PRIORITY_LABEL[task.quadrant].long : '')},${escape(labels_str)},${escape(task.attachment)}\n`;
             });
 
             return csv;
@@ -2857,7 +2875,7 @@
         function createTaskHTML(task) {
             const statusEmojis = { 'not-started': '🟡', 'in-progress': '🔵', 'on-hold': '⏸️', 'completed': '✅', 'cancelled': '❌' };
             const statusLabels = { 'not-started': 'Not Started', 'in-progress': 'In Progress', 'on-hold': 'On Hold', 'completed': 'Completed', 'cancelled': 'Cancelled' };
-            const quadrantEmoji = { do: '🔴', schedule: '🟢', delegate: '🟠', eliminate: '⚫' }[task.quadrant];
+            const prio = PRIORITY_LABEL[task.quadrant];
             
             let dateStr = '';
             if (task.date) {
@@ -2881,7 +2899,7 @@
                                 const label = labels.find(l => l.id === lid);
                                 return `<span class="badge" style="border-color: ${label.color}; color: ${label.color};">🏷️ ${label.name}</span>`;
                             }).join('')}
-                            ${task.quadrant ? `<span class="badge">${quadrantEmoji} ${task.quadrant}</span>` : ''}
+                            ${prio ? `<span class="badge prio-badge" style="color:${prio.color}; border-color:${prio.color}66;" title="${prio.long}">⚑ ${prio.short}</span>` : ''}
                             <span class="badge">${statusEmojis[task.status]} ${statusLabels[task.status]}</span>
                             ${dateStr ? `<span class="badge">📅 ${dateStr}${timeStr}</span>` : ''}
                             ${task.attachment ? `<span class="badge">🔗 Link</span>` : ''}
@@ -3361,7 +3379,7 @@
                 document.getElementById('completionRate').textContent = rate + '%';
                 document.getElementById('completionStat').textContent = `${completed} / ${total}`;
                 document.getElementById('weekCompleted').textContent = weekCompleted;
-                document.getElementById('topQuadrant').textContent = topQuadrant;
+                document.getElementById('topQuadrant').textContent = PRIORITY_LABEL[topQuadrant] ? PRIORITY_LABEL[topQuadrant].short : '-';
             }
 
             updateSidebarCounts();
@@ -4971,6 +4989,9 @@
             return html + '</div>';
         }
 
+        // Tinggi minimum baris tabel identitas, persis template CKP (satuan dxa; 1440 = 1 inci)
+        const CKP_IDENT_ROW_H = [651, 702, 698, 694, 834, 563, 699, 694, 704, 700, 838, 836];
+
         function ckpToggleEditor(id) {
             ckpOpenEditor = ckpOpenEditor === id ? null : id;
             ckpRenderHub();
@@ -5079,11 +5100,11 @@
                         ['SASARAN KINERJA KEPALA', h.sasaranKepala], ['INDIKATOR KINERJA KEPALA', h.indikatorKepala],
                         ['SASARAN KINERJA KETUA TIM', h.sasaranKetua], ['INDIKATOR KINERJA KETUA TIM', h.indikatorKetua],
                         ['SASARAN KINERJA ANGGOTA TIM', h.sasaranAnggota], ['INDIKATOR KINERJA ANGGOTA TIM', h.indikatorAnggota]
-                    ].map(([l, v]) => `<tr><td class="lbl">${l}</td><td class="sep">:</td><td class="val">${esc(v)}</td></tr>`).join('')}</table>
+                    ].map(([l, v], i) => `<tr style="height:${(CKP_IDENT_ROW_H[i] / 1440).toFixed(3)}in"><td class="lbl">${l}</td><td class="sep">:</td><td class="val">${esc(v)}</td></tr>`).join('')}</table>
                 </div>
                 <div class="ckp-sheet ckp-land">
                     <table class="ckp-main">
-                        <colgroup><col style="width:3.8%"><col style="width:22.1%"><col style="width:17%"><col style="width:28.8%"><col style="width:28.3%"></colgroup>
+                        <colgroup><col style="width:3.8%"><col style="width:24.23%"><col style="width:15.5%"><col style="width:29.57%"><col style="width:26.9%"></colgroup>
                         <thead>
                             <tr><th colspan="5" class="fill" style="text-align:left;">BULAN : ${BULAN_ID[m0]} s.d ${BULAN_ID[m0 + 2]} ${ckpYear}</th></tr>
                             <tr class="fill"><th>No.</th><th>Uraian Kegiatan</th><th>Tanggal Pelaksanaan</th><th>Dokumentasi/ bukti dukung</th><th>Keterangan/catatan</th></tr>
@@ -5355,23 +5376,24 @@
                 });
                 const table = (widths, rows, o = {}) => new Table({
                     width: { size: widths.reduce((a, b) => a + b, 0), type: WidthType.DXA },
-                    columnWidths: widths, rows, alignment: o.align
+                    columnWidths: widths, rows, alignment: o.align,
+                    indent: o.indent ? { size: o.indent, type: WidthType.DXA } : undefined
                 });
 
                 // --- Halaman 1 (portrait): judul + identitas
-                const identW = [3744, 281, 5335];
+                const identW = [4106, 278, 5909];
                 const identRows = [
                     ['NAMA', peg.nama], ['NIP', peg.nip], ['PANGKAT/GOLONGAN', peg.pangkat], ['JABATAN', peg.jabatan],
                     ['TUJUAN', h.tujuan], ['TIM KERJA', h.timKerja],
                     ['SASARAN KINERJA KEPALA', h.sasaranKepala], ['INDIKATOR KINERJA KEPALA', h.indikatorKepala],
                     ['SASARAN KINERJA KETUA TIM', h.sasaranKetua], ['INDIKATOR KINERJA KETUA TIM', h.indikatorKetua],
                     ['SASARAN KINERJA ANGGOTA TIM', h.sasaranAnggota], ['INDIKATOR KINERJA ANGGOTA TIM', h.indikatorAnggota]
-                ].map(([l, v]) => new TableRow({
-                    height: { value: 651, rule: HeightRule.ATLEAST },
+                ].map(([l, v], i) => new TableRow({
+                    height: { value: CKP_IDENT_ROW_H[i], rule: HeightRule.ATLEAST },
                     children: [
-                        cell([P(l)], identW[0], { v: VerticalAlign.CENTER, borders: { top: line, bottom: line, left: line, right: none } }),
-                        cell([P(':', { align: AlignmentType.CENTER })], identW[1], { v: VerticalAlign.CENTER, borders: { top: line, bottom: line, left: none, right: none } }),
-                        cell(paras(v || ' '), identW[2], { v: VerticalAlign.CENTER, borders: { top: line, bottom: line, left: none, right: line } })
+                        cell([P(l)], identW[0], { v: VerticalAlign.CENTER }),
+                        cell([P(':', { align: AlignmentType.CENTER })], identW[1], { v: VerticalAlign.CENTER }),
+                        cell(paras(v || ' '), identW[2], { v: VerticalAlign.CENTER })
                     ]
                 }));
                 const cover = [
@@ -5384,7 +5406,7 @@
                 ];
 
                 // --- Halaman 2+ (landscape): tabel kegiatan
-                const mainW = [700, 2861, 2209, 3739, 3451];
+                const mainW = [555, 3540, 2265, 4320, 3930];
                 const rows = [
                     new TableRow({ tableHeader: true, children: [cell([P(`BULAN : ${BULAN_ID[m0]} s.d ${BULAN_ID[m0 + 2]} ${ckpYear}`)], mainW.reduce((a, b) => a + b, 0), { fill: true, span: 5 })] }),
                     new TableRow({ tableHeader: true, children: ['No.', 'Uraian Kegiatan', 'Tanggal Pelaksanaan', 'Dokumentasi/ bukti dukung', 'Keterangan/catatan']
@@ -5413,7 +5435,7 @@
                 if (!list.length) rows.push(new TableRow({ children: mainW.map(w => cell([P('-')], w)) }));
 
                 // Kendala / solusi
-                const kW = [4908, 4094, 3958];
+                const kW = [5098, 4253, 4111];
                 const solusiPics = [];
                 for (const p of (n.buktiSolusiFoto || [])) {
                     const run = await ckpImageRun(p, 220, 200);
@@ -5428,15 +5450,15 @@
                         cell(paras(n.solusi), kW[1], { v: VerticalAlign.CENTER }),
                         cell(solusiCell.length ? solusiCell : [P('-')], kW[2], { v: VerticalAlign.CENTER })
                     ] })
-                ]);
+                ], { indent: -431 });
 
                 // Tanda tangan
-                const tW = [5540, 6027];
+                const tW = [5771, 6278];
                 const C = AlignmentType.CENTER;
                 const ttd = table(tW, [new TableRow({ cantSplit: true, children: [
                     cell([P('Mengetahui,', { align: C }), P('Ketua Tim,', { align: C }), P(''), P(''), P(''), P(''), P(h.ketuaNama, { align: C }), P(`NIP. ${h.ketuaNip || ''}`, { align: C }), P('')], tW[0]),
                     cell([P(`${peg.kota}, ${fmtTanggal(n.tanggal || todayISO())}`, { align: C }), P('Pegawai Yang Melaporkan,', { align: C }), P(''), P(''), P(''), P(''), P(peg.nama, { align: C }), P(`NIP. ${peg.nip}`, { align: C }), P('')], tW[1])
-                ] })], { align: AlignmentType.CENTER });
+                ] })], { indent: 704 });
 
                 const pageMargin = { top: 1440, right: 1440, bottom: 1440, left: 1440 };
                 const doc = new Document({
@@ -5446,7 +5468,7 @@
                     sections: [
                         { properties: { page: { size: { width: 12240, height: 15840 }, margin: pageMargin } }, children: cover },
                         { properties: { page: { size: { width: 12240, height: 15840, orientation: PageOrientation.LANDSCAPE }, margin: pageMargin } },
-                          children: [table(mainW, rows), P(''), P(''), kendala, P(''), P(''), ttd] }
+                          children: [table(mainW, rows, { indent: -572 }), P(''), P(''), kendala, P(''), P(''), ttd] }
                     ]
                 });
                 const blob = await Packer.toBlob(doc);
