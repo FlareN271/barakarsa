@@ -1334,7 +1334,9 @@
         #ckpPrint .ckp-main td.no { text-align: center; vertical-align: middle; }
         #ckpPrint .ckp-main img { display: block; width: 100%; max-height: 2.4in; object-fit: contain; margin: 0 auto 0.05in; }
         #ckpPrint .ckp-main .nophoto { color: #999; font-style: italic; font-size: 10pt; }
-        #ckpPrint .ckp-kendala { margin-top: 0.45in; }
+        #ckpPrint .ckp-kendala { margin-top: 0.45in; table-layout: fixed; break-inside: avoid; page-break-inside: avoid; }
+        #ckpPrint .ckp-main { table-layout: fixed; }
+        #ckpPrint .ckp-kendala img { display: block; width: 100%; max-height: 2.2in; object-fit: contain; margin: 0 auto 0.05in; }
         #ckpPrint .ckp-kendala th { text-align: center; }
         #ckpPrint .ckp-kendala td { height: 0.6in; vertical-align: middle; }
         #ckpPrint .ckp-ttd { width: 92%; margin: 0.45in auto 0; break-inside: avoid; page-break-inside: avoid; }
@@ -1351,6 +1353,61 @@
             body.ckp-printing #ckpPrint .ckp-sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
             body.ckp-printing #ckpPrint .ckp-cover { page: cover; break-after: page; page-break-after: always; }
             body.ckp-printing #ckpPrint .ckp-land { page: auto; }
+        }
+
+        /* ===== v3: subjudul CKP, kalender, sort, mobile ===== */
+        .task-subtitle-input { margin-top: 0.35rem; background: transparent !important; border: 1px dashed transparent !important; color: var(--text-secondary) !important; font-size: 0.88rem !important; padding: 0.3rem 0.75rem !important; }
+        .task-subtitle-input:hover, .task-subtitle-input:focus { border-color: var(--border-color) !important; outline: none; }
+        .task-subtitle-input::placeholder { color: #6b6b6b; font-style: italic; }
+        .task-subtitle { font-size: 0.78rem; font-style: italic; color: var(--text-secondary); opacity: 0.8; margin-top: 0.1rem; line-height: 1.35; }
+        .sort-select { background: var(--dark-card); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 0.5rem; padding: 0.4rem 0.5rem; font-size: 0.85rem; cursor: pointer; }
+        body.is-sorted .drag-handle { display: none; }
+
+        .cal2 { --cal-lane: 26px; background: var(--dark-card); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; }
+        .cal2-head { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+        .cal2-title { font-size: 1.25rem; font-weight: 700; }
+        .cal2-nav { display: flex; gap: 0.35rem; align-items: center; }
+        .cal2-jump { background: var(--dark-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 0.4rem; padding: 0.3rem 0.4rem; font-size: 0.8rem; color-scheme: dark; }
+        .cal2-dow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; font-size: 0.8rem; color: var(--text-secondary); padding-bottom: 0.4rem; border-bottom: 1px solid var(--border-color); }
+        .cal2-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); min-height: 8.5rem; border-bottom: 1px solid var(--border-color); row-gap: 3px; }
+        .cal2-day { border-right: 1px solid var(--border-color); padding: 0.3rem 0.45rem; text-align: right; cursor: pointer; }
+        .cal2-day:nth-child(7) { border-right: none; }
+        .cal2-day:first-child { border-left: none; }
+        .cal2-day.weekend { background: rgba(255,255,255,0.025); }
+        .cal2-day:hover { background: rgba(255,255,255,0.05); }
+        .cal2-day.other .cal2-num { color: #6b6b6b; }
+        .cal2-num { font-size: 0.85rem; font-weight: 600; display: inline-block; min-width: 1.6rem; height: 1.6rem; line-height: 1.6rem; text-align: center; border-radius: 999px; padding: 0 0.3rem; }
+        .cal2-day.today .cal2-num { background: var(--accent-red); color: #fff; }
+        .cal2-ev { z-index: 1; margin: 0 4px; background: var(--dark-hover); border: 1px solid rgba(255,255,255,0.08); border-left: 3px solid var(--pc); border-radius: 0.45rem; padding: 0 0.5rem; font-size: 0.8rem; font-weight: 600; line-height: calc(var(--cal-lane) - 2px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; align-self: stretch; }
+        .cal2-ev:hover { filter: brightness(1.2); }
+        .cal2-ev.done { opacity: 0.5; text-decoration: line-through; }
+        .cal2-ev.cont-l { border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: 0; }
+        .cal2-ev.cont-r { border-top-right-radius: 0; border-bottom-right-radius: 0; margin-right: 0; }
+        .cal2-time { font-weight: 400; color: var(--text-secondary); margin-right: 0.3rem; }
+        .cal2-more { z-index: 1; font-size: 0.72rem; color: var(--text-secondary); padding: 0 0.5rem; cursor: pointer; align-self: center; }
+        .cal2-more:hover { color: var(--text-primary); text-decoration: underline; }
+        .cal2-pop-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .cal2-pop { background: var(--dark-card); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; width: min(360px, 100%); max-height: 80vh; overflow-y: auto; }
+        .cal2-pop-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+        .cal2-pop-item { padding: 0.55rem 0.7rem; background: var(--dark-hover); border-radius: 0.45rem; margin-bottom: 0.4rem; cursor: pointer; font-size: 0.9rem; }
+        .cal2-pop-item.done { opacity: 0.55; text-decoration: line-through; }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: row !important; align-items: center !important; flex-wrap: nowrap; padding: 0.7rem 0.9rem; position: sticky; top: 0; z-index: 50; padding-top: calc(0.7rem + env(safe-area-inset-top, 0px)); }
+            .header-left { flex: 1 1 auto; min-width: 0; gap: 0.5rem; }
+            .header-title { font-size: 1.25rem !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .header > div:last-child { gap: 0.4rem !important; flex-shrink: 0; }
+            #viewToggle { display: none !important; }
+            #syncStatus { font-size: 0.72rem !important; padding: 0.2rem 0.25rem !important; }
+            .sort-select { font-size: 0.78rem; padding: 0.35rem 0.3rem; max-width: 6.8rem; }
+            .cal2 { --cal-lane: 20px; padding: 0.6rem 0.4rem; }
+            .cal2-week { min-height: 5.6rem; }
+            .cal2-ev { font-size: 0.66rem; padding: 0 0.25rem; margin: 0 2px; border-left-width: 2px; }
+            .cal2-num { font-size: 0.72rem; min-width: 1.3rem; height: 1.3rem; line-height: 1.3rem; }
+            .cal2-day { padding: 0.15rem 0.15rem; }
+            .cal2-more { font-size: 0.62rem; padding: 0 0.2rem; }
+            .cal2-title { font-size: 1.05rem; }
+            .cal2-jump { display: none; }
         }
     </style>
 </head>
@@ -1633,6 +1690,7 @@
                     <div class="form-group">
                         <label>Task Title *</label>
                         <input type="text" id="taskTitle" placeholder="What do you want to accomplish?" required>
+                        <input type="text" id="taskUraian" class="task-subtitle-input" placeholder="Uraian versi CKP (opsional) — mis. Mengikuti rapat koordinasi SAKIP daerah 2026" autocomplete="off">
                     </div>
 
                     <div class="form-group">
@@ -1680,6 +1738,11 @@
                     <div class="form-group">
                         <label>Date</label>
                         <input type="date" id="taskDate">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Sampai tanggal <span style="font-weight:400; color:var(--text-secondary); font-size:0.8rem;">(opsional, untuk kegiatan beberapa hari)</span></label>
+                        <input type="date" id="taskDateEnd">
                     </div>
 
                     <div class="form-group">
@@ -4138,6 +4201,9 @@
                         evTrash([path]); // fotonya sudah dihapus selama unggah
                     }
                 }
+
+                // 3) Foto bukti dukung pelaksanaan solusi (CKP)
+                if (typeof ckpUploadNotePhotos === 'function') await ckpUploadNotePhotos();
             } catch (err) {
                 console.error('Antrean foto error:', err);
             } finally {
@@ -4450,6 +4516,15 @@
             const d = new Date(iso + 'T00:00:00');
             return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
         }
+        function fmtRentang(a, b) {
+            if (!a) return '';
+            if (!b || b <= a) return fmtTanggal(a);
+            const d1 = new Date(a + 'T00:00:00'), d2 = new Date(b + 'T00:00:00');
+            const bln = d => d.toLocaleDateString('id-ID', { month: 'long' });
+            if (d1.getFullYear() !== d2.getFullYear()) return `${fmtTanggal(a)} – ${fmtTanggal(b)}`;
+            if (d1.getMonth() !== d2.getMonth()) return `${d1.getDate()} ${bln(d1)} – ${d2.getDate()} ${bln(d2)} ${d2.getFullYear()}`;
+            return `${d1.getDate()}–${d2.getDate()} ${bln(d2)} ${d2.getFullYear()}`;
+        }
         function todayISO() {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -4680,6 +4755,8 @@
 
         function ckpLoadTaskForm(task) {
             ckpInjectTaskField();
+            document.getElementById('taskUraian').value = (task && task.uraianCkp) || '';
+            document.getElementById('taskDateEnd').value = (task && task.dateEnd) || '';
             ckpFillIkiSelect(task ? task.iki : '');
             ckpOnIkiChange();
             ckpToggleIkiGroup();
@@ -4689,6 +4766,10 @@
         function ckpApplyToTask(task) {
             const sel = document.getElementById('taskIki');
             if (sel) task.iki = sel.value || '';
+            const ur = document.getElementById('taskUraian');
+            if (ur) task.uraianCkp = ur.value.trim();
+            const de = document.getElementById('taskDateEnd');
+            if (de) task.dateEnd = (de.value && task.date && de.value > task.date) ? de.value : '';
         }
 
         // ---------- Hub CKP Triwulan ----------
@@ -4845,6 +4926,7 @@
                     <input type="file" accept=".json,application/json" hidden onchange="ckpImportFile(this)"></label></details>`;
 
             body.innerHTML = html;
+            ckpFillSolusiThumbs();
         }
 
         function ckpCardHTML(e, muted) {
@@ -4858,7 +4940,8 @@
                         <small>${esc(e.iki_anggota)}</small></div>
                     <div class="ckp-stats">${list.length} kegiatan${miss ? ` · <span class="warn">${miss} tanpa foto</span>` : ''}</div>
                     <div class="ckp-row">
-                        <button class="btn btn-primary btn-sm" onclick="ckpOpenReport('${e.id}')" ${list.length ? '' : 'disabled'}>🖨️ Laporan PDF</button>
+                        <button class="btn btn-primary btn-sm" onclick="ckpOpenReport('${e.id}')" ${list.length ? '' : 'disabled'}>🖨️ PDF</button>
+                        <button class="btn btn-secondary btn-sm" onclick="ckpExportWord('${e.id}')" ${list.length ? '' : 'disabled'}>📄 Word</button>
                         <button class="btn btn-secondary btn-sm" onclick="ckpToggleEditor('${e.id}')">${open ? 'Tutup' : '✏️ Atur'}</button>
                     </div>
                 </div>`;
@@ -4870,7 +4953,13 @@
                     <div class="ckp-grid">
                         <div class="ckp-field"><label>Kendala</label><textarea onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'kendala', this.value)">${esc(n.kendala || '')}</textarea></div>
                         <div class="ckp-field"><label>Solusi</label><textarea onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'solusi', this.value)">${esc(n.solusi || '')}</textarea></div>
-                        <div class="ckp-field"><label>Bukti dukung pelaksanaan solusi</label><textarea onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'buktiSolusi', this.value)">${esc(n.buktiSolusi || '')}</textarea></div>
+                        <div class="ckp-field"><label>Bukti dukung pelaksanaan solusi (foto JPG/PNG + keterangan opsional)</label>
+                            <div class="ev-grid" style="margin-bottom:0.4rem;">${(n.buktiSolusiFoto || []).map(p => `
+                                <div class="ev-thumb" data-solusi-thumb="${p.id}"><span>📷</span>${p.pending ? '<span class="ev-flag" title="Belum terunggah">⏳</span>' : ''}
+                                <button type="button" class="ev-del" title="Hapus foto" onclick="ckpRemoveSolusiPhoto('${e.id}','${p.id}')">✕</button></div>`).join('')}</div>
+                            <label class="btn btn-secondary btn-sm" style="cursor:pointer; display:inline-block; margin-bottom:0.4rem;">📁 Tambah foto
+                                <input type="file" accept="image/jpeg,image/png" multiple hidden onchange="ckpAddSolusiPhotos('${e.id}', this)"></label>
+                            <textarea placeholder="Keterangan (opsional)" onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'buktiSolusi', this.value)">${esc(n.buktiSolusi || '')}</textarea></div>
                         <div class="ckp-field"><label>Tanggal laporan (tanda tangan)</label><input type="date" value="${esc(n.tanggal || '')}" onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'tanggal', this.value)"></div>
                         <div class="ckp-field"><label>Link Data Dukung (untuk Excel rekap)</label><input placeholder="https://drive.google.com/…" value="${esc(n.link || '')}" onchange="ckpSaveNote(ckpYear, ckpQ, '${e.id}', 'link', this.value)"></div>
                     </div>
@@ -4973,6 +5062,7 @@
             root.id = 'ckpPrint';
             root.innerHTML = `<div class="ckp-toolbar">
                     <button class="btn btn-primary btn-sm" id="ckpPrintBtn" onclick="ckpDoPrint()" disabled>🖨️ Simpan PDF / Cetak</button>
+                    <button class="btn btn-secondary btn-sm" onclick="ckpExportWord('${entryId}')">📄 Unduh Word</button>
                     <button class="btn btn-secondary btn-sm" onclick="ckpClosePrint()">Tutup</button>
                     <span id="ckpPrintStatus">Memuat foto…</span>
                 </div>
@@ -5000,8 +5090,8 @@
                         </thead>
                         <tbody>${list.length ? list.map((t, i) => `<tr>
                             <td class="no">${i + 1}.</td>
-                            <td>${esc(t.title)}</td>
-                            <td>${esc(fmtTanggal(t.date))}</td>
+                            <td>${esc(t.uraianCkp || t.title)}</td>
+                            <td>${esc(fmtRentang(t.date, t.dateEnd))}</td>
                             <td>${evPhotos(t).map(p => `<img data-photo="${p.id}" alt="">`).join('') || '<span class="nophoto">(belum ada foto)</span>'}</td>
                             <td>${esc(t.description || '')}</td></tr>`).join('')
                             : '<tr><td class="no">-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>'}</tbody>
@@ -5009,7 +5099,7 @@
                     <table class="ckp-kendala">
                         <colgroup><col style="width:37.9%"><col style="width:31.6%"><col style="width:30.5%"></colgroup>
                         <tr class="fill"><th>Kendala</th><th>Solusi</th><th>Bukti Dukung Pelaksanaan Solusi</th></tr>
-                        <tr><td>${esc(n.kendala || '-')}</td><td>${esc(n.solusi || '-')}</td><td>${esc(n.buktiSolusi || '-')}</td></tr>
+                        <tr><td>${esc(n.kendala || '-')}</td><td>${esc(n.solusi || '-')}</td><td>${ckpSolusiCellHTML(n)}</td></tr>
                     </table>
                     <table class="ckp-ttd"><tr>
                         <td>Mengetahui,<br>Ketua Tim,<div class="space"></div>${esc(h.ketuaNama)}<br>NIP. ${esc(h.ketuaNip)}</td>
@@ -5023,7 +5113,7 @@
             document.title = `CKP TW${ckpQ} ${ckpYear} - ${e.short}`.replace(/[\\/:*?"<>|]/g, '-');
 
             // Muat foto
-            const photos = list.flatMap(t => evPhotos(t));
+            const photos = list.flatMap(t => evPhotos(t)).concat(n.buktiSolusiFoto || []);
             const status = document.getElementById('ckpPrintStatus');
             try {
                 const urls = await ckpPhotoUrls(photos);
@@ -5101,6 +5191,470 @@
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && document.getElementById('ckpPrint')) ckpClosePrint();
             });
+        })();
+    </script>
+
+    <!-- ============================================================
+         PEMBARUAN v3: uraian CKP (subjudul), rentang tanggal, kalender
+         bulanan dengan task, urutan (sort), foto bukti solusi, Word.
+         ============================================================ -->
+    <script>
+        // ---------- Foto bukti dukung pelaksanaan solusi (CKP) ----------
+        function ckpSolusiCellHTML(n) {
+            const text = n.buktiSolusi ? `<div>${esc(n.buktiSolusi)}</div>` : '';
+            const imgs = (n.buktiSolusiFoto || []).map(p => `<img data-photo="${p.id}" alt="">`).join('');
+            return (imgs + text) || '-';
+        }
+
+        async function ckpFillSolusiThumbs() {
+            const boxes = document.querySelectorAll('[data-solusi-thumb]');
+            for (const box of boxes) {
+                const id = box.dataset.solusiThumb;
+                let photo = null;
+                Object.values(ckpGet('catatan')).forEach(per => Object.values(per || {}).forEach(n =>
+                    (n.buktiSolusiFoto || []).forEach(p => { if (p.id === id) photo = p; })));
+                if (!photo) continue;
+                const url = await evThumbUrl(photo);
+                if (!url || box.querySelector('img')) continue;
+                const span = box.querySelector('span:not(.ev-flag)');
+                if (span) span.remove();
+                const img = document.createElement('img');
+                img.src = url;
+                box.prepend(img);
+            }
+        }
+
+        async function ckpAddSolusiPhotos(entryId, input) {
+            const files = Array.from(input.files || []).filter(f => /^image\/(jpeg|png)$/.test(f.type));
+            input.value = '';
+            if (!files.length) { evToast('Pilih file JPG atau PNG.'); return; }
+            evToast(`Memproses ${files.length} foto…`);
+            const list = (ckpNote(ckpYear, ckpQ, entryId).buktiSolusiFoto || []).slice();
+            for (const file of files) {
+                try {
+                    const { full, thumb } = await evCompress(file);
+                    const id = evNewId();
+                    await photoDB.put('blobs', id, full.blob);
+                    await photoDB.put('thumbs', id, thumb.blob);
+                    list.push({ id, w: full.w, h: full.h, size: full.blob.size, createdAt: new Date().toISOString(), pending: true });
+                } catch (err) { evToast('Foto gagal diproses: ' + err.message); }
+            }
+            ckpSaveNote(ckpYear, ckpQ, entryId, 'buktiSolusiFoto', list);
+            ckpRenderHub();
+            evProcessQueue();
+        }
+
+        function ckpRemoveSolusiPhoto(entryId, photoId) {
+            const list = (ckpNote(ckpYear, ckpQ, entryId).buktiSolusiFoto || []);
+            const photo = list.find(p => p.id === photoId);
+            if (!photo) return;
+            if (photo.path) evTrash([photo.path]);
+            evForgetLocal(photoId);
+            ckpSaveNote(ckpYear, ckpQ, entryId, 'buktiSolusiFoto', list.filter(p => p.id !== photoId));
+            ckpRenderHub();
+            evProcessQueue();
+        }
+
+        // Dipanggil dari antrean unggah foto
+        async function ckpUploadNotePhotos() {
+            const jobs = [];
+            Object.entries(ckpGet('catatan')).forEach(([per, ids]) => Object.entries(ids || {}).forEach(([entryId, n]) =>
+                (n.buktiSolusiFoto || []).forEach(p => { if (p.pending) jobs.push({ per, entryId, photoId: p.id }); })));
+            let changed = false;
+            for (const job of jobs) {
+                const blob = await photoDB.get('blobs', job.photoId).catch(() => null);
+                if (!blob) continue;
+                const path = `${currentUser.id}/ckp/${job.per}/${job.entryId}/${job.photoId}.jpg`;
+                const { error } = await sb.storage.from(EVIDENCE_BUCKET).upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+                if (error) { console.warn('Unggah foto solusi gagal:', error.message); break; }
+                const all = JSON.parse(JSON.stringify(ckpGet('catatan')));
+                const n = all[job.per] && all[job.per][job.entryId];
+                const photo = n && (n.buktiSolusiFoto || []).find(p => p.id === job.photoId);
+                if (photo) {
+                    photo.pending = false; photo.path = path;
+                    ckpSet('catatan', all);
+                    changed = true;
+                    await photoDB.del('blobs', job.photoId).catch(() => {});
+                } else evTrash([path]);
+            }
+            if (changed) ckpRefreshHubIfIdle();
+            return changed;
+        }
+
+        // ---------- Laporan Word (.docx) ----------
+        function ckpLoadDocx() {
+            if (window.docx) return Promise.resolve();
+            return new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/docx@9.6.1/dist/index.iife.js';
+                s.onload = resolve;
+                s.onerror = () => reject(new Error('Pustaka Word gagal dimuat — cek koneksi internet.'));
+                document.head.appendChild(s);
+            });
+        }
+
+        async function ckpPhotoBlob(p) {
+            const blob = await photoDB.get('blobs', p.id).catch(() => null);
+            if (blob) return blob;
+            if (p.path && typeof sb !== 'undefined' && sb && currentUser) {
+                try {
+                    const { data } = await sb.storage.from(EVIDENCE_BUCKET).createSignedUrl(p.path, 600);
+                    if (data && data.signedUrl) {
+                        const r = await fetch(data.signedUrl);
+                        if (r.ok) return await r.blob();
+                    }
+                } catch (e) { /* lanjut ke thumbnail */ }
+            }
+            return await photoDB.get('thumbs', p.id).catch(() => null);
+        }
+
+        async function ckpImageRun(p, maxW, maxH) {
+            const blob = await ckpPhotoBlob(p);
+            if (!blob) return null;
+            let w = p.w, h = p.h;
+            if (!w || !h) {
+                const bmp = await createImageBitmap(blob);
+                w = bmp.width; h = bmp.height;
+                if (bmp.close) bmp.close();
+            }
+            let W = maxW, H = Math.round(maxW * h / w);
+            if (H > maxH) { H = maxH; W = Math.round(maxH * w / h); }
+            return new docx.ImageRun({ type: 'jpg', data: new Uint8Array(await blob.arrayBuffer()), transformation: { width: W, height: H } });
+        }
+
+        async function ckpExportWord(entryId) {
+            const e = ckpEntry(entryId);
+            if (!e) return;
+            try {
+                evToast('Menyiapkan dokumen Word…');
+                await ckpLoadDocx();
+                const D = window.docx;
+                const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType,
+                        VerticalAlign, ShadingType, BorderStyle, PageOrientation, HeightRule } = D;
+                const list = ckpTasksFor(entryId);
+                const peg = ckpPegawai();
+                const h = ckpHeader(e);
+                const n = ckpNote(ckpYear, ckpQ, entryId);
+                const { m0 } = quarterRange(ckpYear, ckpQ);
+                const FONT = 'Times New Roman';
+
+                const P = (text, o = {}) => new Paragraph({
+                    alignment: o.align, spacing: { before: 0, after: 0 }, keepNext: o.keepNext,
+                    children: o.runs || [new TextRun({ text: String(text == null ? '' : text), bold: o.bold, italics: o.italics, font: FONT, size: o.size || 24, color: o.color })]
+                });
+                const paras = (text, o) => String(text == null || text === '' ? '-' : text).split('\n').map(line => P(line, o));
+                const line = { style: BorderStyle.SINGLE, size: 4, color: '000000' };
+                const none = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+                const ALL = { top: line, bottom: line, left: line, right: line };
+                const FILL = { fill: 'FBE4D5', type: ShadingType.CLEAR, color: 'auto' };
+                const cell = (children, width, o = {}) => new TableCell({
+                    children, width: { size: width, type: WidthType.DXA },
+                    borders: o.borders || ALL, shading: o.fill ? FILL : undefined,
+                    verticalAlign: o.v || VerticalAlign.TOP, columnSpan: o.span,
+                    margins: { top: 100, bottom: 100, left: 100, right: 100 }
+                });
+                const table = (widths, rows, o = {}) => new Table({
+                    width: { size: widths.reduce((a, b) => a + b, 0), type: WidthType.DXA },
+                    columnWidths: widths, rows, alignment: o.align
+                });
+
+                // --- Halaman 1 (portrait): judul + identitas
+                const identW = [3744, 281, 5335];
+                const identRows = [
+                    ['NAMA', peg.nama], ['NIP', peg.nip], ['PANGKAT/GOLONGAN', peg.pangkat], ['JABATAN', peg.jabatan],
+                    ['TUJUAN', h.tujuan], ['TIM KERJA', h.timKerja],
+                    ['SASARAN KINERJA KEPALA', h.sasaranKepala], ['INDIKATOR KINERJA KEPALA', h.indikatorKepala],
+                    ['SASARAN KINERJA KETUA TIM', h.sasaranKetua], ['INDIKATOR KINERJA KETUA TIM', h.indikatorKetua],
+                    ['SASARAN KINERJA ANGGOTA TIM', h.sasaranAnggota], ['INDIKATOR KINERJA ANGGOTA TIM', h.indikatorAnggota]
+                ].map(([l, v]) => new TableRow({
+                    height: { value: 651, rule: HeightRule.ATLEAST },
+                    children: [
+                        cell([P(l)], identW[0], { v: VerticalAlign.CENTER, borders: { top: line, bottom: line, left: line, right: none } }),
+                        cell([P(':', { align: AlignmentType.CENTER })], identW[1], { v: VerticalAlign.CENTER, borders: { top: line, bottom: line, left: none, right: none } }),
+                        cell(paras(v || ' '), identW[2], { v: VerticalAlign.CENTER, borders: { top: line, bottom: line, left: none, right: line } })
+                    ]
+                }));
+                const cover = [
+                    P('LAPORAN SASARAN KINERJA PEGAWAI (SKP)', { bold: true, align: AlignmentType.CENTER }),
+                    P(`TRIWULAN ${ROMAWI[ckpQ]} ${ckpYear} – ${h.peranLabel}`, { bold: true, align: AlignmentType.CENTER }),
+                    P(''),
+                    P(h.judul, { bold: true, align: AlignmentType.CENTER }),
+                    P(''),
+                    table(identW, identRows)
+                ];
+
+                // --- Halaman 2+ (landscape): tabel kegiatan
+                const mainW = [700, 2861, 2209, 3739, 3451];
+                const rows = [
+                    new TableRow({ tableHeader: true, children: [cell([P(`BULAN : ${BULAN_ID[m0]} s.d ${BULAN_ID[m0 + 2]} ${ckpYear}`)], mainW.reduce((a, b) => a + b, 0), { fill: true, span: 5 })] }),
+                    new TableRow({ tableHeader: true, children: ['No.', 'Uraian Kegiatan', 'Tanggal Pelaksanaan', 'Dokumentasi/ bukti dukung', 'Keterangan/catatan']
+                        .map((t, i) => cell([P(t, { align: AlignmentType.CENTER })], mainW[i], { fill: true })) })
+                ];
+                let missing = 0;
+                for (let i = 0; i < list.length; i++) {
+                    const t = list[i];
+                    const pics = [];
+                    for (const p of evPhotos(t)) {
+                        const run = await ckpImageRun(p, 230, 220);
+                        if (run) pics.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 }, children: [run] }));
+                        else missing++;
+                    }
+                    rows.push(new TableRow({
+                        cantSplit: true,
+                        children: [
+                            cell([P(`${i + 1}.`, { align: AlignmentType.CENTER })], mainW[0], { v: VerticalAlign.CENTER }),
+                            cell(paras(t.uraianCkp || t.title), mainW[1]),
+                            cell([P(fmtRentang(t.date, t.dateEnd))], mainW[2]),
+                            cell(pics.length ? pics : [P('-')], mainW[3]),
+                            cell(paras(t.description || ''), mainW[4])
+                        ]
+                    }));
+                }
+                if (!list.length) rows.push(new TableRow({ children: mainW.map(w => cell([P('-')], w)) }));
+
+                // Kendala / solusi
+                const kW = [4908, 4094, 3958];
+                const solusiPics = [];
+                for (const p of (n.buktiSolusiFoto || [])) {
+                    const run = await ckpImageRun(p, 220, 200);
+                    if (run) solusiPics.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 }, children: [run] }));
+                    else missing++;
+                }
+                const solusiCell = solusiPics.concat(n.buktiSolusi ? paras(n.buktiSolusi) : []);
+                const kendala = table(kW, [
+                    new TableRow({ tableHeader: true, cantSplit: true, children: ['Kendala', 'Solusi', 'Bukti Dukung Pelaksanaan Solusi'].map((t, i) => cell([P(t, { align: AlignmentType.CENTER, keepNext: true })], kW[i], { fill: true })) }),
+                    new TableRow({ cantSplit: true, height: { value: 860, rule: HeightRule.ATLEAST }, children: [
+                        cell(paras(n.kendala), kW[0], { v: VerticalAlign.CENTER }),
+                        cell(paras(n.solusi), kW[1], { v: VerticalAlign.CENTER }),
+                        cell(solusiCell.length ? solusiCell : [P('-')], kW[2], { v: VerticalAlign.CENTER })
+                    ] })
+                ]);
+
+                // Tanda tangan
+                const tW = [5540, 6027];
+                const C = AlignmentType.CENTER;
+                const ttd = table(tW, [new TableRow({ cantSplit: true, children: [
+                    cell([P('Mengetahui,', { align: C }), P('Ketua Tim,', { align: C }), P(''), P(''), P(''), P(''), P(h.ketuaNama, { align: C }), P(`NIP. ${h.ketuaNip || ''}`, { align: C }), P('')], tW[0]),
+                    cell([P(`${peg.kota}, ${fmtTanggal(n.tanggal || todayISO())}`, { align: C }), P('Pegawai Yang Melaporkan,', { align: C }), P(''), P(''), P(''), P(''), P(peg.nama, { align: C }), P(`NIP. ${peg.nip}`, { align: C }), P('')], tW[1])
+                ] })], { align: AlignmentType.CENTER });
+
+                const pageMargin = { top: 1440, right: 1440, bottom: 1440, left: 1440 };
+                const doc = new Document({
+                    creator: 'Barakarsa',
+                    title: `CKP TW${ckpQ} ${ckpYear} - ${e.short}`,
+                    styles: { default: { document: { run: { font: FONT, size: 24 } } } },
+                    sections: [
+                        { properties: { page: { size: { width: 12240, height: 15840 }, margin: pageMargin } }, children: cover },
+                        { properties: { page: { size: { width: 12240, height: 15840, orientation: PageOrientation.LANDSCAPE }, margin: pageMargin } },
+                          children: [table(mainW, rows), P(''), P(''), kendala, P(''), P(''), ttd] }
+                    ]
+                });
+                const blob = await Packer.toBlob(doc);
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `CKP TW${ckpQ} ${ckpYear} - ${e.short}.docx`.replace(/[\\/:*?"<>|]/g, '-');
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+                evToast(missing ? `Word tersimpan — ${missing} foto tidak tersedia di perangkat ini (login & sinkron dulu).` : 'Dokumen Word tersimpan.');
+            } catch (err) {
+                console.error(err);
+                evToast('Export Word gagal: ' + err.message);
+            }
+        }
+
+        // ---------- Kalender bulanan dengan task ----------
+        function calIso(d) {
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+        let calLastList = [];
+
+        function calNewTask(dateIso) {
+            openTaskModal();
+            document.getElementById('taskDate').value = dateIso;
+        }
+
+        function calTasksOn(dateIso) {
+            return calLastList.filter(t => t.date && t.date <= dateIso && ((t.dateEnd && t.dateEnd > t.date) ? t.dateEnd : t.date) >= dateIso);
+        }
+
+        function calShowDay(dateIso) {
+            const items = calTasksOn(dateIso);
+            const box = document.createElement('div');
+            box.className = 'cal2-pop-wrap';
+            box.onclick = (ev) => { if (ev.target === box) box.remove(); };
+            box.innerHTML = `<div class="cal2-pop">
+                <div class="cal2-pop-head"><strong>${esc(fmtTanggal(dateIso))}</strong><button class="modal-close" style="position:static" onclick="this.closest('.cal2-pop-wrap').remove()">✕</button></div>
+                ${items.map(t => `<div class="cal2-pop-item ${t.status === 'completed' ? 'done' : ''}" onclick="this.closest('.cal2-pop-wrap').remove(); editTask(${t.id})">${esc(t.title)}</div>`).join('')}
+                <button class="btn btn-secondary btn-sm" style="margin-top:0.6rem; width:100%;" onclick="this.closest('.cal2-pop-wrap').remove(); calNewTask('${dateIso}')">➕ Task di tanggal ini</button>
+            </div>`;
+            document.body.appendChild(box);
+        }
+
+        function calJump(value) {
+            if (!value) return;
+            const [y, m] = value.split('-').map(Number);
+            calendarYear = y; calendarMonth = m - 1;
+            render();
+        }
+
+        renderCalendarView = function (container, taskList) {
+            // Di "All Tasks", kalender juga menampilkan task yang sudah selesai (tampil pudar)
+            const list = currentView === 'all' ? getFilteredTasks(tasks.slice()) : taskList;
+            calLastList = list;
+            const y = calendarYear, m = calendarMonth;
+            const first = new Date(y, m, 1), last = new Date(y, m + 1, 0);
+            const gridStart = new Date(y, m, 1 - first.getDay());
+            const gridEnd = new Date(y, m, last.getDate() + (6 - last.getDay()));
+            const todayS = todayISO();
+            const maxLanes = window.innerWidth < 600 ? 2 : 3;
+            const monthLong = first.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            const monthShort = d => d.toLocaleDateString('id-ID', { month: 'short' });
+            const events = list.filter(t => t.date).map(t => ({ t, s: t.date, e: (t.dateEnd && t.dateEnd > t.date) ? t.dateEnd : t.date }));
+
+            let html = `<div class="cal2">
+                <div class="cal2-head">
+                    <div class="cal2-title">${monthLong.charAt(0).toUpperCase() + monthLong.slice(1)}</div>
+                    <div class="cal2-nav">
+                        <input type="month" class="cal2-jump" value="${y}-${String(m + 1).padStart(2, '0')}" onchange="calJump(this.value)" title="Lompat ke bulan">
+                        <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)" title="Bulan sebelumnya">‹</button>
+                        <button class="calendar-nav-btn" onclick="jumpCalendarToToday()">Hari ini</button>
+                        <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)" title="Bulan berikutnya">›</button>
+                    </div>
+                </div>
+                <div class="cal2-dow">${['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => `<div>${d}</div>`).join('')}</div>`;
+
+            for (let ws = new Date(gridStart); ws <= gridEnd; ws = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + 7)) {
+                const days = [0, 1, 2, 3, 4, 5, 6].map(i => new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + i));
+                const iso = days.map(calIso);
+                const wS = iso[0], wE = iso[6];
+                const evs = events.filter(ev => ev.s <= wE && ev.e >= wS)
+                    .map(ev => ({ ...ev, c0: ev.s < wS ? 0 : iso.indexOf(ev.s), c1: ev.e > wE ? 6 : iso.indexOf(ev.e) }))
+                    .sort((a, b) => (b.c1 - b.c0) - (a.c1 - a.c0) || a.c0 - b.c0 ||
+                        (a.t.status === 'completed') - (b.t.status === 'completed') || (a.t.time || '').localeCompare(b.t.time || ''));
+                const lanes = [];
+                const hidden = [0, 0, 0, 0, 0, 0, 0];
+                const placed = [];
+                evs.forEach(ev => {
+                    let lane = 0;
+                    while (lanes[lane] && lanes[lane].some(c => c >= ev.c0 && c <= ev.c1)) lane++;
+                    if (lane >= maxLanes) { for (let c = ev.c0; c <= ev.c1; c++) hidden[c]++; return; }
+                    lanes[lane] = lanes[lane] || [];
+                    for (let c = ev.c0; c <= ev.c1; c++) lanes[lane].push(c);
+                    placed.push({ ...ev, lane });
+                });
+
+                html += `<div class="cal2-week" style="grid-template-rows: 30px repeat(${maxLanes}, var(--cal-lane)) 20px 1fr;">`;
+                days.forEach((d, i) => {
+                    const other = d.getMonth() !== m;
+                    const weekend = i === 0 || i === 6;
+                    const label = d.getDate() === 1 ? `${d.getDate()} ${monthShort(d)}` : d.getDate();
+                    html += `<div class="cal2-day ${other ? 'other' : ''} ${weekend ? 'weekend' : ''} ${iso[i] === todayS ? 'today' : ''}"
+                        style="grid-column:${i + 1}; grid-row:1 / -1;" onclick="calNewTask('${iso[i]}')" title="Klik untuk menambah task">
+                        <span class="cal2-num">${label}</span></div>`;
+                });
+                placed.forEach(ev => {
+                    const t = ev.t;
+                    const proj = projects.find(p => p.id == t.project);
+                    const contL = ev.s < wS, contR = ev.e > wE;
+                    html += `<div class="cal2-ev ${t.status === 'completed' ? 'done' : ''} ${contL ? 'cont-l' : ''} ${contR ? 'cont-r' : ''}"
+                        style="grid-column:${ev.c0 + 1} / ${ev.c1 + 2}; grid-row:${ev.lane + 2}; --pc:${proj ? proj.color : '#6b7280'};"
+                        onclick="event.stopPropagation(); editTask(${t.id})" title="${esc(t.title)}${t.time ? ' · ' + t.time : ''}">${t.time && ev.c0 === ev.c1 ? `<span class="cal2-time">${esc(t.time)}</span>` : ''}${esc(t.title)}</div>`;
+                });
+                hidden.forEach((cnt, c) => {
+                    if (cnt) html += `<div class="cal2-more" style="grid-column:${c + 1}; grid-row:${maxLanes + 2};"
+                        onclick="event.stopPropagation(); calShowDay('${iso[c]}')">+${cnt} lagi</div>`;
+                });
+                html += `</div>`;
+            }
+            html += `</div>`;
+            container.innerHTML = html;
+        };
+
+        // ---------- Urutkan task ----------
+        const SORT_OPTIONS = [
+            ['manual', '⇅ Manual'], ['date-asc', '⇅ Tanggal ↑'], ['date-desc', '⇅ Tanggal ↓'],
+            ['name', '⇅ Nama A–Z'], ['priority', '⇅ Prioritas'], ['status', '⇅ Status']
+        ];
+        let sortMode = localStorage.getItem('barakarsa_sort') || 'manual';
+        const Q_RANK = { do: 0, schedule: 1, delegate: 2, eliminate: 3 };
+        const S_RANK = { 'in-progress': 0, 'not-started': 1, 'on-hold': 2, 'completed': 3, 'cancelled': 4 };
+        const byDateAsc = (a, b) => {
+            if (!a.date && !b.date) return 0;
+            if (!a.date) return 1;
+            if (!b.date) return -1;
+            return a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '');
+        };
+
+        function sortTaskList(list) {
+            const arr = list.slice();
+            if (sortMode === 'date-asc') arr.sort(byDateAsc);
+            else if (sortMode === 'date-desc') arr.sort((a, b) => (!a.date ? 1 : !b.date ? -1 : -byDateAsc(a, b)));
+            else if (sortMode === 'name') arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'id', { sensitivity: 'base', numeric: true }));
+            else if (sortMode === 'priority') arr.sort((a, b) => ((Q_RANK[a.quadrant] ?? 9) - (Q_RANK[b.quadrant] ?? 9)) || byDateAsc(a, b));
+            else if (sortMode === 'status') arr.sort((a, b) => ((S_RANK[a.status] ?? 9) - (S_RANK[b.status] ?? 9)) || byDateAsc(a, b));
+            return arr;
+        }
+
+        function setSortMode(mode) {
+            sortMode = mode;
+            localStorage.setItem('barakarsa_sort', mode);
+            document.body.classList.toggle('is-sorted', mode !== 'manual');
+            render();
+        }
+
+        function injectSortSelect() {
+            if (document.getElementById('sortSelect')) return;
+            const toolsBtn = document.getElementById('toolsMenuBtn');
+            if (!toolsBtn) return;
+            const sel = document.createElement('select');
+            sel.id = 'sortSelect';
+            sel.className = 'sort-select';
+            sel.title = 'Urutkan task';
+            sel.innerHTML = SORT_OPTIONS.map(([v, l]) => `<option value="${v}" ${v === sortMode ? 'selected' : ''}>${l}</option>`).join('');
+            sel.onchange = () => setSortMode(sel.value);
+            toolsBtn.parentElement.parentElement.insertBefore(sel, toolsBtn.parentElement);
+            document.body.classList.toggle('is-sorted', sortMode !== 'manual');
+        }
+
+        // ---------- Kaitan ke fungsi lama ----------
+        (function wireV3() {
+            const _getFilteredTasks = getFilteredTasks;
+            getFilteredTasks = function () {
+                const r = _getFilteredTasks.apply(this, arguments);
+                return sortMode === 'manual' ? r : sortTaskList(r);
+            };
+
+            const _switchView = switchView;
+            switchView = function (view) {
+                const r = _switchView.apply(this, arguments);
+                const sel = document.getElementById('sortSelect');
+                if (sel) sel.style.display = (view === 'filters' || view === 'reporting') ? 'none' : '';
+                return r;
+            };
+
+            const _createTaskHTML = createTaskHTML;
+            createTaskHTML = function (task) {
+                let html = _createTaskHTML.apply(this, arguments);
+                if (task.uraianCkp) {
+                    html = html.replace(/(<div class="task-title"[^>]*>[\s\S]*?<\/div>)/,
+                        (m0) => m0 + `<div class="task-subtitle">${esc(task.uraianCkp)}</div>`);
+                }
+                if (task.date && task.dateEnd && task.dateEnd > task.date) {
+                    const f = d => new Date(d + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+                    html = html.replace(`📅 ${f(task.date)}`, `📅 ${f(task.date)}–${f(task.dateEnd)}`);
+                }
+                return html;
+            };
+
+            injectSortSelect();
+            window.addEventListener('resize', (() => {
+                let t = null, lastW = window.innerWidth;
+                return () => { clearTimeout(t); t = setTimeout(() => {
+                    if ((lastW < 600) !== (window.innerWidth < 600)) render();
+                    lastW = window.innerWidth;
+                }, 200); };
+            })());
         })();
     </script>
 
