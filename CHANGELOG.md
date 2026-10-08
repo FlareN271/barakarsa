@@ -7,8 +7,43 @@ Format setiap rilis: **Baru** (fitur baru), **Diubah** (perilaku yang berubah), 
 
 ---
 
-## [3.1] — Rapi & Cepat
-*Belum dirilis. Lihat ROADMAP.md.*
+## [3.1] — Rapi & Cepat (8 Oktober 2026)
+
+File yang berubah: `index.html`, `sw.js`, `manifest.json`.
+
+### Baru
+- **Duplikasi task**: tombol ⧉ di setiap task dan tombol "⧉ Duplikat" di form edit. Salinan dibuka di form dulu dan baru tercipta saat Save, lalu diletakkan tepat di bawah task aslinya. Yang ikut disalin: judul, description, project, label, priority, IKI, tanggal, jam, rentang tanggal, status, dan link Drive. Foto bukti dukung tidak ikut.
+- **Tombol ➕ melayang** di pojok kanan bawah untuk menambah task: bulat di HP, berbentuk "+ Add task" di desktop.
+- **Pintasan keyboard Q** (desktop) untuk membuka form tambah task, seperti Todoist.
+- **Tombol Hapus di form edit task**, dengan konfirmasi.
+- **Buka Naraloka ↗** di menu ⋯ → Lainnya (https://flaren271.github.io/naraloka/, tab baru).
+- **Edit Project**: ubah nama, warna, dan penanda **Project CKP**. Project CKP diberi tag "CKP" di sidebar.
+- **Shortcut "Tambah task cepat"**: tekan lama ikon aplikasi (Android/Chrome) → langsung ke kolom input Inbox.
+- **Catat waktu selesai (`completedAt`)** setiap task menjadi Completed; dihapus lagi bila task dibuka kembali. Edit task yang sudah selesai tidak mengubah waktu selesainya. "Avg Completion" di Reporting kini terisi dari data ini.
+- **Pemberitahuan versi baru**: bila ada pembaruan di server, muncul tombol "Muat ulang".
+- Nomor versi tampil di menu ⋯ → Help & resources.
+
+### Diubah
+- **Project ASN → KipApp** (ditandai Project CKP) dan **Work → Kerja**, migrasi otomatis. Setiap project hanya dimigrasi sekali, jadi nama yang kemudian diubah sendiri tidak akan ditimpa, termasuk saat sinkron dari perangkat lain.
+- **CKP mengikuti penanda Project CKP**, tidak lagi bergantung pada nama "ASN". Teks peringatan CKP memakai kata "CKP".
+- **Kolom "Uraian versi CKP" dihapus.** Sebagai gantinya, label form diberi subjudul abu-abu (tampil saat project CKP dipilih): Task Title → *Uraian Kegiatan di CKP*, Description → *Keterangan/Catatan di CKP*. Laporan PDF dan Word memakai Task Title.
+- **Badge priority disembunyikan** pada task Completed (datanya tetap disimpan).
+- **"Pasang aplikasi"** pindah dari tombol melayang ke menu ⋯ → Lainnya, dan hanya muncul bila browser menawarkan instalasi.
+- **Header lebih ringkas** di desktop dan HP. Di HP, kartu statistik Dashboard dibuat satu baris, task lebih rapat, dan aplikasi dibuka dengan sidebar tertutup.
+- **Aplikasi terbuka lebih cepat**: service worker kini menampilkan dari cache dulu lalu memperbarui di belakang (cache `barakarsa-v3.1`), dan pustaka Supabase dimuat setelah tampilan siap.
+- Tombol ⋯ di samping nama project selalu terlihat di HP (sebelumnya hanya saat hover).
+- **Tombol form task** (Hapus, Duplikat, Cancel, Save) dipindah ke footer selebar form, tidak lagi berdesakan di kolom kanan. Di HP footer tetap menempel di bawah saat form digulir.
+- **Klik project di sidebar** selalu menampilkan project itu, project yang dipilih disorot, dan judul header menjadi nama project. Klik Dashboard untuk kembali ke semua task. Di HP, sidebar menutup sendiri setelah memilih menu atau project.
+
+### Diperbaiki
+- Menghapus project kini benar-benar melepas task-nya (sebelumnya gagal karena id teks vs angka).
+- Edit Project membuka form berisi data project, bukan form Create Project kosong.
+- Menghapus label lewat dialog konfirmasi kini berfungsi (sebelumnya tombol konfirmasi tidak melakukan apa-apa).
+- Klik project dua kali tidak lagi "bolak-balik" (klik kedua dulu membatalkan filter project).
+
+### Catatan
+- Task yang sudah Completed sebelum 3.1 dicatat dengan waktu selesai "tidak diketahui" (`null`), supaya tidak terhitung seolah selesai hari ini.
+- Shortcut ikon belum didukung iPhone (keterbatasan iOS).
 
 ---
 
@@ -39,10 +74,10 @@ Versi yang sedang berjalan di https://flaren271.github.io/barakarsa/, dicatat se
 - **Export**: Laporan PDF per IKI (cetak dari browser, sesuai template CKP), dokumen Word (.docx), dan Excel rekap CKP.
 
 ### Batasan yang diketahui
-- Edit Project belum berfungsi (membuka form Create Project).
-- CKP mengenali project lewat nama "ASN"; menghapus atau mengganti nama project ini berisiko.
-- Waktu penyelesaian task belum dicatat, sehingga "Avg Completion" di Reporting selalu "-".
-- Pembukaan aplikasi di HP lambat saat sinyal lemah (service worker network-first).
+- Edit Project belum berfungsi (membuka form Create Project). *(diperbaiki di 3.1)*
+- CKP mengenali project lewat nama "ASN"; menghapus atau mengganti nama project ini berisiko. *(diperbaiki di 3.1)*
+- Waktu penyelesaian task belum dicatat, sehingga "Avg Completion" di Reporting selalu "-". *(diperbaiki di 3.1)*
+- Pembukaan aplikasi di HP lambat saat sinyal lemah (service worker network-first). *(diperbaiki di 3.1)*
 
 ---
 
