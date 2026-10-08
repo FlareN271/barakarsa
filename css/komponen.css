@@ -1,0 +1,917 @@
+/* ============================================================
+   komponen.css — kartu statistik, task, badge, tombol, form,
+   modal, dialog konfirmasi, menu project, filter, toast, tombol ➕
+   ============================================================ */
+
+/* ---------- Kartu statistik (Dashboard & Reporting) ---------- */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+#statDo { color: var(--accent-text); }
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.stat-sub {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.section-heading {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+/* ---------- Pencarian & filter ---------- */
+.search-container {
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.85rem 1rem;
+    background: var(--field-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.search-input::placeholder { color: var(--text-secondary); }
+
+.filter-btn {
+    padding: 0.85rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.filter-btn.active {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: var(--accent);
+}
+
+.filter-panel {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.filter-section { margin-bottom: 1.5rem; }
+.filter-section:last-child { margin-bottom: 0; }
+
+.filter-section-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filter-option {
+    padding: 0.5rem 1rem;
+    background: var(--hover);
+    border: 1px solid var(--border-color);
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.filter-option:hover { border-color: var(--accent); }
+
+.filter-option.active {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: var(--accent);
+}
+
+/* ---------- Inbox: tambah cepat ---------- */
+.quick-task {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.quick-input {
+    flex: 1;
+    background: var(--field-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.85rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.quick-input::placeholder { color: var(--text-secondary); }
+
+.search-input:focus,
+.quick-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+/* ---------- Kartu task ---------- */
+.task-item {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: all 0.2s ease;
+    cursor: grab;
+}
+
+.task-item:active { cursor: grabbing; }
+
+.task-item:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+}
+
+.task-item.completed {
+    opacity: 0.6;
+    background: var(--hover);
+}
+
+.task-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.25rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+}
+
+.task-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.task-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin-bottom: 0.35rem;
+    word-break: break-word;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.task-title:hover { color: var(--accent); }
+
+.task-item.completed .task-title {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
+
+.task-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    word-break: break-word;
+}
+
+.task-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+}
+
+.task-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* Urutan manual: pegangan ⠿ */
+.drag-handle {
+    cursor: grab;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    padding: 0 0.3rem;
+    user-select: none;
+    opacity: 0.45;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.task-item:hover .drag-handle { opacity: 1; }
+.drag-handle:active { cursor: grabbing; }
+body.is-sorted .drag-handle { display: none; }
+
+.task-item.dragging {
+    opacity: 0.4;
+    border: 1px dashed var(--accent);
+}
+
+.task-item.drag-over-top { box-shadow: 0 -3px 0 0 var(--accent); }
+.task-item.drag-over-bottom { box-shadow: 0 3px 0 0 var(--accent); }
+
+.add-task-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: var(--surface);
+    border: 1px dashed var(--border-color);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: 600;
+    transition: all 0.2s ease;
+    margin-top: 1rem;
+}
+
+.add-task-inline:hover {
+    border-color: var(--accent);
+    background: var(--hover);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+.empty-state .btn { margin-top: 1rem; }
+
+.empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+/* ---------- Badge ---------- */
+.badge {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: transparent;
+    border: 1px solid var(--border-color);
+}
+
+/* Titik warna project/label supaya teks badge tetap netral di kedua mode */
+.badge-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: 1px;
+}
+
+.prio-badge { font-weight: 700; }
+.prio-do { color: var(--p1); border-color: var(--p1-border); }
+.prio-schedule { color: var(--p2); border-color: var(--p2-border); }
+.prio-delegate { color: var(--p3); border-color: var(--p3-border); }
+.prio-eliminate { color: var(--p4); border-color: var(--p4-border); }
+
+/* ---------- Tombol ---------- */
+.btn {
+    padding: 0.85rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.btn-primary,
+.btn-danger {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+.btn-primary:hover,
+.btn-danger:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+    background: var(--hover);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn-sm {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.9rem;
+}
+
+.btn-block { width: 100%; }
+
+/* Tombol di kartu task dibuat tenang; merah hanya saat hapus disorot */
+.task-actions .btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    box-shadow: none;
+}
+
+.task-actions .btn:hover {
+    background: var(--hover);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    box-shadow: none;
+}
+
+.task-actions .btn-danger:hover {
+    background: var(--danger-soft);
+    border-color: var(--danger-border);
+}
+
+.view-toggle {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#allViewToggle {
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.view-btn {
+    padding: 0.6rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.view-btn:hover { border-color: var(--accent); }
+
+.view-btn.active {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: var(--accent);
+}
+
+/* ---------- Modal ---------- */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--overlay);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: var(--surface);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: 70% 30%;
+    position: relative;
+}
+
+/* Modal satu kolom (Project, Label, Masuk, Help, Backup, Stress Test) */
+.modal-simple { grid-template-columns: 1fr; }
+.modal-body { padding: 2rem; }
+
+#authModal .modal-content { max-width: 420px; }
+#projectModal .modal-content,
+#labelModal .modal-content { max-width: 500px; }
+#helpModal .modal-content { max-width: 640px; }
+#stressTestModal .modal-content { max-width: 650px; }
+#exportModal .modal-content,
+#pasteImportModal .modal-content { max-width: 700px; }
+
+.modal-left {
+    padding: 2rem;
+    border-right: 1px solid var(--border-color);
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+.modal-right {
+    padding: 2rem;
+    overflow-y: auto;
+    background: var(--sidebar-bg);
+    max-height: 90vh;
+}
+
+.modal-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 10;
+}
+
+.modal-note {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.modal-mono {
+    width: 100%;
+    padding: 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    font-family: monospace;
+    font-size: 0.8rem;
+    resize: vertical;
+}
+
+/* ---------- Form ---------- */
+.form-group { margin-bottom: 1.75rem; }
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--field-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+/* Subjudul abu-abu di bawah label (mis. "Uraian Kegiatan di CKP") */
+.label-sub {
+    display: block;
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-top: 0.1rem;
+}
+
+.label-note {
+    font-weight: 400;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.color-picker-group {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.color-option {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.color-option:hover { transform: scale(1.1); }
+.color-option.selected { border-color: var(--text-primary); }
+
+.label-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    margin-bottom: 0.5rem;
+    background: var(--bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.label-checkbox input {
+    width: auto;
+    cursor: pointer;
+}
+
+.label-checkbox-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+/* Penanda Project CKP di form project */
+.form-group .ckp-flag { margin-bottom: 0; }
+.ckp-flag .label-sub { margin: 0.15rem 0 0; }
+
+.form-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.form-buttons .btn { flex: 1; }
+
+/* ---------- Form task: dua kolom + footer tombol selebar modal ---------- */
+#taskModal .modal-content {
+    grid-template-rows: minmax(0, 1fr) auto;
+    height: min(88vh, 900px);
+    max-height: none;
+    overflow: hidden;
+}
+
+#taskModal .modal-left,
+#taskModal .modal-right {
+    max-height: none;
+    min-height: 0;
+}
+
+.task-modal-footer {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.85rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--surface);
+    border-radius: 0 0 0.75rem 0.75rem;
+}
+
+.tmf-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.task-modal-footer .btn {
+    padding: 0.6rem 1.1rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
+}
+
+.task-modal-footer .btn-primary { min-width: 7rem; }
+
+.task-modal-footer .tmf-danger {
+    color: var(--danger);
+    border-color: var(--danger-border);
+    background: transparent;
+}
+
+.task-modal-footer .tmf-danger:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: var(--danger-border);
+}
+
+/* ---------- Dialog konfirmasi ---------- */
+.confirm-dialog {
+    background: var(--surface);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+}
+
+.confirm-message {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.confirm-actions .btn { flex: 1; }
+
+/* ---------- Menu ⋯ di samping nama project ---------- */
+.project-menu {
+    position: absolute;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 500;
+    min-width: 150px;
+}
+
+.project-menu-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.project-menu-item:hover {
+    background: var(--hover);
+    color: var(--accent);
+}
+
+.project-menu-item.danger { color: var(--danger); }
+.project-menu-item.danger:hover { background: var(--danger-soft); }
+
+/* ---------- Daftar label (menu Labels) ---------- */
+.label-row {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.label-row-left,
+.label-row-right {
+    display: flex;
+    align-items: center;
+}
+
+.label-row-left { gap: 0.75rem; }
+.label-row-right { gap: 1rem; }
+
+.label-row-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+}
+
+.label-row-name {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.label-row-count {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+#addLabelBtn { margin-bottom: 1.5rem; }
+
+/* ---------- Tombol ➕ melayang: pil di desktop, bulat di HP ---------- */
+.fab-add {
+    position: fixed;
+    right: calc(1.1rem + env(safe-area-inset-right, 0px));
+    bottom: calc(1.1rem + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    width: auto;
+    height: 52px;
+    padding: 0 1.3rem 0 1.05rem;
+    border-radius: 26px;
+    border: none;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 900;
+    box-shadow: var(--shadow-fab);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.fab-add:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-sm);
+}
+
+.fab-add:active { transform: scale(0.93); }
+
+.fab-add .fab-plus {
+    font-size: 1.6rem;
+    font-weight: 300;
+    line-height: 1;
+    margin-top: -2px;
+}
+
+/* ---------- Toast ---------- */
+.ev-toast,
+.update-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    box-shadow: var(--shadow-lg);
+    max-width: 90vw;
+}
+
+.ev-toast {
+    padding: 0.6rem 1rem;
+    border-radius: 0.5rem;
+    z-index: 3100;
+}
+
+.update-toast {
+    z-index: 3200;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.6rem 0.75rem 0.6rem 1rem;
+    border-radius: 0.6rem;
+    max-width: 92vw;
+}
+
+/* ---------- Isi modal kecil ---------- */
+.auth-intro {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    margin: 0.5rem 0 1.5rem;
+}
+
+.auth-error {
+    color: var(--accent);
+    font-size: 0.85rem;
+    min-height: 1.2rem;
+    margin-bottom: 0.75rem;
+}
+
+#authSignUp { margin-top: 0.6rem; }
+
+.help-body {
+    font-size: 0.92rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+    margin-top: 1rem;
+}
+
+.help-body p { margin-bottom: 1rem; }
+.help-body p:last-child {
+    margin: 1.25rem 0 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.help-body strong { color: var(--accent); }
+
+.export-name { margin-bottom: 1rem; font-size: 0.9rem; }
+.export-filename { color: var(--accent); }
+#exportContent { height: 280px; }
+#pasteImportContent { height: 240px; }
+.modal-body .modal-mono + .btn { margin-top: 1rem; }
+#pasteImportModal .btn-secondary { margin-bottom: 1rem; }
+
+.stress-box {
+    background: var(--bg);
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.stress-box label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.stress-box select {
+    width: 100%;
+    padding: 0.6rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+}
+
+.stress-field { margin-bottom: 1rem; }
+
+#stressResults {
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.stress-intro {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.stress-hint { color: var(--text-secondary); }

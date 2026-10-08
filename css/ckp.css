@@ -1,0 +1,227 @@
+/* ============================================================
+   ckp.css — bukti dukung (foto), IKI di form task, hub CKP Triwulan
+   ============================================================ */
+
+/* ---------- Bukti dukung (foto) di form task ---------- */
+.ev-hint {
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-left: 0.35rem;
+}
+
+.ev-drop {
+    border: 1.5px dashed var(--border-color);
+    border-radius: 0.6rem;
+    padding: 0.75rem;
+    transition: border-color .15s, background .15s;
+}
+
+.ev-drop.dragover {
+    border-color: var(--status-done);
+    background: var(--tint-hover);
+}
+
+.ev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+
+.ev-grid:empty { display: none; }
+
+.ev-thumb {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 0.4rem;
+    overflow: hidden;
+    background: var(--hover);
+    cursor: zoom-in;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: var(--text-secondary);
+}
+
+.ev-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.ev-del {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: var(--scrim);
+    color: var(--on-scrim);
+    font-size: 0.8rem;
+    cursor: pointer;
+    line-height: 24px;
+    padding: 0;
+}
+
+.ev-flag {
+    position: absolute;
+    left: 4px;
+    bottom: 4px;
+    font-size: 0.68rem;
+    background: var(--scrim);
+    color: var(--on-scrim);
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.ev-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.ev-status { font-size: 0.8rem; color: var(--text-secondary); }
+
+.badge.ev-missing { color: var(--warn); border-color: var(--warn-border); }
+
+/* Peringatan oranye (Dashboard, Completed, hub CKP) */
+.ev-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    color: var(--text-primary);
+    border-radius: 0.6rem;
+    padding: 0.7rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.ev-banner button { margin-left: auto; }
+
+.ev-lightbox {
+    position: fixed;
+    inset: 0;
+    background: var(--scrim-strong);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    cursor: zoom-out;
+}
+
+.ev-lightbox img { max-width: 100%; max-height: 100%; border-radius: 0.4rem; }
+
+/* ---------- IKI di form task ---------- */
+.iki-suggest { margin-top: 0.4rem; font-size: 0.8rem; color: var(--text-secondary); }
+
+.iki-suggest button {
+    background: none;
+    border: 1px dashed var(--warn);
+    color: var(--warn);
+    border-radius: 0.4rem;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-align: left;
+}
+
+.iki-full { margin-top: 0.35rem; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.35; }
+
+.badge.iki-badge { color: var(--iki); border-color: var(--iki-border); }
+
+/* ---------- Hub CKP Triwulan ---------- */
+#ckpHubModal .modal-content.ckp-hub {
+    display: block;
+    grid-template-columns: none;
+    max-width: 1080px;
+    padding: 1.75rem;
+    overflow-y: auto;
+    max-height: 92vh;
+}
+
+.ckp-hub h3 { font-size: 1rem; margin: 1.4rem 0 0.6rem; }
+.ckp-hub .ckp-list-head h3 { margin: 0; }
+
+.ckp-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+.ckp-row.ckp-period { margin: 0.6rem 0 0.2rem; }
+.ckp-row.ckp-list-head { justify-content: space-between; margin-top: 1.2rem; }
+
+.ckp-check {
+    font-size: 0.85rem;
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.ckp-hub select,
+.ckp-hub input,
+.ckp-hub textarea {
+    background: var(--bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 0.4rem;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+}
+
+.ckp-hub textarea { width: 100%; min-height: 3.2rem; resize: vertical; }
+
+.ckp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.6rem 1rem; }
+
+.ckp-grid label,
+.ckp-field label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.2rem;
+}
+
+.ckp-grid input,
+.ckp-field input,
+.ckp-field textarea { width: 100%; }
+
+.ckp-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.6rem;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.6rem;
+}
+
+.ckp-card.muted { opacity: 0.6; }
+.ckp-card.ckp-start { margin-top: 1rem; }
+
+.ckp-card-head { display: flex; gap: 0.75rem; align-items: flex-start; flex-wrap: wrap; }
+.ckp-card-title { flex: 1 1 320px; }
+.ckp-card-title strong { display: block; font-size: 0.95rem; }
+
+.ckp-card-title small {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    display: block;
+    margin-top: 0.15rem;
+}
+
+.ckp-stats { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; }
+.ckp-stats .warn { color: var(--warn); }
+
+.ckp-editor { margin-top: 0.9rem; border-top: 1px solid var(--border-color); padding-top: 0.9rem; }
+.ckp-editor .ckp-field { margin-bottom: 0.6rem; }
+
+.ckp-note { font-size: 0.8rem; color: var(--text-secondary); margin: 0.3rem 0 0.8rem; line-height: 1.45; }
+.ckp-note.ckp-note-gap { margin-top: 0.8rem; }
+
+.ckp-file-btn { cursor: pointer; }
+.ckp-file-btn.ckp-solusi-add { display: inline-block; margin-bottom: 0.4rem; }
+.ckp-solusi-grid { margin-bottom: 0.4rem; }
+
+/* Daftar task yang belum lengkap di dalam peringatan hub */
+.ev-banner.ckp-warn { display: block; margin-top: 1rem; }
+.ckp-warn-more { margin-top: 0.4rem; }
+.ckp-warn-date { color: var(--text-secondary); }
+
+.ckp-warnlist { font-size: 0.85rem; margin: 0.3rem 0 0 1.1rem; }
+.ckp-warnlist a { color: var(--iki); cursor: pointer; text-decoration: underline; }
+
+.ckp-hub details summary { cursor: pointer; font-weight: 600; margin: 1.2rem 0 0.6rem; }

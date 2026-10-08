@@ -1,0 +1,52 @@
+/* ============================================================
+   cetak.css — halaman Laporan PDF CKP (#ckpPrint)
+
+   Sengaja TIDAK memakai variabel tema: laporan selalu putih
+   dengan huruf Times New Roman, apa pun mode tampilannya.
+   Ukuran tabel mengikuti template CKP (dxa = 1/1440 inci).
+   ============================================================ */
+
+#ckpPrint { position: fixed; inset: 0; z-index: 2500; background: #525659; overflow: auto; padding: 0 0 2rem; }
+#ckpPrint .ckp-toolbar { position: sticky; top: 0; z-index: 2; display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; background: #2d2d2d; padding: 0.7rem 1rem; padding-top: calc(0.7rem + env(safe-area-inset-top, 0px)); border-bottom: 1px solid #404040; color: #e0e0e0; font-size: 0.85rem; }
+#ckpPrint .ckp-sheet { background: #fff; color: #000; margin: 1.2rem auto; box-shadow: 0 2px 12px rgba(0,0,0,0.5); padding: 1in; font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.15; box-sizing: border-box; }
+#ckpPrint .ckp-cover { width: 8.5in; min-height: 11in; }
+#ckpPrint .ckp-land { width: 11in; min-height: 8.5in; }
+#ckpPrint table { border-collapse: collapse; width: 100%; font-size: 12pt; color: #000; }
+#ckpPrint td, #ckpPrint th { border: 1px solid #000; padding: 0.07in; vertical-align: top; font-weight: normal; text-align: left; }
+#ckpPrint .ckp-title { text-align: center; font-weight: bold; margin-bottom: 0.35in; }
+#ckpPrint .ckp-title div { margin: 0; }
+/* Tabel identitas: 4106 | 278 | 5909 dxa, semua garis (termasuk dua garis di sisi ":") */
+#ckpPrint .ckp-ident { width: 7.148in; table-layout: fixed; }
+#ckpPrint .ckp-ident td { vertical-align: middle; }
+#ckpPrint .ckp-ident td.lbl { width: 2.851in; }
+#ckpPrint .ckp-ident td.sep { width: 0.193in; text-align: center; padding: 0; }
+#ckpPrint .ckp-ident td.val { width: 4.103in; }
+#ckpPrint .fill { background: #fbe4d5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+#ckpPrint .ckp-main th { text-align: center; }
+#ckpPrint .ckp-main tr { break-inside: avoid; page-break-inside: avoid; }
+#ckpPrint .ckp-main td.no { text-align: center; vertical-align: middle; }
+#ckpPrint .ckp-main img { display: block; width: 100%; max-height: 2.4in; object-fit: contain; margin: 0 auto 0.05in; }
+#ckpPrint .ckp-main .nophoto { color: #999; font-style: italic; font-size: 10pt; }
+/* Tabel kegiatan 14610 dxa, menjorok -572; kendala 13462, -431; tanda tangan 12049, +704 */
+#ckpPrint .ckp-main { table-layout: fixed; width: 10.146in; margin-left: -0.397in; }
+#ckpPrint .ckp-kendala { margin-top: 0.45in; table-layout: fixed; width: 9.349in; margin-left: -0.299in; break-inside: avoid; page-break-inside: avoid; }
+#ckpPrint .ckp-kendala img { display: block; width: 100%; max-height: 2.2in; object-fit: contain; margin: 0 auto 0.05in; }
+#ckpPrint .ckp-kendala th { text-align: center; }
+#ckpPrint .ckp-kendala td { height: 0.6in; vertical-align: middle; }
+#ckpPrint .ckp-ttd { width: 8.368in; margin: 0.45in 0 0 0.489in; table-layout: fixed; break-inside: avoid; page-break-inside: avoid; }
+#ckpPrint .ckp-ttd td { text-align: center; vertical-align: top; line-height: 1.2; padding-bottom: 0.3in; }
+#ckpPrint .ckp-ttd td:first-child { width: 47.9%; }
+#ckpPrint .ckp-ttd .space { height: 0.75in; }
+@page { size: letter landscape; margin: 2.54cm 0.2in; }
+@page cover { size: letter portrait; margin: 2.54cm 0.2in; }
+@media print {
+    html { background: #fff; }
+    /* !important: menang atas display yang dipasang lewat JS (mis. toast) */
+    body.ckp-printing > *:not(#ckpPrint) { display: none !important; }
+    body.ckp-printing { background: #fff; }
+    body.ckp-printing #ckpPrint { position: static; overflow: visible; background: none; padding: 0; }
+    body.ckp-printing #ckpPrint .ckp-toolbar { display: none; }
+    body.ckp-printing #ckpPrint .ckp-sheet { width: auto; min-height: 0; margin: 0; padding: 0 0.8in; box-shadow: none; }
+    body.ckp-printing #ckpPrint .ckp-cover { page: cover; break-after: page; page-break-after: always; }
+    body.ckp-printing #ckpPrint .ckp-land { page: auto; }
+}

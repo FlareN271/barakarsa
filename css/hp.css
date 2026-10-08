@@ -1,0 +1,172 @@
+/* ============================================================
+   hp.css — penyesuaian layar HP (≤768px)
+
+   Dimuat paling akhir supaya aturan di sini menang atas aturan
+   dasar dengan tingkat selektor yang sama.
+   ============================================================ */
+
+@media (max-width: 768px) {
+    :root {
+        font-size: 14px;
+        --sidebar-width: 300px;
+    }
+
+    /* Sidebar melayang di atas konten, digeser keluar saat tertutup */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        width: 260px;
+        border-bottom: none;
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+        z-index: 999;
+        padding: 1rem 0.75rem;
+    }
+
+    .sidebar.collapsed {
+        width: 260px;
+        transform: translateX(-100%);
+    }
+
+    /* Sebelum JS jalan: sidebar sudah tertutup (dipasang skrip di <head>) */
+    :root[data-sidebar-awal] .sidebar { transform: translateX(-100%); }
+
+    .project-menu-btn { visibility: visible; }
+
+    /* Header satu baris, menempel di atas */
+    .header {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: nowrap;
+        padding: 0.45rem 0.7rem;
+        padding-top: calc(0.45rem + env(safe-area-inset-top, 0px));
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .header-left { flex: 1 1 auto; min-width: 0; gap: 0.5rem; }
+
+    .header-title {
+        font-size: 1.05rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .header-right { gap: 0.4rem; flex-shrink: 0; }
+    .hamburger-btn { font-size: 1.25rem; padding: 0.25rem 0.4rem; }
+    .tools-menu-btn { padding: 0.3rem 0.6rem; }
+    .sync-status { font-size: 0.72rem; padding: 0.2rem 0.25rem; }
+    .sort-select { font-size: 0.78rem; padding: 0.35rem 0.3rem; max-width: 6.8rem; }
+
+    .content { padding: 0.9rem 0.75rem calc(6rem + env(safe-area-inset-bottom, 0px)); }
+
+    /* Tombol & form */
+    .btn { padding: 0.6rem 1rem; font-size: 0.95rem; }
+    .view-toggle { flex-wrap: wrap; }
+
+    .form-group label { font-size: 0.9rem; }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        font-size: 1rem;
+        padding: 0.5rem;
+    }
+
+    /* Modal */
+    .modal { padding: 0; }
+
+    .modal-content {
+        grid-template-columns: 1fr;
+        max-width: 95vw;
+        max-height: 85vh;
+        width: 100%;
+        margin: 0;
+        border-radius: 0.5rem;
+        overflow: visible;
+    }
+
+    .modal-left {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem;
+        overflow-y: auto;
+        max-height: 50vh;
+    }
+
+    .modal-right {
+        padding: 1rem;
+        overflow-y: auto;
+        max-height: 35vh;
+    }
+
+    .modal-title { font-size: 1.25rem; }
+
+    /* Form task: satu kolom yang bisa digulir, tombol menempel di bawah */
+    #taskModal .modal-content {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        max-height: 92vh;
+        overflow-y: auto;
+    }
+
+    #taskModal .modal-left,
+    #taskModal .modal-right {
+        max-height: none;
+        overflow: visible;
+        flex-shrink: 0;
+    }
+
+    .task-modal-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        padding: 0.65rem 0.75rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
+        border-radius: 0;
+    }
+
+    .task-modal-footer .btn { padding: 0.55rem 0.85rem; }
+
+    /* Tombol ➕ bulat */
+    .fab-add { width: 56px; height: 56px; border-radius: 50%; padding: 0; }
+    .fab-add .fab-plus { font-size: 2rem; }
+    .fab-add .fab-label { display: none; }
+
+    .ev-toast,
+    .update-toast { bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); }
+
+    /* Statistik: 2 kolom (Reporting), 1 baris ringkas (Dashboard) */
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    #dashboardView .stats { grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin-bottom: 1rem; }
+    #dashboardView .stat-card { padding: 0.5rem 0.2rem; border-radius: 0.5rem; }
+    #dashboardView .stat-number { font-size: 1.35rem; margin-bottom: 0; line-height: 1.2; }
+    #dashboardView .stat-label { font-size: 0.58rem; letter-spacing: 0; }
+    #dashboardView .section-heading { margin-bottom: 0.75rem; font-size: 1rem; }
+
+    /* Daftar task lebih rapat */
+    .quick-task { padding: 0.75rem; margin-bottom: 1rem; gap: 0.5rem; }
+    .task-item { padding: 0.85rem; gap: 0.6rem; margin-bottom: 0.6rem; }
+    .task-actions { flex-direction: column; gap: 0.35rem; }
+    .task-actions .btn-sm { padding: 0.35rem 0.55rem; }
+
+    .board-container { grid-template-columns: 1fr; }
+
+    /* Kalender */
+    .cal2 { --cal-lane: 20px; padding: 0.6rem 0.4rem; }
+    .cal2-week { min-height: 5.6rem; }
+    .cal2-ev { font-size: 0.66rem; padding: 0 0.25rem; margin: 0 2px; border-left-width: 2px; }
+    .cal2-num { font-size: 0.72rem; min-width: 1.3rem; height: 1.3rem; line-height: 1.3rem; }
+    .cal2-day { padding: 0.15rem 0.15rem; }
+    .cal2-more { font-size: 0.62rem; padding: 0 0.2rem; }
+    .cal2-title { font-size: 1.05rem; }
+    .cal2-jump { display: none; }
+}
+
+@media (max-width: 420px) {
+    .tmf-label { display: none; }
+}

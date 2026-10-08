@@ -1,0 +1,113 @@
+/* ============================================================
+   tema.css — palet Bara (gelap & terang)
+
+   Satu-satunya tempat kode warna aplikasi (selain cetak.css).
+   Gelap = :root, terang = :root[data-theme="light"].
+   Atribut data-theme dipasang oleh skrip kecil di <head> index.html
+   sebelum halaman digambar, lalu dijaga oleh js/tema.js.
+   ============================================================ */
+
+:root {
+    color-scheme: dark;
+
+    /* Latar & permukaan */
+    --bg: #16110e;              /* latar halaman, header */
+    --surface: #231b17;         /* kartu, modal, menu */
+    --hover: #2e231e;           /* sorotan & latar sekunder */
+    --sidebar-bg: #1d1612;      /* sidebar, panel kanan form */
+    --field-bg: #16110e;        /* kolom isian */
+    --border-color: #3b2d26;
+
+    /* Teks */
+    --text-primary: #f4ebe5;
+    --text-secondary: #b8a497;
+    --text-faint: #7d6a5f;
+
+    /* Aksen merah-oranye */
+    --accent: #cf4219;          /* tombol utama, garis fokus */
+    --accent-hover: #b8380f;
+    --accent-text: #ff8a5c;     /* teks/ikon beraksen di atas latar biasa */
+    --accent-soft: rgba(228, 83, 42, 0.18);
+    --accent-soft-text: #ff9a72;
+    --accent-ring: rgba(228, 83, 42, 0.25);
+    --on-accent: #ffffff;       /* teks di atas tombol aksen */
+
+    /* Status & penanda */
+    --status-progress: #6ea8fe;
+    --status-done: #3ccf8e;
+    --warn: #fbbf6a;
+    --warn-bg: rgba(245, 158, 11, 0.10);
+    --warn-border: rgba(245, 158, 11, 0.40);
+    --iki: #f6b48f;
+    --iki-border: rgba(246, 180, 143, 0.45);
+    --danger: #ff6b5e;
+    --danger-border: rgba(255, 107, 94, 0.45);
+    --danger-soft: rgba(255, 107, 94, 0.12);
+
+    /* Priority 1–4 */
+    --p1: #ff6b5e; --p1-border: rgba(255, 107, 94, 0.45);
+    --p2: #f5a524; --p2-border: rgba(245, 165, 36, 0.45);
+    --p3: #6ea8fe; --p3-border: rgba(110, 168, 254, 0.45);
+    --p4: #a8998f; --p4-border: rgba(168, 153, 143, 0.45);
+
+    /* Bayangan, lapisan, rona */
+    --overlay: rgba(8, 5, 4, 0.72);
+    --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.5);
+    --tint-weak: rgba(255, 255, 255, 0.025);
+    --tint-hover: rgba(255, 255, 255, 0.05);
+
+    /* Sama di kedua mode */
+    --shadow-fab: 0 6px 18px rgba(0, 0, 0, 0.5);
+    --scrim: rgba(0, 0, 0, 0.7);          /* tombol & label di atas foto */
+    --scrim-strong: rgba(0, 0, 0, 0.88);  /* latar foto diperbesar */
+    --on-scrim: #ffffff;
+    --no-project: #6b7280;                /* garis kalender untuk task tanpa project */
+
+    --sidebar-width: 320px;
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    --bg: #fbf7f4;
+    --surface: #ffffff;
+    --hover: #f6eee8;
+    --sidebar-bg: #f5ede7;
+    --field-bg: #ffffff;
+    --border-color: #eadbd0;
+
+    --text-primary: #2b1d16;
+    --text-secondary: #76604f;
+    --text-faint: #a38f82;
+
+    --accent: #c9411a;
+    --accent-hover: #a8350f;
+    --accent-text: #c9411a;
+    --accent-soft: #fbe2d6;
+    --accent-soft-text: #a8350f;
+    --accent-ring: rgba(201, 65, 26, 0.18);
+    --on-accent: #ffffff;
+
+    --status-progress: #2f6fd0;
+    --status-done: #1f9d63;
+    --warn: #8a4b00;
+    --warn-bg: #fff4e0;
+    --warn-border: #f3cf8f;
+    --iki: #9a3d14;
+    --iki-border: #efc2aa;
+    --danger: #c8352a;
+    --danger-border: #efb8b2;
+    --danger-soft: #fdecea;
+
+    --p1: #c8352a; --p1-border: #efb8b2;
+    --p2: #a65c06; --p2-border: #ecd0a6;
+    --p3: #2f6fd0; --p3-border: #bcd2f3;
+    --p4: #7f6f65; --p4-border: #ded2ca;
+
+    --overlay: rgba(43, 29, 22, 0.45);
+    --shadow-sm: 0 2px 8px rgba(120, 60, 30, 0.10);
+    --shadow-lg: 0 10px 28px rgba(120, 60, 30, 0.20);
+    --tint-weak: rgba(120, 60, 30, 0.03);
+    --tint-hover: rgba(120, 60, 30, 0.06);
+}

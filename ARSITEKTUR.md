@@ -1,0 +1,118 @@
+# BARAKARSA — Arsitektur
+
+Peta kode Barakarsa mulai versi 3.2.1. Tanpa alat build: semua file langsung disajikan GitHub Pages.
+Rencana versi ada di `ROADMAP.md`, riwayat di `CHANGELOG.md`.
+
+## Peta file
+
+```
+index.html        HTML saja + skrip kecil di <head> (tema & sidebar HP sebelum halaman digambar)
+manifest.json     PWA: nama, ikon, warna, shortcut "Tambah task cepat"
+sw.js             service worker: cache dulu, perbarui di belakang, kabar versi baru
+icon-192.png, icon-512.png
+
+css/              dimuat berurutan; urutan ini penting
+  tema.css        SEMUA warna: variabel gelap (:root) dan terang ([data-theme="light"])
+  dasar.css       reset, tata letak, sidebar, header, menu ⋯
+  komponen.css    statistik, kartu task, badge, tombol, form, modal, toast, tombol ➕
+  tampilan.css    Board, Kalender, Reporting
+  ckp.css         foto bukti dukung, IKI di form, hub CKP Triwulan
+  cetak.css       halaman Laporan PDF CKP — selalu putih, tidak memakai variabel tema
+  hp.css          layar ≤768px (paling akhir supaya menang atas aturan dasar)
+
+js/               skrip biasa dengan defer (bukan ES module), dijalankan berurutan
+  data.js         data task/project/label, muat & simpan, migrasi 3.1, waktu selesai, utilitas
+  sinkron.js      Supabase: login, sinkron per item, tombstone
+  tema.js         mode terang/gelap
+  tampilan.js     render(), menu, List/Board/Kalender, filter, urutkan, pencarian, drag & drop
+  form-task.js    form task: buka, edit, simpan, duplikat, hapus; Inbox cepat; dialog konfirmasi
+  project-label.js project & label
+  bukti.js        foto: kompres, IndexedDB, antrean unggah, peringatan "belum ada bukti"
+  ckp.js          katalog IKI, saran IKI, hub CKP Triwulan, foto solusi
+  ekspor.js       backup JSON/CSV, import, stress test, Excel/PDF/Word CKP
+  pwa.js          daftar service worker, "Pasang aplikasi", kabar versi baru, ?quick=1
+  main.js         menu ⋯, event umum, urutan inisialisasi
+```
+
+Karena bukan module, semua fungsi dan variabel tingkat atas berbagi satu ruang global.
+Itu yang membuat `onclick="saveTask(event)"` di HTML tetap bekerja. Konsekuensinya: nama
+tingkat atas harus unik di seluruh file. Urutan file hanya penting untuk kode yang langsung
+jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termuat.
+
+## Urutan mulai
+
+1. `<head>`: skrip kecil memasang `data-theme` (dan `data-sidebar-awal` di HP) sebelum halaman digambar.
+2. Setelah HTML terbaca, file `js/` dijalankan berurutan. `main.js` memasang tema, PWA, event foto, tombol Q, dan resize.
+3. `DOMContentLoaded` (main.js): tutup sidebar di HP → `loadData()` → `setupEventListeners()` → `render()` → shortcut `?quick=1`.
+4. `load` + 50 ms: `initSync()` memuat pustaka Supabase dari CDN, memeriksa sesi, lalu sinkron.
+
+## Penyimpanan
+
+| Tempat | Kunci / nama | Isi |
+|---|---|---|
+| localStorage | `barakarsa_v6` | `{ tasks, projects, labels, nextProjectId, nextLabelId, tombstones }` — sumber utama |
+| localStorage | `barakarsa_ckp_v1` | pengaturan CKP: `katalog`, `profil`, `catatan` (masing-masing `{ data, updatedAt }`) |
+| localStorage | `barakarsa_theme` | `light` / `dark` (kosong = otomatis); per perangkat |
+| localStorage | `barakarsa_sort` | pilihan urutan; per perangkat |
+| localStorage | `barakarsa_photo_trash` | path foto yang menunggu dihapus dari server |
+| localStorage | `barakarsa_mig31_ckp`, `barakarsa_mig31_done` | penanda migrasi 3.1 sudah jalan |
+| localStorage | `barakarsa_stress_backup` | cadangan sementara selama stress test |
+| IndexedDB | `barakarsa_photos` (`blobs`, `thumbs`) | foto penuh yang belum terunggah, thumbnail |
+| Supabase | tabel `barakarsa_items` | satu baris per task/project/label: `user_id, id, kind, data, deleted, updated_at` |
+| Supabase | tabel `barakarsa_settings` | satu baris per bagian CKP: `user_id, id, data, updated_at` |
+| Supabase | bucket `bukti-dukung` (privat) | `{user}/{taskId}/{fotoId}.jpg`, foto solusi di `{user}/ckp/{periode}/{iki}/…` |
+
+Bentuk task (field yang dipakai):
+`id, title, description, date, dateEnd, time, quadrant (do/schedule/delegate/eliminate = P1–P4), project (teks id), labels (angka id), attachment, status, isInbox, createdAt, completedAt, order, iki, photos[], updatedAt`.
+
+## Alur data: localStorage → Supabase
+
+```
+pengguna mengubah sesuatu
+  → saveData()                         data.js
+      trackCompletion()                isi/hapus completedAt
+      stampChanges()                   sinkron.js: bandingkan dengan snapshot,
+                                       beri updatedAt baru, catat tombstone bila hilang
+      writeStore()                     localStorage barakarsa_v6
+      scheduleSync()                   1,5 detik kemudian → syncNow()
+
+syncNow()                              sinkron.js
+  syncItems()   ambil semua baris → kirim yang lokal lebih baru / tombstone →
+                pakai baris server yang lebih baru → simpan & render bila ada yang datang
+  evProcessQueue()                     bukti.js: hapus foto terbuang, unggah foto tertunda
+  ckpSyncSettings()                    ckp.js: katalog/profil/catatan, updatedAt terbaru menang
+  migrate31()                          data dari perangkat lama ikut dimigrasi
+```
+
+`syncNow()` juga jalan saat aplikasi kembali dibuka, saat online lagi, dan tiap 60 detik.
+Konflik diselesaikan per item: `updated_at` terbaru menang. Tombstone disimpan 90 hari.
+
+## Alur "simpan task"
+
+```
+klik Save / Enter di judul
+  → saveTask(e)                                     form-task.js
+      tolak bila foto masih diproses (evBusy)
+      task = { ...task lama, field dari form, isInbox: false, createdAt }
+      ckpApplyToTask(task)                          IKI + "Sampai tanggal" (hanya bila setelah tanggal)
+      evCommit(task, foto lama)                     foto draft → task.photos, foto terbuang → antrean hapus
+      edit: ganti di tempat | salinan: placeCopyBelow() | baru: taruh di akhir
+      saveData()                                    (lihat alur di atas; completedAt diurus di sini)
+      closeTaskModal()                              evDiscard(): foto baru yang belum disimpan dibuang
+      debouncedRender()
+      evProcessQueue()                              mulai unggah foto
+```
+
+`editTask(id)` dan `openTaskModal()` mengisi form, lalu `evLoad()` (foto) dan `ckpLoadTaskForm()`
+(IKI, rentang tanggal, subjudul CKP). `duplicateTask(id)` membuka form kosong, mengisinya dari task
+asal, dan menandai `dupSourceId` supaya salinan diletakkan tepat di bawah aslinya saat Save.
+
+## Aturan menambah kode
+
+- Warna baru: tambahkan variabel di `css/tema.css` (versi gelap **dan** terang), lalu pakai `var(--…)`.
+- Aturan untuk HP di `css/hp.css`, bukan di file lain.
+- File baru di `css/` atau `js/`: daftarkan di `index.html` **dan** di `ASSETS` dalam `sw.js`.
+- Setiap rilis: naikkan `CACHE_NAME` di `sw.js` dan `APP_VERSION` di `js/main.js`.
+- Jangan ubah kunci localStorage, nama database IndexedDB, tabel, atau bucket tanpa migrasi —
+  perangkat dengan versi lama harus tetap bisa sinkron.
+- Komentar dan nama baru berbahasa Indonesia.

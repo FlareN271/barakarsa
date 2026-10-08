@@ -1,0 +1,290 @@
+/* ============================================================
+   tampilan.css — Board (per status), Kalender bulanan, Reporting
+   ============================================================ */
+
+/* Tombol navigasi kecil (‹ › Hari ini), dipakai Board dan Kalender */
+.calendar-nav-btn {
+    background: var(--hover);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.calendar-nav-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* ---------- Board ---------- */
+.board-period {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.board-period select {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.4rem;
+    color: var(--text-primary);
+    padding: 0.4rem 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* ‹ › nonaktif saat "Semua periode" */
+.board-period .calendar-nav-btn.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.board-period-count {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.board-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.board-column {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+}
+
+.board-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.board-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.board-card {
+    background: var(--hover);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.85rem;
+    cursor: move;
+    transition: all 0.2s ease;
+}
+
+.board-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+}
+
+.board-card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    word-break: break-word;
+}
+
+.board-card-meta {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    font-size: 0.7rem;
+}
+
+.board-card-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+/* ---------- Kalender bulanan ----------
+   Setiap minggu adalah grid 7 kolom; baris 1 = nomor tanggal,
+   baris berikutnya = "jalur" task (--cal-lane), lalu "+n lagi". */
+.cal2 {
+    --cal-lane: 26px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+}
+
+.cal2-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+}
+
+.cal2-title { font-size: 1.25rem; font-weight: 700; }
+
+.cal2-nav { display: flex; gap: 0.35rem; align-items: center; }
+
+.cal2-jump {
+    background: var(--bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 0.4rem;
+    padding: 0.3rem 0.4rem;
+    font-size: 0.8rem;
+    color-scheme: inherit;
+}
+
+.cal2-dow {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.cal2-week {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    min-height: 8.5rem;
+    border-bottom: 1px solid var(--border-color);
+    row-gap: 3px;
+}
+
+.cal2-day {
+    border-right: 1px solid var(--border-color);
+    padding: 0.3rem 0.45rem;
+    text-align: right;
+    cursor: pointer;
+}
+
+.cal2-day:nth-child(7) { border-right: none; }
+.cal2-day:first-child { border-left: none; }
+.cal2-day.weekend { background: var(--tint-weak); }
+.cal2-day:hover { background: var(--tint-hover); }
+
+.cal2-num {
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 1.6rem;
+    height: 1.6rem;
+    line-height: 1.6rem;
+    text-align: center;
+    border-radius: 999px;
+    padding: 0 0.3rem;
+}
+
+.cal2-day.other .cal2-num { color: var(--text-faint); }
+
+.cal2-day.today .cal2-num {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+/* --pc = warna project task */
+.cal2-ev {
+    z-index: 1;
+    margin: 0 4px;
+    background: var(--hover);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--pc);
+    border-radius: 0.45rem;
+    padding: 0 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: calc(var(--cal-lane) - 2px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    align-self: stretch;
+}
+
+.cal2-ev:hover { filter: brightness(1.2); }
+.cal2-ev.done { opacity: 0.5; text-decoration: line-through; }
+.cal2-ev.cont-l { border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: 0; }
+.cal2-ev.cont-r { border-top-right-radius: 0; border-bottom-right-radius: 0; margin-right: 0; }
+
+.cal2-time {
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-right: 0.3rem;
+}
+
+.cal2-more {
+    z-index: 1;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    padding: 0 0.5rem;
+    cursor: pointer;
+    align-self: center;
+}
+
+.cal2-more:hover { color: var(--text-primary); text-decoration: underline; }
+
+/* Daftar task satu tanggal (klik "+n lagi") */
+.cal2-pop-wrap {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    z-index: 1500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.cal2-pop {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    width: min(360px, 100%);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.cal2-pop-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.cal2-pop-head .modal-close { position: static; }
+
+.cal2-pop-item {
+    padding: 0.55rem 0.7rem;
+    background: var(--hover);
+    border-radius: 0.45rem;
+    margin-bottom: 0.4rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.cal2-pop-item.done { opacity: 0.55; text-decoration: line-through; }
+
+.cal2-pop-add {
+    margin-top: 0.6rem;
+    width: 100%;
+}
+
+/* ---------- Reporting ---------- */
+#topQuadrant { font-size: 2rem; }

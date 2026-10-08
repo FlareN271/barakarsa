@@ -1,22 +1,44 @@
-// BARAKARSA service worker — v3.2
+// BARAKARSA service worker — v3.2.1
 // Strategi: tampilkan dari cache dulu (cepat, juga saat sinyal lemah atau offline),
 // lalu perbarui cache di belakang layar. Kalau index.html di server berubah,
 // halaman diberi tahu supaya bisa menawarkan "Muat ulang".
+//
+// Setiap file baru di css/ atau js/ WAJIB ditambahkan ke ASSETS, dan nama
+// CACHE_NAME dinaikkan setiap rilis, supaya aplikasi tetap jalan offline.
 
-const CACHE_NAME = 'barakarsa-v3.2';
+const CACHE_NAME = 'barakarsa-v3.2.1';
 const APP_SHELL = './index.html';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './css/tema.css',
+  './css/dasar.css',
+  './css/komponen.css',
+  './css/tampilan.css',
+  './css/ckp.css',
+  './css/cetak.css',
+  './css/hp.css',
+  './js/data.js',
+  './js/sinkron.js',
+  './js/tema.js',
+  './js/tampilan.js',
+  './js/form-task.js',
+  './js/project-label.js',
+  './js/bukti.js',
+  './js/ckp.js',
+  './js/ekspor.js',
+  './js/pwa.js',
+  './js/main.js'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
+      // cache: 'reload' = ambil langsung dari server, bukan dari cache HTTP browser
+      .then((cache) => cache.addAll(ASSETS.map((url) => new Request(url, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
       .catch(() => self.skipWaiting())
   );
