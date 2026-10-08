@@ -81,13 +81,13 @@ function buildCSV() {
 function exportToJSON() {
     const data = { tasks, projects, labels, exportDate: new Date().toISOString() };
     const json = JSON.stringify(data, null, 2);
-    const filename = `barakarsa-backup-${new Date().toISOString().split('T')[0]}.json`;
+    const filename = `barakarsa-backup-${todayISO()}.json`;
     deliverExport(json, filename, 'application/json', 'JSON');
 }
 
 function exportToCSV() {
     const csv = buildCSV();
-    const filename = `barakarsa-backup-${new Date().toISOString().split('T')[0]}.csv`;
+    const filename = `barakarsa-backup-${todayISO()}.csv`;
     deliverExport(csv, filename, 'text/csv', 'CSV');
 }
 

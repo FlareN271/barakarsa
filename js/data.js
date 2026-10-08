@@ -52,7 +52,9 @@ function loadData() {
     normalizeOrder();
     initSyncSnapshot();
     primeLastStamp();
-    if (migrate31()) saveData();
+    // Simpan (dan sinkronkan) bila ada yang dimigrasi atau task yang belum bernomor urutan
+    const migrated = migrate31();
+    if (migrated || hasMissingOrder()) saveData();
 }
 
 // Tulis seluruh data ke localStorage apa adanya (tanpa menandai perubahan)
@@ -63,24 +65,59 @@ function writeStore() {
 }
 
 // Simpan setelah pengguna mengubah sesuatu. Urutannya penting:
-// 1) catat/hapus waktu selesai, 2) beri cap updatedAt pada item yang berubah
-//    dan tombstone pada item yang hilang, 3) tulis, 4) jadwalkan sinkron.
+// 1) catat/hapus waktu selesai, 2) beri nomor urutan pada task baru,
+// 3) beri cap updatedAt pada item yang berubah dan tombstone pada item
+//    yang hilang, 4) tulis, 5) jadwalkan sinkron.
 function saveData() {
     trackCompletion();
+    fillMissingOrder();
     stampChanges();
     writeStore();
     scheduleSync();
 }
 
+// ---------- Nomor urutan (order) ----------
 // Setiap task membawa angka "order" supaya urutannya bertahan saat lewat
 // database (baris di database tidak punya urutan bawaan).
+
+const hasOrder = t => typeof t.order === 'number' && Number.isFinite(t.order);
+
+function hasMissingOrder() {
+    return tasks.some(t => !hasOrder(t));
+}
+
+// Urutkan task menurut order. Bila ada task yang belum bernomor, urutan
+// tersimpan dibiarkan apa adanya; fillMissingOrder() memberi nomor sesuai
+// posisinya saat data disimpan. (Sebelum 3.2.3 semua task dinomori ulang
+// di perangkat itu saja, sehingga nomor di tiap perangkat bisa berbeda.)
 function normalizeOrder() {
-    const needsNumbering = tasks.some(t => typeof t.order !== 'number');
-    if (needsNumbering) {
-        tasks.forEach((t, i) => { t.order = (i + 1) * 1000; });
-    } else {
-        tasks.sort((a, b) => a.order - b.order);
+    if (hasMissingOrder()) return;
+    tasks.sort((a, b) => a.order - b.order);
+}
+
+// Beri nomor pada task yang belum punya (task baru, data lama, impor, atau
+// task dari perangkat yang masih 3.2.2), di antara tetangganya di daftar.
+// Task baru selalu ada di akhir daftar, jadi mendapat nomor terbesar.
+function fillMissingOrder() {
+    if (!hasMissingOrder()) return;
+    let i = 0;
+    while (i < tasks.length) {
+        if (hasOrder(tasks[i])) { i++; continue; }
+        let j = i;
+        while (j < tasks.length && !hasOrder(tasks[j])) j++;       // tasks[i..j-1] belum bernomor
+        const count = j - i;
+        const prev = i > 0 ? tasks[i - 1].order : null;
+        const next = j < tasks.length ? tasks[j].order : null;
+        let lo, hi;
+        if (prev === null && next === null) { lo = 0; hi = (count + 1) * 1000; }
+        else if (prev === null) { hi = next; lo = next - (count + 1) * 1000; }
+        else if (next === null || next <= prev) { lo = prev; hi = prev + (count + 1) * 1000; }
+        else { lo = prev; hi = next; }
+        const step = (hi - lo) / (count + 1);
+        for (let k = 0; k < count; k++) tasks[i + k].order = lo + step * (k + 1);
+        i = j;
     }
+    tasks.sort((a, b) => a.order - b.order);
 }
 
 // ---------- Waktu selesai (completedAt) ----------
@@ -148,6 +185,9 @@ function isCkpTask(task) {
 }
 
 // ---------- Tanggal ----------
+// Semua "hari ini" memakai tanggal lokal perangkat (WITA), bukan UTC.
+// Sebelum 3.2.3, Today/Upcoming dan tanggal bawaan form memakai UTC, sehingga
+// antara pukul 00.00–07.59 WITA aplikasi masih menganggap hari kemarin.
 function todayISO() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -183,8 +223,9 @@ function fmtPendek(iso) {
     return new Date(iso + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
 }
 
-// Tanggal hari ini menurut UTC (dipakai Today/Upcoming dan isi bawaan form, seperti sejak awal).
-// Catatan: berbeda dengan todayISO() yang memakai tanggal lokal.
-function todayUTC() {
-    return new Date().toISOString().split('T')[0];
+// Tanggal Minggu awal pekan ini (tanggal lokal), untuk "This Week Done"
+function weekStartISO() {
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay());
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }

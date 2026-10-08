@@ -77,15 +77,15 @@ function closeTaskModalOnOverlay(event) {
 }
 
 function setDefaultDate() {
-    document.getElementById('taskDate').value = todayUTC();
+    document.getElementById('taskDate').value = todayISO();
 }
 
 function renderTaskLabels() {
     document.getElementById('taskLabelsForm').innerHTML = labels.map(label => `
         <label class="label-checkbox">
             <input type="checkbox" name="label-${label.id}" value="${label.id}">
-            <span class="label-checkbox-dot" style="background: ${label.color};"></span>
-            ${label.name}
+            <span class="label-checkbox-dot" style="background: ${esc(label.color)};"></span>
+            ${esc(label.name)}
         </label>
     `).join('');
 }
@@ -98,7 +98,7 @@ function renderProjectSelect() {
     const select = document.getElementById('taskProject');
     const currentValue = select.value;
     select.innerHTML = '<option value="">No Project</option>' + projects.map(p =>
-        `<option value="${p.id}">${p.name}</option>`
+        `<option value="${p.id}">${esc(p.name)}</option>`
     ).join('');
     select.value = currentValue;
 }

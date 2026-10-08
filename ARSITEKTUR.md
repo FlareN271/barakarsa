@@ -71,6 +71,7 @@ Bentuk task (field yang dipakai):
 pengguna mengubah sesuatu
   → saveData()                         data.js
       trackCompletion()                isi/hapus completedAt
+      fillMissingOrder()               beri nomor urutan pada task yang belum punya
       stampChanges()                   sinkron.js: bandingkan dengan snapshot,
                                        beri updatedAt baru, catat tombstone bila hilang
       writeStore()                     localStorage barakarsa_v6
@@ -81,7 +82,7 @@ syncNow()                              sinkron.js
                 pakai baris server yang lebih baru → simpan & render bila ada yang datang
   evProcessQueue()                     bukti.js: hapus foto terbuang, unggah foto tertunda
   ckpSyncSettings()                    ckp.js: katalog/profil/catatan, updatedAt terbaru menang
-  migrate31()                          data dari perangkat lama ikut dimigrasi
+  migrate31(), nomor urutan            data dari perangkat lama ikut dimigrasi & dinomori
 ```
 
 `syncNow()` juga jalan saat aplikasi kembali dibuka, saat online lagi, dan tiap 60 detik.
@@ -115,4 +116,7 @@ asal, dan menandai `dupSourceId` supaya salinan diletakkan tepat di bawah asliny
 - Setiap rilis: naikkan `CACHE_NAME` di `sw.js` dan `APP_VERSION` di `js/main.js`.
 - Jangan ubah kunci localStorage, nama database IndexedDB, tabel, atau bucket tanpa migrasi —
   perangkat dengan versi lama harus tetap bisa sinkron.
+- Tanggal "hari ini" selalu `todayISO()` (tanggal lokal). Jangan memakai `new Date().toISOString()` untuk tanggal kalender; itu UTC dan bisa mundur sehari di WITA.
+- Teks dari pengguna (judul, description, nama project/label, isi katalog) selalu lewat `esc()` sebelum dimasukkan ke HTML.
+- Task baru tidak perlu diberi `order` sendiri: `saveData()` memberi nomor pada task yang belum punya.
 - Komentar dan nama baru berbahasa Indonesia.

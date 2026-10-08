@@ -117,7 +117,7 @@ function renderFilterPanel(panelName) {
         <div class="filter-section">
             <div class="filter-section-title">Labels</div>
             <div class="filter-options">
-                ${labels.map(label => opt('labels', label.id, label.name)).join('')}
+                ${labels.map(label => opt('labels', label.id, esc(label.name))).join('')}
             </div>
         </div>` : ''}
     `;
@@ -208,6 +208,8 @@ function performGlobalSearch(query) {
 
 // ---------- Kartu task (List) ----------
 
+// Teks dari pengguna (judul, description, nama project/label) selalu lewat esc(),
+// supaya karakter seperti < > & tampil apa adanya, bukan dibaca sebagai HTML.
 function createTaskHTML(task) {
     const prio = PRIORITY_LABEL[task.quadrant];
     const project = task.project ? projects.find(p => p.id == task.project) : null;
@@ -232,13 +234,13 @@ function createTaskHTML(task) {
             <span class="drag-handle" title="Tahan dan geser untuk mengubah urutan">⠿</span>
             <input type="checkbox" class="task-checkbox" ${task.status === 'completed' ? 'checked' : ''} onchange="toggleStatus(${task.id})">
             <div class="task-content">
-                <div class="task-title" onclick="editTask(${task.id})">${task.title}</div>
-                ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                <div class="task-title" onclick="editTask(${task.id})">${esc(task.title)}</div>
+                ${task.description ? `<div class="task-description">${esc(task.description)}</div>` : ''}
                 <div class="task-meta">${ikiBadge}${evBadgeHTML(task)}
-                    ${project ? `<span class="badge"><span class="badge-dot" style="background: ${project.color};"></span>${project.name}</span>` : ''}
+                    ${project ? `<span class="badge"><span class="badge-dot" style="background: ${esc(project.color)};"></span>${esc(project.name)}</span>` : ''}
                     ${task.labels.map(lid => {
                         const label = labels.find(l => l.id === lid);
-                        return `<span class="badge" style="border-color: ${label.color};"><span class="badge-dot" style="background: ${label.color};"></span>${label.name}</span>`;
+                        return `<span class="badge" style="border-color: ${esc(label.color)};"><span class="badge-dot" style="background: ${esc(label.color)};"></span>${esc(label.name)}</span>`;
                     }).join('')}
                     ${prio && task.status !== 'completed' ? `<span class="badge prio-badge prio-${task.quadrant}" title="${prio.long}">⚑ ${prio.short}</span>` : ''}
                     <span class="badge">${STATUS_EMOJI[task.status]} ${STATUS_LABEL[task.status]}</span>
@@ -296,11 +298,11 @@ function createBoardCard(task) {
         : (evIsMissing(task) ? '<span title="Bukti belum ada">⚠️</span>' : '');
     return `
         <div class="board-card">
-            <div class="board-card-title" onclick="editTask(${task.id})">${task.title}</div>
+            <div class="board-card-title" onclick="editTask(${task.id})">${esc(task.title)}</div>
             <div class="board-card-meta">${evMark}
                 ${task.labels.map(lid => {
                     const label = labels.find(l => l.id === lid);
-                    return `<span class="board-card-dot" style="background: ${label.color};"></span>`;
+                    return `<span class="board-card-dot" style="background: ${esc(label.color)};"></span>`;
                 }).join('')}
                 ${task.attachment ? '<span>🔗</span>' : ''}
             </div>
@@ -319,7 +321,7 @@ function renderBoardView(container, taskList) {
 
     // Pilihan bulan: bulan yang punya task, ditambah bulan ini
     const monthsWithTasks = [...new Set(taskList.filter(t => t.date).map(t => t.date.slice(0, 7)))];
-    const nowKey = new Date().toISOString().slice(0, 7);
+    const nowKey = todayISO().slice(0, 7);
     if (!monthsWithTasks.includes(nowKey)) monthsWithTasks.push(nowKey);
     monthsWithTasks.sort();
 
@@ -484,9 +486,9 @@ function renderProjects() {
     document.getElementById('projectsList').innerHTML = projects.map(project => {
         const count = tasks.filter(t => t.project == project.id).length;
         return `
-            <div class="project-item ${currentProjectFilter == project.id ? 'active' : ''}" onclick="filterByProject(${project.id})" style="--pc: ${project.color};">
-                <span class="project-dot" style="background: ${project.color};"></span>
-                <span class="project-name">${project.name}</span>
+            <div class="project-item ${currentProjectFilter == project.id ? 'active' : ''}" onclick="filterByProject(${project.id})" style="--pc: ${esc(project.color)};">
+                <span class="project-dot" style="background: ${esc(project.color)};"></span>
+                <span class="project-name">${esc(project.name)}</span>
                 ${project.ckp ? '<span class="project-ckp-tag" title="Project CKP">CKP</span>' : ''}
                 <span class="project-count">${count}</span>
                 <button class="project-menu-btn" onclick="showProjectMenu(${project.id}, event)">⋯</button>
@@ -503,7 +505,7 @@ function updateStats() {
 }
 
 function updateSidebarCounts() {
-    const today = todayUTC();
+    const today = todayISO();
     document.getElementById('inboxCount').textContent = tasks.filter(t => t.isInbox && t.status !== 'completed').length;
     document.getElementById('todayCount').textContent = tasks.filter(t => t.date === today && t.status !== 'completed').length;
     document.getElementById('allCount').textContent = tasks.filter(t => t.status !== 'completed').length;
@@ -518,9 +520,8 @@ function renderReporting() {
     const total = reportTasks.length;
     const rate = total ? Math.round((completed / total) * 100) : 0;
 
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-    const weekCompleted = reportTasks.filter(t => new Date(t.date) >= weekStart && t.status === 'completed').length;
+    const weekStart = weekStartISO();
+    const weekCompleted = reportTasks.filter(t => t.date && t.date >= weekStart && t.status === 'completed').length;
 
     const quadrants = {};
     reportTasks.forEach(t => { quadrants[t.quadrant] = (quadrants[t.quadrant] || 0) + 1; });
@@ -547,7 +548,7 @@ function updateAvgCompletion() {
 
 function render() {
     updateStats();
-    const today = todayUTC();
+    const today = todayISO();
     const undone = t => t.status !== 'completed';
 
     if (currentView === 'dashboard') {
@@ -566,7 +567,7 @@ function render() {
             ? list.map(createTaskHTML).join('') + ADD_TASK_INLINE
             : emptyState('📅', 'No tasks for today', '➕ Add task for today');
     } else if (currentView === 'upcoming') {
-        const list = getFilteredTasks(tasks.filter(t => new Date(t.date) > new Date() && undone(t)));
+        const list = getFilteredTasks(tasks.filter(t => t.date && t.date > today && undone(t)));
         document.getElementById('upcomingList').innerHTML = list.length
             ? list.map(createTaskHTML).join('') + ADD_TASK_INLINE
             : emptyState('📆', 'No upcoming tasks', '➕ Add upcoming task');
@@ -578,8 +579,8 @@ function render() {
         document.getElementById('filtersList').innerHTML = labels.length ? labels.map(label => `
             <div class="label-row">
                 <div class="label-row-left">
-                    <span class="label-row-dot" style="background: ${label.color};"></span>
-                    <span class="label-row-name">${label.name}</span>
+                    <span class="label-row-dot" style="background: ${esc(label.color)};"></span>
+                    <span class="label-row-name">${esc(label.name)}</span>
                 </div>
                 <div class="label-row-right">
                     <span class="label-row-count">${tasks.filter(t => t.labels.includes(label.id)).length}</span>
