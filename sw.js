@@ -1,9 +1,9 @@
-// BARAKARSA service worker — v3.1
+// BARAKARSA service worker — v3.2
 // Strategi: tampilkan dari cache dulu (cepat, juga saat sinyal lemah atau offline),
 // lalu perbarui cache di belakang layar. Kalau index.html di server berubah,
 // halaman diberi tahu supaya bisa menawarkan "Muat ulang".
 
-const CACHE_NAME = 'barakarsa-v3.1';
+const CACHE_NAME = 'barakarsa-v3.2';
 const APP_SHELL = './index.html';
 const ASSETS = [
   './',
