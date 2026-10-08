@@ -456,6 +456,14 @@ body.is-sorted .drag-handle { display: none; }
 .modal-simple { grid-template-columns: 1fr; }
 .modal-body { padding: 2rem; }
 
+/* Isi panjang (mis. Help di layar pendek) digulir di dalam kotak, tidak meluber.
+   Tombol ✕ tetap di tempat karena posisinya mengikuti .modal-content. */
+.modal-simple .modal-body {
+    max-height: inherit;   /* 90vh, di HP 85vh */
+    overflow-y: auto;
+    border-radius: inherit;
+}
+
 #authModal .modal-content { max-width: 420px; }
 #projectModal .modal-content,
 #labelModal .modal-content { max-width: 500px; }
