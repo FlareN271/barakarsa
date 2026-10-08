@@ -1431,6 +1431,37 @@
         .fab-add:active { transform: scale(0.93); }
         .update-toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%); z-index: 3200; display: flex; gap: 0.75rem; align-items: center; background: var(--dark-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.6rem 0.75rem 0.6rem 1rem; border-radius: 0.6rem; box-shadow: 0 6px 20px rgba(0,0,0,0.45); font-size: 0.88rem; max-width: 92vw; }
 
+        /* Tombol tambah task melayang: pil di desktop, bulat di HP */
+        .fab-add { display: flex; width: auto; height: 52px; border-radius: 26px; padding: 0 1.3rem 0 1.05rem; gap: 0.45rem; font-size: 1rem; font-weight: 600; }
+        .fab-add .fab-plus { font-size: 1.6rem; font-weight: 300; line-height: 1; margin-top: -2px; }
+        .fab-add:hover { background: #b91c1c; }
+        .content { padding-bottom: 6rem; }
+
+        .project-item.active { background: var(--dark-hover); color: var(--text-primary); border-color: var(--pc, var(--accent-red)); font-weight: 600; }
+
+        /* Form task: tombol di footer selebar modal */
+        #taskModal .modal-content { grid-template-rows: minmax(0, 1fr) auto; height: min(88vh, 900px); max-height: none; overflow: hidden; }
+        #taskModal .modal-left, #taskModal .modal-right { max-height: none; min-height: 0; }
+        .task-modal-footer { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.85rem 1.5rem; border-top: 1px solid var(--border-color); background: var(--dark-card); border-radius: 0 0 0.75rem 0.75rem; }
+        .tmf-group { display: flex; gap: 0.5rem; }
+        .task-modal-footer .btn { padding: 0.6rem 1.1rem; font-size: 0.92rem; white-space: nowrap; }
+        .task-modal-footer .btn-primary { min-width: 7rem; }
+        .tmf-danger { color: #f87171 !important; border-color: rgba(248,113,113,0.4) !important; background: transparent !important; }
+        .tmf-danger:hover { background: rgba(239,68,68,0.12) !important; }
+
+        @media (max-width: 768px) {
+            .fab-add { width: 56px; height: 56px; border-radius: 50%; padding: 0; }
+            .fab-add .fab-plus { font-size: 2rem; }
+            .fab-add .fab-label { display: none; }
+            #taskModal .modal-content { display: flex; flex-direction: column; height: auto; max-height: 92vh; overflow-y: auto; }
+            #taskModal .modal-left, #taskModal .modal-right { max-height: none; overflow: visible; flex-shrink: 0; }
+            .task-modal-footer { position: sticky; bottom: 0; z-index: 5; padding: 0.65rem 0.75rem calc(0.65rem + env(safe-area-inset-bottom, 0px)); border-radius: 0; }
+            .task-modal-footer .btn { padding: 0.55rem 0.85rem; }
+        }
+        @media (max-width: 420px) {
+            .tmf-label { display: none; }
+        }
+
         @media (max-width: 768px) {
             .header { padding: 0.45rem 0.7rem !important; padding-top: calc(0.45rem + env(safe-area-inset-top, 0px)) !important; }
             .header-title { font-size: 1.05rem !important; }
@@ -1812,12 +1843,18 @@
                         <input type="url" id="taskAttachment" placeholder="https://drive.google.com/...">
                     </div>
 
-                    <div class="form-buttons">
-                        <button type="submit" class="btn btn-primary">💾 Save</button>
-                        <button type="button" class="btn btn-secondary" id="taskDupBtn" style="display: none;" title="Buat salinan task ini" onclick="duplicateTask(editingTaskId)">⧉ Duplikat</button>
-                        <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
-                    </div>
                 </form>
+            </div>
+
+            <div class="task-modal-footer">
+                <div class="tmf-group">
+                    <button type="button" class="btn btn-secondary tmf-danger" id="taskDelBtn" style="display: none;" title="Hapus task ini" onclick="deleteTaskFromModal()">🗑️<span class="tmf-label"> Hapus</span></button>
+                    <button type="button" class="btn btn-secondary" id="taskDupBtn" style="display: none;" title="Buat salinan task ini" onclick="duplicateTask(editingTaskId)">⧉<span class="tmf-label"> Duplikat</span></button>
+                </div>
+                <div class="tmf-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                    <button type="submit" form="taskDetailsForm" class="btn btn-primary">💾 Save</button>
+                </div>
             </div>
         </div>
     </div>
@@ -3347,7 +3384,7 @@
             container.innerHTML = projects.map(project => {
                 const count = tasks.filter(t => t.project == project.id).length;
                 return `
-                    <div class="project-item" onclick="filterByProject(${project.id})">
+                    <div class="project-item ${currentProjectFilter == project.id ? 'active' : ''}" onclick="filterByProject(${project.id})" style="--pc: ${project.color};">
                         <span class="project-dot" style="background: ${project.color};"></span>
                         <span class="project-name">${project.name}</span>
                         ${project.ckp ? '<span class="project-ckp-tag" title="Project CKP">CKP</span>' : ''}
@@ -3358,12 +3395,10 @@
             }).join('');
         }
 
+        // v3.1: klik project selalu menampilkan project itu (dulu klik kedua membatalkan
+        // filter, sehingga klik ganda terasa "bolak-balik"). Keluar lewat menu Dashboard.
         function filterByProject(projectId) {
-            if (currentProjectFilter === projectId) {
-                currentProjectFilter = null;
-            } else {
-                currentProjectFilter = projectId;
-            }
+            currentProjectFilter = projectId;
             switchView('dashboard', false);
         }
 
@@ -5860,10 +5895,32 @@
             btn.type = 'button';
             btn.title = 'Tambah task';
             btn.setAttribute('aria-label', 'Tambah task');
-            btn.textContent = '+';
+            btn.title = 'Tambah task (tombol Q)';
+            btn.innerHTML = '<span class="fab-plus">+</span><span class="fab-label">Add task</span>';
             btn.onclick = (e) => { e.stopPropagation(); openTaskModal(); };
             document.body.appendChild(btn);
         }
+
+        // ---------- Hapus task dari form edit ----------
+        function deleteTaskFromModal() {
+            if (!editingTaskId) return;
+            const t = tasks.find(x => x.id === editingTaskId);
+            const photos = t && Array.isArray(t.photos) ? t.photos.length : 0;
+            openConfirmDialog('task', editingTaskId,
+                'Hapus task ini?' + (photos ? ` ${photos} foto bukti dukungnya juga ikut terhapus.` : ''));
+        }
+
+        // ---------- Pintasan keyboard: Q = tambah task (seperti Todoist) ----------
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'q' && e.key !== 'Q') return;
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            const a = document.activeElement;
+            if (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
+            if (document.querySelector('.modal.active') || document.getElementById('ckpPrint')) return;
+            e.preventDefault();
+            openTaskModal();
+            setTimeout(() => document.getElementById('taskTitle').focus(), 50);
+        });
 
         // ---------- Shortcut "Tambah task cepat" (tekan lama ikon aplikasi) ----------
         function handleLaunchParams() {
@@ -5931,6 +5988,7 @@
                 dupSourceId = null;
                 const r = _openTaskModal.apply(this, arguments);
                 document.getElementById('taskDupBtn').style.display = 'none';
+                document.getElementById('taskDelBtn').style.display = 'none';
                 return r;
             };
 
@@ -5939,6 +5997,7 @@
                 dupSourceId = null;
                 const r = _editTask.apply(this, arguments);
                 document.getElementById('taskDupBtn').style.display = '';
+                document.getElementById('taskDelBtn').style.display = '';
                 return r;
             };
 
@@ -5988,8 +6047,36 @@
             render = function () {
                 const r = _render.apply(this, arguments);
                 if (currentView === 'reporting') updateAvgCompletion();
+                // Saat sedang melihat satu project: judul header = nama project,
+                // dan menu Dashboard tidak ikut tampak aktif (klik Dashboard = keluar dari project)
+                if (currentView === 'dashboard') {
+                    const p = currentProjectFilter != null ? projects.find(x => x.id == currentProjectFilter) : null;
+                    if (currentProjectFilter != null && !p) currentProjectFilter = null;
+                    document.getElementById('headerTitle').textContent = p ? '📁 ' + p.name : '📊 Dashboard';
+                    const dashItem = document.querySelector('.sidebar-item[data-view="dashboard"]');
+                    if (dashItem) dashItem.classList.toggle('active', !p);
+                }
                 return r;
             };
+
+            // Hapus dari form edit: tutup form setelah task terhapus
+            const _deleteTask = deleteTask;
+            deleteTask = function (id) {
+                const r = _deleteTask.apply(this, arguments);
+                if (editingTaskId === id && document.getElementById('taskModal').classList.contains('active')) {
+                    closeTaskModal();
+                    evToast('Task dihapus.');
+                }
+                return r;
+            };
+
+            // HP: tutup sidebar setelah memilih menu atau project
+            document.getElementById('sidebar').addEventListener('click', (e) => {
+                if (window.innerWidth > 768) return;
+                if (e.target.closest('.sidebar-item, .project-item')) {
+                    document.getElementById('sidebar').classList.add('collapsed');
+                }
+            });
 
             const _syncNow = syncNow;
             syncNow = async function () {
