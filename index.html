@@ -11,13 +11,33 @@
 
     <!-- PWA -->
     <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#16110e">
     <meta name="description" content="To-do list pribadi dengan integrasi CKP">
     <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
     <link rel="apple-touch-icon" href="./icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BARAKARSA">
+
+    <!-- v3.2: font Bara (tidak menahan tampilan; tanpa sinyal tetap pakai font sistem) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+
+    <script>
+        // v3.2: pasang tema sebelum halaman digambar, supaya tidak berkedip
+        (function () {
+            var pref = 'auto';
+            try { pref = localStorage.getItem('barakarsa_theme') || 'auto'; } catch (e) {}
+            var t = (pref === 'light' || pref === 'dark') ? pref
+                : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            document.documentElement.setAttribute('data-theme', t);
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.setAttribute('content', t === 'light' ? '#fbf7f4' : '#16110e');
+            var s = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            if (s) s.setAttribute('content', t === 'light' ? 'default' : 'black-translucent');
+        })();
+    </script>
 
     <style>
         * {
@@ -26,22 +46,91 @@
             box-sizing: border-box;
         }
 
+        /* v3.2 — tema Bara. Nama variabel lama (--dark-*, --accent-red) dipertahankan
+           supaya seluruh kode lama ikut berganti tema; nilainya yang berubah. */
         :root {
-            --dark-bg: #1a1a1a;
-            --dark-card: #2d2d2d;
-            --dark-hover: #3a3a3a;
-            --text-primary: #e0e0e0;
-            --text-secondary: #a0a0a0;
-            --accent-red: #dc2626;
-            --accent-red-light: #ef4444;
-            --status-progress: #3b82f6;
-            --status-done: #10b981;
-            --border-color: #404040;
+            color-scheme: dark;
+            --dark-bg: #16110e;
+            --dark-card: #231b17;
+            --dark-hover: #2e231e;
+            --sidebar-bg: #1d1612;
+            --field-bg: #16110e;
+            --text-primary: #f4ebe5;
+            --text-secondary: #b8a497;
+            --text-faint: #7d6a5f;
+            --accent-red: #cf4219;
+            --accent-red-light: #ff8a5c;
+            --accent-hover: #b8380f;
+            --accent-text: #ff8a5c;
+            --accent-soft: rgba(228, 83, 42, 0.18);
+            --accent-soft-text: #ff9a72;
+            --accent-ring: rgba(228, 83, 42, 0.25);
+            --on-accent: #ffffff;
+            --status-progress: #6ea8fe;
+            --status-done: #3ccf8e;
+            --border-color: #3b2d26;
+            --warn: #fbbf6a;
+            --warn-bg: rgba(245, 158, 11, 0.10);
+            --warn-border: rgba(245, 158, 11, 0.40);
+            --iki: #f6b48f;
+            --iki-border: rgba(246, 180, 143, 0.45);
+            --danger: #ff6b5e;
+            --danger-border: rgba(255, 107, 94, 0.45);
+            --danger-soft: rgba(255, 107, 94, 0.12);
+            --p1: #ff6b5e; --p1-border: rgba(255, 107, 94, 0.45);
+            --p2: #f5a524; --p2-border: rgba(245, 165, 36, 0.45);
+            --p3: #6ea8fe; --p3-border: rgba(110, 168, 254, 0.45);
+            --p4: #a8998f; --p4-border: rgba(168, 153, 143, 0.45);
+            --overlay: rgba(8, 5, 4, 0.72);
+            --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.35);
+            --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.5);
+            --tint-weak: rgba(255, 255, 255, 0.025);
+            --tint-hover: rgba(255, 255, 255, 0.05);
             --sidebar-width: 320px;
         }
 
+        :root[data-theme="light"] {
+            color-scheme: light;
+            --dark-bg: #fbf7f4;
+            --dark-card: #ffffff;
+            --dark-hover: #f6eee8;
+            --sidebar-bg: #f5ede7;
+            --field-bg: #ffffff;
+            --text-primary: #2b1d16;
+            --text-secondary: #76604f;
+            --text-faint: #a38f82;
+            --accent-red: #c9411a;
+            --accent-red-light: #c9411a;
+            --accent-hover: #a8350f;
+            --accent-text: #c9411a;
+            --accent-soft: #fbe2d6;
+            --accent-soft-text: #a8350f;
+            --accent-ring: rgba(201, 65, 26, 0.18);
+            --on-accent: #ffffff;
+            --status-progress: #2f6fd0;
+            --status-done: #1f9d63;
+            --border-color: #eadbd0;
+            --warn: #8a4b00;
+            --warn-bg: #fff4e0;
+            --warn-border: #f3cf8f;
+            --iki: #9a3d14;
+            --iki-border: #efc2aa;
+            --danger: #c8352a;
+            --danger-border: #efb8b2;
+            --danger-soft: #fdecea;
+            --p1: #c8352a; --p1-border: #efb8b2;
+            --p2: #a65c06; --p2-border: #ecd0a6;
+            --p3: #2f6fd0; --p3-border: #bcd2f3;
+            --p4: #7f6f65; --p4-border: #ded2ca;
+            --overlay: rgba(43, 29, 22, 0.45);
+            --shadow-sm: 0 2px 8px rgba(120, 60, 30, 0.10);
+            --shadow-lg: 0 10px 28px rgba(120, 60, 30, 0.20);
+            --tint-weak: rgba(120, 60, 30, 0.03);
+            --tint-hover: rgba(120, 60, 30, 0.06);
+        }
+
         html, body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: var(--dark-bg);
             color: var(--text-primary);
             line-height: 1.6;
@@ -1481,6 +1570,74 @@
             .task-actions .btn-sm { padding: 0.35rem 0.55rem; }
             .project-menu-btn { visibility: visible; }
         }
+
+        /* ===== v3.2: Tampilan (tema Bara, terang/gelap) ===== */
+        body { background: var(--dark-bg); }
+        ::selection { background: var(--accent-soft); }
+        .sidebar { background: var(--sidebar-bg); }
+        .header { background: var(--dark-bg); }
+        .app-title, .hamburger-btn { color: var(--accent-text); }
+        .sidebar-add-task, .btn-primary, .btn-danger, .fab-add { color: var(--on-accent); }
+        .sidebar-add-task:hover, .btn-primary:hover, .btn-danger:hover, .fab-add:hover { background: var(--accent-hover); box-shadow: var(--shadow-sm); }
+        .sidebar-item:hover { border-color: transparent; }
+        .sidebar-item.active { background: var(--accent-soft); color: var(--accent-soft-text); border-color: transparent; font-weight: 700; }
+        .sidebar-item-count { background: transparent; color: var(--text-secondary); }
+        .sidebar-item.active .sidebar-item-count { background: transparent; color: var(--accent-soft-text); }
+        .project-menu-btn:hover, .project-item:hover .project-menu-btn { color: var(--accent-text); }
+        .stat-number { color: var(--text-primary); }
+        #statDo { color: var(--accent-text); }
+        .stat-card:hover, .task-item:hover, .board-card:hover { box-shadow: var(--shadow-sm); }
+        .search-input, .quick-input, .form-group input, .form-group textarea, .form-group select { background: var(--field-bg); }
+        .search-input:focus, .quick-input:focus, .form-group input:focus, .form-group textarea:focus, .form-group select:focus { box-shadow: 0 0 0 3px var(--accent-ring); }
+        .modal { background: var(--overlay); }
+        .modal-right { background: var(--sidebar-bg); }
+        .modal-content, .confirm-dialog, .project-menu, .ev-toast, .update-toast { box-shadow: var(--shadow-lg); }
+        #toolsMenu { box-shadow: var(--shadow-lg) !important; }
+        .color-option.selected { border-color: var(--text-primary); }
+        .calendar-day.today { background: var(--accent-soft); }
+
+        /* Badge: titik warna untuk project/label supaya terbaca di kedua mode */
+        .badge { background: transparent; }
+        .badge-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+        .prio-do { color: var(--p1); border-color: var(--p1-border); }
+        .prio-schedule { color: var(--p2); border-color: var(--p2-border); }
+        .prio-delegate { color: var(--p3); border-color: var(--p3-border); }
+        .prio-eliminate { color: var(--p4); border-color: var(--p4-border); }
+
+        /* Tombol di kartu task lebih tenang; merah hanya saat disorot */
+        .task-actions .btn { background: transparent; border: 1px solid transparent; color: var(--text-secondary); box-shadow: none; }
+        .task-actions .btn:hover { background: var(--dark-hover); border-color: var(--border-color); color: var(--text-primary); box-shadow: none; }
+        .task-actions .btn-danger:hover { background: var(--danger-soft); border-color: var(--danger-border); }
+
+        /* CKP & bukti dukung */
+        .ev-drop.dragover { border-color: var(--status-done); background: var(--tint-hover); }
+        .badge.ev-missing { color: var(--warn); border-color: var(--warn-border); }
+        .ev-banner { background: var(--warn-bg); border-color: var(--warn-border); }
+        .iki-suggest button { border-color: var(--warn); color: var(--warn); }
+        .badge.iki-badge { color: var(--iki); border-color: var(--iki-border); }
+        .project-ckp-tag { color: var(--iki); border-color: var(--iki-border); }
+        .ckp-stats .warn { color: var(--warn); }
+        .ckp-warnlist a { color: var(--iki); }
+
+        /* Kalender */
+        .cal2-day.weekend { background: var(--tint-weak); }
+        .cal2-day:hover { background: var(--tint-hover); }
+        .cal2-day.other .cal2-num { color: var(--text-faint); }
+        .cal2-day.today .cal2-num { color: var(--on-accent); }
+        .cal2-ev { border-top-color: var(--border-color); border-right-color: var(--border-color); border-bottom-color: var(--border-color); }
+        .cal2-jump { color-scheme: inherit; }
+        .cal2-pop-wrap { background: var(--overlay); }
+        .task-subtitle-input::placeholder { color: var(--text-faint); }
+
+        /* Bahaya: hapus */
+        .tmf-danger { color: var(--danger) !important; border-color: var(--danger-border) !important; }
+        .tmf-danger:hover { background: var(--danger-soft) !important; }
+        .project-menu-item.danger { color: var(--danger); }
+        .project-menu-item.danger:hover { background: var(--danger-soft); }
+
+        /* Pilihan tema di menu ⋯ */
+        .tools-menu-item.is-current { color: var(--accent-soft-text); background: var(--accent-soft); font-weight: 600; }
+        .tools-menu-item.is-current::after { content: '✓'; float: right; }
     </style>
 </head>
 <body>
@@ -1628,6 +1785,11 @@
                             <div class="tools-menu-item" onclick="toolsAction('json')">💾 Export JSON</div>
                             <div class="tools-menu-item" onclick="toolsAction('csv')">📊 Export CSV</div>
                             <div class="tools-menu-item" onclick="toolsAction('import')">📥 Import Backup</div>
+
+                            <div style="padding: 0.7rem 0.75rem 0.4rem; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Tampilan</div>
+                            <div class="tools-menu-item theme-option" data-theme-pref="auto" onclick="toolsAction('theme-auto')">🖥️ Otomatis (ikut perangkat)</div>
+                            <div class="tools-menu-item theme-option" data-theme-pref="light" onclick="toolsAction('theme-light')">☀️ Terang</div>
+                            <div class="tools-menu-item theme-option" data-theme-pref="dark" onclick="toolsAction('theme-dark')">🌙 Gelap</div>
 
                             <div style="padding: 0.7rem 0.75rem 0.4rem; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Lainnya</div>
                             <div class="tools-menu-item" onclick="toolsAction('naraloka')">🌐 Buka Naraloka ↗</div>
@@ -1986,10 +2148,13 @@
                     <p style="margin-bottom: 1rem;"><strong style="color: var(--accent-red);">CKP</strong><br>
                     Task di project bertanda <em>Project CKP</em> (bawaan: KipApp) yang sudah dipilih IKI-nya masuk ke menu ⋯ → CKP Triwulan. Task Title menjadi Uraian Kegiatan, Description menjadi Keterangan/Catatan. Dari sana bisa dibuat Laporan PDF per IKI (lengkap dengan foto bukti dukung) dan Excel rekap CKP.</p>
 
+                    <p style="margin-bottom: 1rem;"><strong style="color: var(--accent-red);">Tampilan</strong><br>
+                    Menu ⋯ → Tampilan: <em>Otomatis</em> mengikuti mode gelap/terang perangkat, atau pilih Terang/Gelap. Pilihan disimpan per perangkat. Laporan PDF CKP selalu putih apa pun temanya.</p>
+
                     <p><strong style="color: var(--accent-red);">Backup</strong><br>
                     Data tersimpan di perangkat ini dan, bila sudah masuk akun, tersinkron lewat server. Export JSON tetap disarankan secara berkala.</p>
 
-                    <p style="margin-top: 1.25rem; font-size: 0.8rem; color: var(--text-secondary);">Barakarsa versi <span id="appVersionLabel">3.1</span></p>
+                    <p style="margin-top: 1.25rem; font-size: 0.8rem; color: var(--text-secondary);">Barakarsa versi <span id="appVersionLabel">3.2</span></p>
                 </div>
             </div>
         </div>
@@ -3015,12 +3180,12 @@
                         <div class="task-title" onclick="editTask(${task.id})">${task.title}</div>
                         ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
                         <div class="task-meta">
-                            ${projectName ? `<span class="badge" style="color: ${projects.find(p => p.id == task.project).color};">📁 ${projectName}</span>` : ''}
+                            ${projectName ? `<span class="badge"><span class="badge-dot" style="background: ${projects.find(p => p.id == task.project).color};"></span>${projectName}</span>` : ''}
                             ${task.labels.map(lid => {
                                 const label = labels.find(l => l.id === lid);
-                                return `<span class="badge" style="border-color: ${label.color}; color: ${label.color};">🏷️ ${label.name}</span>`;
+                                return `<span class="badge" style="border-color: ${label.color};"><span class="badge-dot" style="background: ${label.color};"></span>${label.name}</span>`;
                             }).join('')}
-                            ${prio && task.status !== 'completed' ? `<span class="badge prio-badge" style="color:${prio.color}; border-color:${prio.color}66;" title="${prio.long}">⚑ ${prio.short}</span>` : ''}
+                            ${prio && task.status !== 'completed' ? `<span class="badge prio-badge prio-${task.quadrant}" title="${prio.long}">⚑ ${prio.short}</span>` : ''}
                             <span class="badge">${statusEmojis[task.status]} ${statusLabels[task.status]}</span>
                             ${dateStr ? `<span class="badge">📅 ${dateStr}${timeStr}</span>` : ''}
                             ${task.attachment ? `<span class="badge">🔗 Link</span>` : ''}
@@ -3053,6 +3218,7 @@
             else if (action === 'import') openPasteImportModal();
             else if (action === 'stress') openStressTestModal();
             else if (action === 'help') openHelpModal();
+            else if (action.indexOf('theme-') === 0) setThemePref(action.slice(6));
             else if (action === 'naraloka') window.open(NARALOKA_URL, '_blank', 'noopener');
             else if (action === 'install') promptInstall();
             else if (action === 'auth') { currentUser ? doSignOut() : openAuthModal(); }
@@ -3660,8 +3826,8 @@
             const config = {
                 'offline':  { icon: '○', text: 'Lokal',        color: 'var(--text-secondary)' },
                 'signedout':{ icon: '○', text: 'Belum masuk',  color: 'var(--text-secondary)' },
-                'syncing':  { icon: '◍', text: 'Menyinkron…',  color: '#fb923c' },
-                'synced':   { icon: '●', text: 'Tersinkron',   color: '#10b981' },
+                'syncing':  { icon: '◍', text: 'Menyinkron…',  color: 'var(--warn)' },
+                'synced':   { icon: '●', text: 'Tersinkron',   color: 'var(--status-done)' },
                 'error':    { icon: '▲', text: 'Gagal sinkron', color: 'var(--accent-red)' }
             }[state] || { icon: '○', text: '', color: 'var(--text-secondary)' };
 
@@ -5805,7 +5971,7 @@
          tombol ➕ melayang, shortcut tambah cepat, notifikasi versi baru.
          ============================================================ -->
     <script>
-        const APP_VERSION = '3.1';
+        const APP_VERSION = '3.2';
         const NARALOKA_URL = 'https://flaren271.github.io/naraloka/';
 
         // ---------- Migrasi data (aman diulang, aman untuk sinkron) ----------
@@ -6093,6 +6259,63 @@
             if (window.innerWidth <= 768) document.getElementById('sidebar').classList.add('collapsed');
             window.addEventListener('DOMContentLoaded', handleLaunchParams);
         })();
+    </script>
+
+    <!-- ============================================================
+         PEMBARUAN v3.2 — Tampilan: tema Bara, mode terang/gelap.
+         Pilihan: auto (ikut perangkat, bawaan) / light / dark,
+         disimpan per perangkat di localStorage (tidak disinkron).
+         Halaman cetak CKP (#ckpPrint) tidak memakai variabel tema,
+         jadi selalu putih.
+         ============================================================ -->
+    <script>
+        const THEME_KEY = 'barakarsa_theme';
+        const THEME_META = { light: { bar: '#fbf7f4', ios: 'default' }, dark: { bar: '#16110e', ios: 'black-translucent' } };
+        const themeMedia = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+
+        function getThemePref() {
+            try {
+                const v = localStorage.getItem(THEME_KEY);
+                return v === 'light' || v === 'dark' ? v : 'auto';
+            } catch (e) { return 'auto'; }
+        }
+
+        function resolveTheme(pref) {
+            if (pref === 'light' || pref === 'dark') return pref;
+            return themeMedia && themeMedia.matches ? 'light' : 'dark';
+        }
+
+        function applyTheme() {
+            const pref = getThemePref();
+            const theme = resolveTheme(pref);
+            document.documentElement.setAttribute('data-theme', theme);
+            const bar = document.querySelector('meta[name="theme-color"]');
+            if (bar) bar.setAttribute('content', THEME_META[theme].bar);
+            const ios = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            if (ios) ios.setAttribute('content', THEME_META[theme].ios);
+            document.querySelectorAll('.theme-option').forEach(el => {
+                el.classList.toggle('is-current', el.dataset.themePref === pref);
+            });
+        }
+
+        function setThemePref(pref) {
+            try {
+                if (pref === 'light' || pref === 'dark') localStorage.setItem(THEME_KEY, pref);
+                else localStorage.removeItem(THEME_KEY);
+            } catch (e) { /* mode privat: tetap berlaku sampai halaman ditutup */ }
+            applyTheme();
+            const label = { auto: 'Otomatis (ikut perangkat)', light: 'Terang', dark: 'Gelap' }[getThemePref()] || 'Otomatis';
+            if (typeof evToast === 'function') evToast('Tampilan: ' + label);
+        }
+
+        // Mode Otomatis: ikut berubah saat HP/komputer berganti gelap/terang
+        if (themeMedia) {
+            const onSystemChange = () => { if (getThemePref() === 'auto') applyTheme(); };
+            if (themeMedia.addEventListener) themeMedia.addEventListener('change', onSystemChange);
+            else if (themeMedia.addListener) themeMedia.addListener(onSystemChange);
+        }
+
+        applyTheme();
     </script>
 
 </body>
