@@ -23,8 +23,24 @@ function ckpSet(part, data) {
     localStorage.setItem(CKP_KEY, JSON.stringify(ckpStore));
     ckpScheduleSettingsSync();
 }
+// Katalog berisi dua daftar:
+//   entries — IKI penugasanmu (sama seperti sebelum 3.3, dibaca juga oleh versi lama)
+//   lain    — IKI tim lain dari pohon kinerja yang sama (sejak 3.3; diabaikan versi lama)
 function ckpCatalog() { return ckpGet('katalog').entries || []; }
-function ckpEntry(id) { return id ? ckpCatalog().find(e => e.id === id) : null; }
+function ckpCatalogLain() { return ckpGet('katalog').lain || []; }
+function ckpAllEntries() { return ckpCatalog().concat(ckpCatalogLain()); }
+let ckpIndexSrc = null, ckpIndex = new Map();
+function ckpEntry(id) {
+    if (!id) return null;
+    const kat = ckpGet('katalog');
+    if (kat !== ckpIndexSrc) {
+        ckpIndexSrc = kat;
+        ckpIndex = new Map(ckpAllEntries().map(e => [e.id, e]));
+    }
+    return ckpIndex.get(id) || null;
+}
+// IKI tim lain = bukan penugasanmu. Entri dari versi lama tidak punya `milik` dan selalu milik sendiri.
+function ckpIsLain(e) { return !!e && e.milik === false; }
 function ckpPegawai() {
     return Object.assign({ nama: '', nip: '', pangkat: '', jabatan: '', kota: 'Paringin', idPegawai: '', wilayah: 'Balangan', unit: 'BPS Kabupaten/Kota' },
         ckpGet('profil').pegawai || {});
@@ -105,53 +121,83 @@ function quarterRange(y, q) {
 }
 
 // ---------- Impor pohon kinerja -> katalog IKI ----------
+// Kata tahapan untuk membedakan IKI dalam satu kegiatan (mis. "Sensus Ekonomi · Persiapan")
+const CKP_STAGE_NAME = /Persiapan|Pengumpulan|Pengolahan|Diseminasi|keprotokolan|penyusun laporan|kehumasan|Permintaan Dokumen|pemenuhan dokumen|Pembinaan|rekomendasi|penilaian|kondisi BMN|persediaan|perencanaan|Realisasi Anggaran/i;
+const isAkronim = w => /[A-Z]{2,}/.test(w) && w === w.toUpperCase();
+// Huruf kecil kecuali akronim (BMN, SAKIP, PST tetap kapital)
+const kecilKecualiAkronim = s => String(s || '').split(/(\s+)/).map(w => isAkronim(w) ? w : w.toLowerCase()).join('');
+
+// Satu baris rk_iki -> entri katalog per IKI Anggota. `p` = baris penugasan (null untuk IKI tim lain).
+function ckpEntriesFromRow(r, p, tw) {
+    const out = [];
+    const rincian = r.rincian || [];
+    const rkList = r.rk_anggota || [];
+    const pairs = r.iki_anggota || [];
+    const seen = new Set();
+    pairs.forEach((pair, i) => {
+        const iki = String(pair.iki || '').replace(/^\d+\.\s*/, '').trim();
+        if (!iki || seen.has(norm(iki))) return;
+        seen.add(norm(iki));
+        const rkIdx = rkList.indexOf(pair.rk);
+        const rinc = rincian.length === rkList.length && rkIdx >= 0 ? rincian[rkIdx]
+                   : rincian.length === pairs.length ? rincian[i]
+                   : rincian.join('; ');
+        const twRow = p ? tw.find(t => norm(t.capaian) === norm(iki)) : null;
+        const kegiatan = p ? p.kegiatan : r.kegiatan;
+        const e = {
+            id: hashId(norm(kegiatan) + '|' + norm(iki)),
+            kode_ik: p ? (p.kode_ik || '') : ((String(r.ik || '').match(/^\s*([IVX]+(\.\d+)+)/) || [])[1] || ''),
+            kelompok: p ? (p.kelompok || '') : (/^[–-]?$/.test(String(r.kelompok || '').trim()) ? '' : r.kelompok),
+            tim: (p && p.tim) || r.tim || '',
+            peran: p ? (p.peran || 'Anggota') : '',
+            ketua_tim: r.ketua_tim || '',
+            tujuan: stripCode(r.tujuan),
+            sasaran: stripCode(r.sasaran),
+            ik: stripCode(r.ik),
+            rk_ketua: r.rk_ketua || '',
+            iki_ketua: r.iki_ketua || '',
+            kegiatan,
+            rk_anggota: pair.rk || rkList[0] || '',
+            iki_anggota: iki,
+            rincian: rinc || '',
+            rk_ringkas: twRow ? twRow.rencana_kinerja : '',
+            dipakai_tw2: !!twRow
+        };
+        if (!p) e.milik = false;
+        out.push(e);
+    });
+    return out;
+}
+
 function ckpBuildCatalog(pk) {
     const rkRows = pk.rk_iki || [];
     const tw = pk.ckp_tw2 || [];
     const entries = [];
+    const used = new Set();
+    // 1) Penugasanmu — cara dan id sama persis dengan versi lama, supaya IKI di task tetap terbaca
     (pk.penugasan_naufal || pk.penugasan || []).forEach(p => {
         const r = rkRows.find(x => norm(x.kegiatan) === norm(p.kegiatan) && String(x.ik || '').startsWith(p.kode_ik))
                || rkRows.find(x => norm(x.kegiatan) === norm(p.kegiatan));
         if (!r) return;
-        const rincian = r.rincian || [];
-        const rkList = r.rk_anggota || [];
-        const seen = new Set();
-        (r.iki_anggota || []).forEach(pair => {
-            const iki = String(pair.iki || '').replace(/^\d+\.\s*/, '').trim();
-            if (!iki || seen.has(norm(iki))) return;
-            seen.add(norm(iki));
-            const rkIdx = rkList.indexOf(pair.rk);
-            const rinc = rincian.length === rkList.length && rkIdx >= 0 ? rincian[rkIdx] : rincian.join('; ');
-            const twRow = tw.find(t => norm(t.capaian) === norm(iki));
-            entries.push({
-                id: hashId(norm(p.kegiatan) + '|' + norm(iki)),
-                kode_ik: p.kode_ik || '',
-                kelompok: p.kelompok || '',
-                tim: p.tim || r.tim || '',
-                peran: p.peran || 'Anggota',
-                ketua_tim: r.ketua_tim || '',
-                tujuan: stripCode(r.tujuan),
-                sasaran: stripCode(r.sasaran),
-                ik: stripCode(r.ik),
-                rk_ketua: r.rk_ketua || '',
-                iki_ketua: r.iki_ketua || '',
-                kegiatan: p.kegiatan,
-                rk_anggota: pair.rk || rkList[0] || '',
-                iki_anggota: iki,
-                rincian: rinc || '',
-                rk_ringkas: twRow ? twRow.rencana_kinerja : '',
-                dipakai_tw2: !!twRow
-            });
-        });
+        used.add(r);
+        entries.push(...ckpEntriesFromRow(r, p, tw));
+    });
+    // 2) Seluruh pohon kinerja: kegiatan lain yang bukan penugasanmu
+    const ids = new Set(entries.map(e => e.id));
+    const lain = [];
+    rkRows.forEach(r => {
+        if (used.has(r)) return;
+        ckpEntriesFromRow(r, null, tw).forEach(e => { if (!ids.has(e.id)) { ids.add(e.id); lain.push(e); } });
     });
     // Nama pendek untuk kegiatan yang punya lebih dari satu IKI
-    entries.forEach(e => {
-        const sibs = entries.filter(x => x.kegiatan === e.kegiatan);
+    const all = entries.concat(lain);
+    all.forEach(e => {
+        const sibs = all.filter(x => x.kegiatan === e.kegiatan);
         if (sibs.length < 2) { e.short = e.kegiatan; return; }
-        const stage = (e.iki_anggota.match(/Persiapan|Pengumpulan|Pengolahan|keprotokolan|penyusun laporan|kehumasan|Permintaan Dokumen|pemenuhan dokumen/i) || [])[0];
-        e.short = e.kegiatan + ' · ' + (stage ? stage.charAt(0).toUpperCase() + stage.slice(1).toLowerCase() : (sibs.indexOf(e) + 1));
+        const stage = (e.iki_anggota.match(CKP_STAGE_NAME) || [])[0];
+        e.short = e.kegiatan + ' · ' + (stage ? stage.charAt(0).toUpperCase() + kecilKecualiAkronim(stage.slice(1)) : (sibs.indexOf(e) + 1));
     });
-    return entries;
+    return { entries, lain };
 }
 
 function ckpImportFile(input) {
@@ -162,9 +208,9 @@ function ckpImportFile(input) {
     reader.onload = () => {
         try {
             const pk = JSON.parse(reader.result);
-            const entries = ckpBuildCatalog(pk);
-            if (!entries.length) throw new Error('Tidak ada penugasan/IKI yang dikenali di file ini.');
-            ckpSet('katalog', { entries, source: file.name, importedAt: new Date().toISOString() });
+            const { entries, lain } = ckpBuildCatalog(pk);
+            if (!entries.length && !lain.length) throw new Error('Tidak ada penugasan/IKI yang dikenali di file ini.');
+            ckpSet('katalog', { entries, lain, source: file.name, importedAt: new Date().toISOString() });
             // Isi profil pegawai dari file bila masih kosong
             const peg = ckpPegawai();
             const hdr = (pk.ckp_format && pk.ckp_format.header) || {};
@@ -177,7 +223,7 @@ function ckpImportFile(input) {
                 const p = ckpGet('profil');
                 ckpSet('profil', { ...p, pegawai: { ...peg, ...upd } });
             }
-            evToast(`Katalog terisi: ${entries.length} IKI dari ${file.name}`);
+            evToast(`Katalog terisi: ${entries.length} IKI penugasanmu + ${lain.length} IKI lain dari ${file.name}`);
             ckpRenderHub();
             debouncedRender();
         } catch (err) {
@@ -214,8 +260,10 @@ const CKP_STAGES = [
 const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const hasWord = (text, w) => new RegExp('(^|[^a-z0-9])' + reEsc(w) + '($|[^a-z0-9])').test(text);
 
+// Disimpan di WeakMap, bukan di entri, supaya tidak ikut tertulis ke localStorage
+const ckpKwCache = new WeakMap();
 function ckpKeywords(e) {
-    if (e._kw) return e._kw;
+    if (ckpKwCache.has(e)) return ckpKwCache.get(e);
     const STOP = ['dokumen', 'pengisian', 'kegiatan', 'laporan', 'statistik', 'pendataan', 'pelaksanaan', 'triwulanan', 'keluar', 'masuk'];
     const own = [], words = [];
     String(e.rincian || '').split(/[;,&()]|\bdsb\b|\bdll\b/i).map(s => s.trim().toLowerCase())
@@ -227,8 +275,9 @@ function ckpKeywords(e) {
     const syn = [...words];
     CKP_SYNONYMS.forEach(([re, words]) => { if (re.test(e.kegiatan)) syn.push(...words); });
     syn.push(e.kegiatan.toLowerCase());
-    e._kw = { own, syn };
-    return e._kw;
+    const kw = { own, syn };
+    ckpKwCache.set(e, kw);
+    return kw;
 }
 
 function ckpSuggest(text) {
@@ -249,77 +298,334 @@ function ckpSuggest(text) {
 }
 
 // ---------- IKI di form task ----------
-// Kolom IKI ada di HTML form task (#ikiGroup); di sini hanya pemasangan event-nya
+// Kolom IKI ada di HTML form task (#ikiGroup): tombol pemilih, panel pencarian,
+// dan nilai terpilih di <input type="hidden" id="taskIki">.
+let ckpShowLain = false;      // daftar "IKI lain" sedang dibuka (saat tidak mencari)
+let ckpIkiActive = -1;        // sorotan keyboard di daftar IKI
+let ckpDescItems = [];        // saran keterangan yang sedang tampil
+
 function setupIkiField() {
     document.getElementById('taskProject').addEventListener('change', ckpToggleIkiGroup);
     let t = null;
     ['taskTitle', 'taskDesc'].forEach(id => document.getElementById(id).addEventListener('input', () => {
-        clearTimeout(t); t = setTimeout(ckpUpdateSuggestion, 250);
+        clearTimeout(t); t = setTimeout(() => { ckpUpdateSuggestion(); ckpUpdateDescSuggest(); }, 250);
     }));
+    const search = document.getElementById('ikiSearch');
+    let ts = null;
+    search.addEventListener('input', () => { clearTimeout(ts); ts = setTimeout(() => { ckpIkiActive = -1; ckpRenderIkiList(); }, 60); });
+    search.addEventListener('keydown', ckpIkiSearchKey);
+    document.getElementById('descSuggest').addEventListener('click', ev => {
+        const b = ev.target.closest('[data-ds]');
+        if (b) ckpApplyDesc(+b.dataset.ds);
+    });
 }
 
-function ckpFillIkiSelect(selected) {
-    const sel = document.getElementById('taskIki');
-    const cat = ckpCatalog();
-    if (!cat.length) {
-        sel.innerHTML = '<option value="">— impor pohon kinerja dulu (menu ⋯ → CKP Triwulan)</option>';
+function ckpIkiValue() { return document.getElementById('taskIki').value; }
+
+// Tombol pemilih: nama pendek + tim · kode IK
+function ckpUpdateIkiPick() {
+    const id = ckpIkiValue();
+    const e = ckpEntry(id);
+    let main, sub = '';
+    if (e) { main = e.short; sub = `${e.tim} · ${e.kode_ik}`; }
+    else if (id) main = '(IKI lama, tidak ada di katalog)';
+    else if (!ckpAllEntries().length) main = '— impor pohon kinerja dulu (menu ⋯ → CKP Triwulan)';
+    else main = '— belum dipilih —';
+    const m = document.getElementById('ikiPickMain');
+    m.textContent = main;
+    m.classList.toggle('empty', !e);
+    document.getElementById('ikiPickSub').textContent = sub;
+}
+
+function ckpPickerOpen() { return !document.getElementById('ikiPanel').hidden; }
+
+function ckpTogglePicker(force) {
+    const open = force === undefined ? !ckpPickerOpen() : !!force;
+    const panel = document.getElementById('ikiPanel');
+    const btn = document.getElementById('ikiPick');
+    if (open === ckpPickerOpen()) { if (open) ckpRenderIkiList(); return; }
+    panel.hidden = !open;
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) return;
+    const search = document.getElementById('ikiSearch');
+    search.value = '';
+    ckpShowLain = false;
+    ckpIkiActive = -1;
+    ckpRenderIkiList();
+    // Di HP keyboard tidak langsung dimunculkan; cukup pastikan panel terlihat
+    if (window.matchMedia('(pointer: fine)').matches) search.focus();
+    else panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+// Tiga IKI yang paling akhir dipakai di task (berdasarkan waktu task terakhir diubah)
+function ckpRecentIki(n) {
+    const seen = new Set(), out = [];
+    tasks.filter(t => t.iki).map(t => [t.updatedAt || t.createdAt || '', t.iki])
+        .sort((a, b) => (a[0] < b[0] ? 1 : a[0] > b[0] ? -1 : 0))
+        .some(([, id]) => {
+            if (seen.has(id)) return false;
+            seen.add(id);
+            const e = ckpEntry(id);
+            if (e) out.push(e);
+            return out.length >= n;
+        });
+    return out;
+}
+
+// ---------- Pencarian IKI ----------
+// Setiap entri punya teks pencarian per bidang; disimpan di WeakMap (tidak ikut tersimpan ke localStorage)
+const ckpSearchCache = new WeakMap();
+const CKP_SEARCH_FIELDS = [
+    ['short', 3], ['kegiatan', 3], ['tim', 2], ['kode_ik', 2],
+    ['iki_anggota', 1], ['rincian', 1], ['rk_anggota', 1], ['ketua_tim', 1]
+];
+function ckpSearchText(e) {
+    let s = ckpSearchCache.get(e);
+    if (!s) {
+        s = CKP_SEARCH_FIELDS.map(([k, w]) => ({ k, w, t: String(e[k] || '').toLowerCase() }));
+        ckpSearchCache.set(e, s);
+    }
+    return s;
+}
+function ckpSearch(q) {
+    const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+    const res = [];
+    ckpAllEntries().forEach((e, i) => {
+        const fields = ckpSearchText(e);
+        let score = 0, snip = null;
+        for (const w of words) {
+            const hit = fields.filter(f => f.t.includes(w));
+            if (!hit.length) return;
+            score += Math.max(...hit.map(f => f.w));
+            // Potongan teks ditampilkan bila kata hanya cocok di IKI/rincian/RK/ketua
+            if (!snip && hit.every(f => f.w === 1)) snip = hit[0].k;
+        }
+        res.push({ e, score: score + (ckpIsLain(e) ? 0 : 0.5), snip, i });
+    });
+    return { words, res: res.sort((a, b) => b.score - a.score || a.i - b.i) };
+}
+
+// Teks dengan kata yang dicari disorot (<mark>); selalu lewat esc()
+function ckpHighlight(text, words, maxLen) {
+    let s = String(text || '');
+    const low = s.toLowerCase();
+    let start = 0;
+    if (maxLen && s.length > maxLen) {
+        const first = Math.min(...words.map(w => { const i = low.indexOf(w); return i < 0 ? Infinity : i; }));
+        start = isFinite(first) ? Math.max(0, Math.min(first - 25, s.length - maxLen)) : 0;
+    }
+    const end = maxLen ? Math.min(s.length, start + maxLen) : s.length;
+    const marks = new Array(end).fill(false);
+    words.forEach(w => {
+        if (!w) return;
+        let i = low.indexOf(w, start);
+        while (i >= 0 && i < end) { for (let k = i; k < Math.min(end, i + w.length); k++) marks[k] = true; i = low.indexOf(w, i + w.length); }
+    });
+    let out = start > 0 ? '…' : '', run = '', on = false;
+    const flush = () => { out += on ? `<mark>${esc(run)}</mark>` : esc(run); run = ''; };
+    for (let k = start; k < end; k++) { if (marks[k] !== on) { flush(); on = marks[k]; } run += s[k]; }
+    flush();
+    return out + (end < s.length ? '…' : '');
+}
+
+const CKP_SNIP_LABEL = { iki_anggota: 'IKI', rincian: 'Rincian', rk_anggota: 'RK', ketua_tim: 'Ketua tim' };
+
+function ckpIkiOption(e, words, snip) {
+    const cur = ckpIkiValue() === e.id;
+    const lain = ckpIsLain(e);
+    const hl = t => words ? ckpHighlight(t, words) : esc(t);
+    let sub = `${hl(e.tim)} · ${hl(e.kode_ik)}`;
+    if (snip) sub += `<span class="iki-opt-snip">${CKP_SNIP_LABEL[snip]}: ${ckpHighlight(e[snip], words, 90)}</span>`;
+    return `<button type="button" class="iki-opt${cur ? ' sel' : ''}" role="option" aria-selected="${cur}" data-iki="${esc(e.id)}" onclick="ckpPickIki(this.dataset.iki)">
+        <span class="iki-opt-t">${hl(e.short)}${lain ? '<span class="iki-tag">bukan penugasanmu</span>' : ''}</span>
+        <span class="iki-opt-s">${sub}</span></button>`;
+}
+
+function ckpRenderIkiList() {
+    const list = document.getElementById('ikiList');
+    const q = document.getElementById('ikiSearch').value.trim();
+    const mine = ckpCatalog(), lain = ckpCatalogLain();
+    const sec = t => `<div class="iki-sec">${t}</div>`;
+    let html = '';
+    if (!mine.length && !lain.length) {
+        list.innerHTML = '<p class="iki-empty">Katalog IKI masih kosong. Impor file pohon kinerja lewat menu ⋯ → CKP Triwulan.</p>';
         return;
     }
-    const groups = [];
-    cat.forEach(e => {
-        let g = groups.find(x => x.tim === e.tim);
-        if (!g) { g = { tim: e.tim, items: [] }; groups.push(g); }
-        g.items.push(e);
-    });
-    let html = '<option value="">— belum dipilih —</option>';
-    if (selected && !ckpEntry(selected)) html += `<option value="${esc(selected)}">(IKI lama, tidak ada di katalog)</option>`;
-    groups.forEach(g => {
-        html += `<optgroup label="${esc(g.tim)}">` + g.items.map(e =>
-            `<option value="${e.id}" title="${esc(e.iki_anggota)}">${esc(e.short)}</option>`).join('') + '</optgroup>';
-    });
-    sel.innerHTML = html;
-    sel.value = selected || '';
+    if (ckpIkiValue()) html += `<button type="button" class="iki-opt iki-clear" data-iki="" onclick="ckpPickIki('')">✕ Kosongkan pilihan IKI</button>`;
+    if (!q) {
+        const recent = ckpRecentIki(3);
+        if (recent.length) html += sec('🕘 Terakhir dipakai') + recent.map(e => ckpIkiOption(e)).join('');
+        if (mine.length) html += sec(`🙋 Penugasanku (${mine.length})`) + mine.filter(e => !recent.includes(e)).map(e => ckpIkiOption(e)).join('');
+        if (lain.length) {
+            if (ckpShowLain) {
+                html += sec(`📚 IKI lain di pohon kinerja (${lain.length})`) + lain.filter(e => !recent.includes(e)).map(e => ckpIkiOption(e)).join('')
+                     + `<button type="button" class="iki-more" onclick="ckpToggleLain()">Sembunyikan IKI lain ▴</button>`;
+            } else {
+                html += `<button type="button" class="iki-more" onclick="ckpToggleLain()">📚 IKI lain di pohon kinerja (${lain.length}) ▸</button>`;
+            }
+        } else if (ckpGet('katalog').lain === undefined) {
+            html += '<p class="iki-empty">Impor ulang file pohon kinerja (menu ⋯ → CKP Triwulan) untuk memuat IKI tim lain.</p>';
+        }
+    } else {
+        const { words, res } = ckpSearch(q);
+        const m = res.filter(r => !ckpIsLain(r.e)), l = res.filter(r => ckpIsLain(r.e));
+        if (m.length) html += sec(`🙋 Penugasanku · ${m.length} hasil`) + m.map(r => ckpIkiOption(r.e, words, r.snip)).join('');
+        if (l.length) html += sec(`📚 IKI lain · ${l.length} hasil`) + l.map(r => ckpIkiOption(r.e, words, r.snip)).join('');
+        if (!res.length) html += `<p class="iki-empty">Tidak ada IKI yang cocok dengan “${esc(q)}”.</p>`;
+    }
+    list.innerHTML = html;
+    ckpMarkActive();
+}
+
+function ckpToggleLain() {
+    ckpShowLain = !ckpShowLain;
+    ckpRenderIkiList();
+}
+
+// Keyboard di kotak cari: ↑/↓ pilih, Enter pakai, Esc tutup (Enter tidak boleh menyimpan form)
+function ckpIkiSearchKey(ev) {
+    const opts = [...document.querySelectorAll('#ikiList .iki-opt[data-iki]:not(.iki-clear)')];
+    if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        if (!opts.length) return;
+        ckpIkiActive = ev.key === 'ArrowDown' ? Math.min(opts.length - 1, ckpIkiActive + 1) : Math.max(0, ckpIkiActive - 1);
+        ckpMarkActive();
+    } else if (ev.key === 'Enter') {
+        ev.preventDefault();
+        const o = opts[ckpIkiActive >= 0 ? ckpIkiActive : 0];
+        if (o && document.getElementById('ikiSearch').value.trim()) ckpPickIki(o.dataset.iki);
+        else if (o && ckpIkiActive >= 0) ckpPickIki(o.dataset.iki);
+    } else if (ev.key === 'Escape') {
+        ev.preventDefault();
+        ev.stopPropagation();
+        ckpTogglePicker(false);
+        document.getElementById('ikiPick').focus();
+    }
+}
+function ckpMarkActive() {
+    const opts = [...document.querySelectorAll('#ikiList .iki-opt[data-iki]:not(.iki-clear)')];
+    opts.forEach((o, i) => o.classList.toggle('active', i === ckpIkiActive));
+    if (opts[ckpIkiActive]) opts[ckpIkiActive].scrollIntoView({ block: 'nearest' });
+}
+
+function ckpPickIki(id) {
+    document.getElementById('taskIki').value = id || '';
+    ckpTogglePicker(false);
+    ckpOnIkiChange();
 }
 
 function ckpToggleIkiGroup() {
     const g = document.getElementById('ikiGroup');
     const isCkp = isCkpTask({ project: document.getElementById('taskProject').value });
     g.style.display = isCkp ? '' : 'none';
+    if (!isCkp) ckpTogglePicker(false);
     document.querySelectorAll('#taskModal .ckp-sub').forEach(el => { el.style.display = isCkp ? '' : 'none'; });
     ckpUpdateSuggestion();
+    ckpUpdateDescSuggest();
 }
 
 function ckpOnIkiChange() {
-    const e = ckpEntry(document.getElementById('taskIki').value);
+    const e = ckpEntry(ckpIkiValue());
+    ckpUpdateIkiPick();
     document.getElementById('ikiFull').textContent = e ? e.iki_anggota : '';
+    document.getElementById('ikiLainNote').hidden = !ckpIsLain(e);
     ckpUpdateSuggestion();
+    ckpUpdateDescSuggest();
 }
 
+// 💡 Saran IKI dari judul + description (hanya dari IKI penugasanmu)
 function ckpUpdateSuggestion() {
     const box = document.getElementById('ikiSuggest');
-    const sel = document.getElementById('taskIki');
     const isCkp = isCkpTask({ project: document.getElementById('taskProject').value });
-    if (!isCkp || sel.value || !ckpCatalog().length) { box.innerHTML = ''; return; }
+    if (!isCkp || ckpIkiValue() || !ckpCatalog().length) { box.innerHTML = ''; return; }
     const text = document.getElementById('taskTitle').value + ' ' + document.getElementById('taskDesc').value;
     const e = ckpSuggest(text);
-    box.innerHTML = e ? `<button type="button" onclick="ckpPickSuggestion('${e.id}')">💡 Saran: ${esc(e.short)}</button>` : '';
+    box.innerHTML = e ? `<button type="button" data-iki="${esc(e.id)}" onclick="ckpPickIki(this.dataset.iki)">💡 Saran: ${esc(e.short)}</button>` : '';
 }
 
-function ckpPickSuggestion(id) {
-    document.getElementById('taskIki').value = id;
-    ckpOnIkiChange();
+// ---------- Saran keterangan (Description) ----------
+// Sumber utama: description task sebelumnya dengan IKI yang sama. Yang judulnya mirip
+// dengan judul sekarang didahulukan, lalu yang paling sering dipakai, lalu yang terbaru.
+// Bila IKI ini belum pernah punya description, ditawarkan kalimat dasar dari judul + RK.
+const ckpWords = s => new Set(String(s || '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 3));
+function ckpSimilar(a, b) {
+    const A = ckpWords(a), B = ckpWords(b);
+    if (!A.size || !B.size) return 0;
+    let same = 0;
+    A.forEach(w => { if (B.has(w)) same++; });
+    return same / (A.size + B.size - same);
+}
+const ckpNormText = s => String(s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+
+function ckpDescHistory(iki, title, exceptId) {
+    const groups = new Map();
+    tasks.forEach(t => {
+        if (t.iki !== iki || t.id === exceptId) return;
+        const d = String(t.description || '').trim();
+        if (!d) return;
+        const key = ckpNormText(d);
+        const g = groups.get(key) || { text: d, count: 0, last: '', sim: 0 };
+        const ts = t.updatedAt || t.createdAt || '';
+        g.count++;
+        if (ts >= g.last) { g.last = ts; g.text = d; }
+        g.sim = Math.max(g.sim, ckpSimilar(title, t.title));
+        groups.set(key, g);
+    });
+    return [...groups.values()].sort((a, b) =>
+        Math.round(b.sim * 4) - Math.round(a.sim * 4) || b.count - a.count || (a.last < b.last ? 1 : a.last > b.last ? -1 : 0));
+}
+
+function ckpDescTemplate(e, title) {
+    const t = String(title || '').trim().replace(/[.\s]+$/, '');
+    const rk = String(e.rk_anggota || '').trim().replace(/[.\s]+$/, '');
+    return t && rk ? `${t} untuk mendukung ${kecilKecualiAkronim(rk)}.` : '';
+}
+
+function ckpUpdateDescSuggest() {
+    const box = document.getElementById('descSuggest');
+    const isCkp = isCkpTask({ project: document.getElementById('taskProject').value });
+    const e = ckpEntry(ckpIkiValue());
+    ckpDescItems = [];
+    if (!isCkp || !e) { box.innerHTML = ''; return; }
+    const title = document.getElementById('taskTitle').value;
+    const cur = ckpNormText(document.getElementById('taskDesc').value);
+    const hist = ckpDescHistory(e.id, title, typeof editingTaskId !== 'undefined' ? editingTaskId : null);
+    hist.filter(g => !cur.includes(ckpNormText(g.text))).slice(0, 3)
+        .forEach(g => ckpDescItems.push({ icon: '🕘', text: g.text, note: g.count > 1 ? `${g.count}×` : '' }));
+    // Kalimat dasar hanya sebagai pembuka saat Description masih kosong
+    if (!hist.length && !cur) {
+        const tpl = ckpDescTemplate(e, title);
+        if (tpl && !cur.includes(ckpNormText(tpl))) ckpDescItems.push({ icon: '🧩', text: tpl, note: 'kalimat dasar' });
+    }
+    if (!ckpDescItems.length) { box.innerHTML = ''; return; }
+    box.innerHTML = `<span class="desc-suggest-head">💡 Saran keterangan ${hist.length ? '— dari task sebelumnya dengan IKI ini' : '— dari judul + rencana kinerja (sunting seperlunya)'}</span>`
+        + ckpDescItems.map((it, i) => `<button type="button" class="ds-chip" data-ds="${i}" title="${esc(it.text)}">
+            <span class="ds-icon">${it.icon}</span><span class="ds-text">${esc(it.text)}</span>${it.note ? `<small>${esc(it.note)}</small>` : ''}</button>`).join('');
+}
+
+// Klik saran: Description kosong → diisi; sudah ada isinya → ditambah di baris baru
+function ckpApplyDesc(i) {
+    const it = ckpDescItems[i];
+    if (!it) return;
+    const ta = document.getElementById('taskDesc');
+    const cur = ta.value.replace(/\s+$/, '');
+    ta.value = cur ? cur + '\n' + it.text : it.text;
+    ckpUpdateDescSuggest();
+    ckpUpdateSuggestion();
 }
 
 function ckpLoadTaskForm(task) {
     document.getElementById('taskDateEnd').value = (task && task.dateEnd) || '';
-    ckpFillIkiSelect(task ? task.iki : '');
+    document.getElementById('taskIki').value = (task && task.iki) || '';
+    ckpTogglePicker(false);
     ckpOnIkiChange();
     ckpToggleIkiGroup();
 }
 
 // Dipanggil dari saveTask: IKI dan "Sampai tanggal" (hanya bila setelah tanggal mulai)
 function ckpApplyToTask(task) {
-    task.iki = document.getElementById('taskIki').value || '';
+    task.iki = ckpIkiValue() || '';
     const de = document.getElementById('taskDateEnd').value;
     task.dateEnd = (de && task.date && de > task.date) ? de : '';
 }
@@ -399,6 +705,7 @@ function ckpRenderHub() {
     const body = document.getElementById('ckpHubBody');
     if (!body) return;
     const cat = ckpCatalog();
+    const lain = ckpCatalogLain();
     const kat = ckpGet('katalog');
     const peg = ckpPegawai();
     const years = [];
@@ -412,10 +719,10 @@ function ckpRenderHub() {
                 <input type="checkbox" ${ckpIncludeUnfinished ? 'checked' : ''} onchange="ckpIncludeUnfinished=this.checked; ckpRenderHub()"> sertakan task yang belum Completed</label>
         </div>`;
 
-    if (!cat.length) {
+    if (!cat.length && !lain.length) {
         html += `<div class="ckp-card ckp-start">
             <strong>Mulai dengan mengimpor pohon kinerja</strong>
-            <p class="ckp-note">Pilih file <code>pohon_kinerja_*.json</code>. Barakarsa akan membuat daftar IKI dari penugasanmu, lengkap dengan tim, ketua tim, sasaran, dan indikatornya.</p>
+            <p class="ckp-note">Pilih file <code>pohon_kinerja_*.json</code>. Barakarsa akan membuat daftar IKI dari seluruh pohon kinerja — penugasanmu ditandai — lengkap dengan tim, ketua tim, sasaran, dan indikatornya.</p>
             <label class="btn btn-primary btn-sm ckp-file-btn">📥 Impor pohon kinerja (JSON)
                 <input type="file" accept=".json,application/json" hidden onchange="ckpImportFile(this)"></label>
         </div>`;
@@ -437,8 +744,8 @@ function ckpRenderHub() {
         html += `</div>`;
     }
 
-    // Daftar IKI
-    const withTasks = cat.filter(e => ckpTasksFor(e.id).length);
+    // Daftar IKI: penugasanmu, ditambah IKI tim lain yang punya kegiatan di triwulan ini
+    const withTasks = cat.filter(e => ckpTasksFor(e.id).length).concat(lain.filter(e => ckpTasksFor(e.id).length));
     const withoutTasks = cat.filter(e => !ckpTasksFor(e.id).length);
     html += `<div class="ckp-row ckp-list-head">
             <h3>IKI dengan kegiatan di Triwulan ${ROMAWI[ckpQ]} ${ckpYear} (${withTasks.length})</h3>
@@ -460,7 +767,8 @@ function ckpRenderHub() {
         </div></details>`;
 
     html += `<details><summary>📚 Katalog IKI</summary>
-        <p class="ckp-note">${cat.length} IKI dari <strong>${esc(kat.source || 'file')}</strong>, diimpor ${kat.importedAt ? new Date(kat.importedAt).toLocaleString('id-ID') : '-'}.
+        <p class="ckp-note">${cat.length} IKI penugasanmu${lain.length ? ` + ${lain.length} IKI tim lain` : ''} dari <strong>${esc(kat.source || 'file')}</strong>, diimpor ${kat.importedAt ? new Date(kat.importedAt).toLocaleString('id-ID') : '-'}.
+        ${kat.lain === undefined ? 'Katalog ini dibuat versi lama dan baru berisi penugasanmu; impor ulang file yang sama untuk memuat IKI tim lain. ' : ''}
         Impor ulang (misalnya pohon kinerja tahun baru) akan mengganti katalog; isian yang sudah kamu ubah per IKI tetap disimpan.</p>
         <label class="btn btn-secondary btn-sm ckp-file-btn">📥 Impor ulang JSON
             <input type="file" accept=".json,application/json" hidden onchange="ckpImportFile(this)"></label></details>`;
@@ -476,7 +784,7 @@ function ckpCardHTML(e, muted) {
     let html = `<div class="ckp-card ${muted ? 'muted' : ''}">
         <div class="ckp-card-head">
             <div class="ckp-card-title"><strong>${esc(e.short)}</strong>
-                <small>${esc(e.tim)} · ${esc(e.kode_ik)} · ${esc(e.peran)}</small>
+                <small>${esc(e.tim)} · ${esc(e.kode_ik)} · ${ckpIsLain(e) ? '<span class="iki-tag">bukan penugasanmu</span>' : esc(e.peran)}</small>
                 <small>${esc(e.iki_anggota)}</small></div>
             <div class="ckp-stats">${list.length} kegiatan${miss ? ` · <span class="warn">${miss} tanpa foto</span>` : ''}</div>
             <div class="ckp-row">

@@ -288,7 +288,7 @@ async function ckpExportExcel() {
         const bulan = s => s.charAt(0) + s.slice(1).toLowerCase();
         const periode = `1 ${bulan(BULAN_ID[m0])} - ${last} ${bulan(BULAN_ID[m0 + 2])} (Triwulan ${ROMAWI[ckpQ]})`;
         const d0 = new Date(start + 'T00:00:00'), d1 = new Date(end + 'T00:00:00');
-        const rows = ckpCatalog().filter(e => ckpTasksFor(e.id).length).map(e => {
+        const rows = ckpAllEntries().filter(e => ckpTasksFor(e.id).length).map(e => {
             const n = ckpNote(ckpYear, ckpQ, e.id);
             return [d0, d1, '', '', e.rk_ringkas || e.rk_anggota, e.rk_anggota, 100, e.iki_anggota, n.link || '', 'Ya'];
         });

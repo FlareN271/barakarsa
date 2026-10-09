@@ -28,7 +28,7 @@ js/               skrip biasa dengan defer (bukan ES module), dijalankan berurut
   form-task.js    form task: buka, edit, simpan, duplikat, hapus; Inbox cepat; dialog konfirmasi
   project-label.js project & label
   bukti.js        foto: kompres, IndexedDB, antrean unggah, peringatan "belum ada bukti"
-  ckp.js          katalog IKI, saran IKI, hub CKP Triwulan, foto solusi
+  ckp.js          katalog IKI, pemilih & pencarian IKI, saran IKI, saran keterangan, hub CKP Triwulan, foto solusi
   ekspor.js       backup JSON/CSV, import, stress test, Excel/PDF/Word CKP
   pwa.js          daftar service worker, "Pasang aplikasi", kabar versi baru, ?quick=1
   main.js         menu ⋯, event umum, urutan inisialisasi
@@ -51,7 +51,7 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 | Tempat | Kunci / nama | Isi |
 |---|---|---|
 | localStorage | `barakarsa_v6` | `{ tasks, projects, labels, nextProjectId, nextLabelId, tombstones }` — sumber utama |
-| localStorage | `barakarsa_ckp_v1` | pengaturan CKP: `katalog`, `profil`, `catatan` (masing-masing `{ data, updatedAt }`) |
+| localStorage | `barakarsa_ckp_v1` | pengaturan CKP: `katalog`, `profil`, `catatan` (masing-masing `{ data, updatedAt }`); bentuk katalog di bawah |
 | localStorage | `barakarsa_theme` | `light` / `dark` (kosong = otomatis); per perangkat |
 | localStorage | `barakarsa_sort` | pilihan urutan; per perangkat |
 | localStorage | `barakarsa_photo_trash` | path foto yang menunggu dihapus dari server |
@@ -64,6 +64,18 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 
 Bentuk task (field yang dipakai):
 `id, title, description, date, dateEnd, time, quadrant (do/schedule/delegate/eliminate = P1–P4), project (teks id), labels (angka id), attachment, status, isInbox, createdAt, completedAt, order, iki, photos[], updatedAt`.
+
+Bentuk katalog IKI (`katalog.data`, sejak 3.3):
+`{ entries, lain, source, importedAt }`
+- `entries` — IKI penugasanmu. Dibaca juga oleh versi ≤3.2.3, jadi **jangan diisi IKI tim lain**
+  (versi lama akan menampilkan semuanya di hub). Cara membuat id-nya tidak boleh diubah:
+  `hashId(norm(kegiatan) + '|' + norm(iki))`; id ini yang tersimpan di `task.iki`.
+- `lain` — IKI Anggota tim lain dari pohon kinerja yang sama, dengan `milik: false`.
+  Tidak ada = katalog dibuat versi lama (pemilih IKI menyarankan impor ulang).
+- Akses lewat `ckpCatalog()` (penugasan), `ckpCatalogLain()`, `ckpAllEntries()`, `ckpEntry(id)` (keduanya),
+  `ckpIsLain(e)`. Nilai turunan (kata kunci saran, teks pencarian) disimpan di `WeakMap`, **bukan**
+  sebagai properti entri, supaya tidak ikut tertulis ke localStorage dan tersinkron.
+- "Terakhir dipakai" dihitung dari task (`updatedAt` terbaru), tidak disimpan dan tidak disinkron.
 
 ## Alur data: localStorage → Supabase
 
@@ -105,7 +117,22 @@ klik Save / Enter di judul
 ```
 
 `editTask(id)` dan `openTaskModal()` mengisi form, lalu `evLoad()` (foto) dan `ckpLoadTaskForm()`
-(IKI, rentang tanggal, subjudul CKP). `duplicateTask(id)` membuka form kosong, mengisinya dari task
+(IKI, rentang tanggal, subjudul CKP).
+
+## Kolom IKI dan saran di form task (3.3)
+
+```
+#taskIki (input hidden)            nilai IKI terpilih; dibaca ckpApplyToTask() saat Save
+#ikiPick → ckpTogglePicker()       buka/tutup panel; di desktop kotak cari langsung fokus
+  ckpRenderIkiList()               tanpa kata cari: 🕘 Terakhir dipakai (3) → 🙋 Penugasanku → 📚 IKI lain (tertutup)
+                                   dengan kata cari: ckpSearch() — semua kata harus cocok di salah satu bidang
+                                   (nama, kegiatan, tim, kode IK, teks IKI, rincian, RK, ketua tim)
+  #ikiSearch keydown               ↑/↓ sorot, Enter pilih (tidak menyimpan form), Esc tutup
+ckpPickIki(id) → ckpOnIkiChange()  tombol, teks IKI, peringatan "bukan penugasanmu", 💡 saran IKI, saran keterangan
+ckpUpdateDescSuggest()             #descSuggest: description task lain dengan IKI sama (judul mirip → sering → terbaru),
+                                   atau 🧩 kalimat dasar (judul + RK) bila belum ada riwayat dan Description kosong
+ckpApplyDesc(i)                    Description kosong → diisi; sudah berisi → ditambah di baris baru
+``` `duplicateTask(id)` membuka form kosong, mengisinya dari task
 asal, dan menandai `dupSourceId` supaya salinan diletakkan tepat di bawah aslinya saat Save.
 
 ## Aturan menambah kode
@@ -120,3 +147,4 @@ asal, dan menandai `dupSourceId` supaya salinan diletakkan tepat di bawah asliny
 - Teks dari pengguna (judul, description, nama project/label, isi katalog) selalu lewat `esc()` sebelum dimasukkan ke HTML.
 - Task baru tidak perlu diberi `order` sendiri: `saveData()` memberi nomor pada task yang belum punya.
 - Komentar dan nama baru berbahasa Indonesia.
+- Jangan menulis properti turunan (cache) ke objek di `ckpStore`; pakai `WeakMap` (lihat `ckpKwCache`, `ckpSearchCache`).

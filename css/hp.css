@@ -170,3 +170,11 @@
 @media (max-width: 420px) {
     .tmf-label { display: none; }
 }
+
+/* Pemilih IKI dan saran keterangan (3.3): sasaran sentuh lebih besar */
+@media (max-width: 768px) {
+    .iki-list { max-height: 50vh; }
+    .iki-opt { padding-top: 0.6rem; padding-bottom: 0.6rem; }
+    .iki-more { padding-top: 0.7rem; padding-bottom: 0.7rem; }
+    .ds-chip { padding: 0.45rem 0.6rem; }
+}

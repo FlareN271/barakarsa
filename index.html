@@ -340,6 +340,8 @@
                     <div class="form-group">
                         <label for="taskDesc">Description<span class="label-sub ckp-sub">Keterangan/Catatan di CKP</span></label>
                         <textarea id="taskDesc" placeholder="Add more details..."></textarea>
+                        <!-- Saran keterangan CKP (diisi oleh ckpUpdateDescSuggest) -->
+                        <div id="descSuggest" class="desc-suggest"></div>
                     </div>
                 </form>
 
@@ -371,8 +373,21 @@
                     <!-- Hanya tampil untuk project bertanda Project CKP -->
                     <div class="form-group" id="ikiGroup">
                         <label>🎯 IKI (untuk CKP)</label>
-                        <select id="taskIki" onchange="ckpOnIkiChange()"></select>
+                        <!-- Nilai IKI terpilih; daftar pilihan diisi oleh ckpRenderIkiList (ckp.js) -->
+                        <input type="hidden" id="taskIki">
+                        <button type="button" class="iki-pick" id="ikiPick" onclick="ckpTogglePicker()" aria-expanded="false" aria-controls="ikiPanel">
+                            <span class="iki-pick-text">
+                                <span class="iki-pick-main" id="ikiPickMain"></span>
+                                <span class="iki-pick-sub" id="ikiPickSub"></span>
+                            </span>
+                            <span class="iki-pick-caret" aria-hidden="true">▾</span>
+                        </button>
+                        <div class="iki-panel" id="ikiPanel" hidden>
+                            <input type="search" class="iki-search" id="ikiSearch" placeholder="🔍 Cari IKI, kegiatan, tim…" autocomplete="off" enterkeyhint="done" aria-label="Cari IKI">
+                            <div class="iki-list" id="ikiList" role="listbox"></div>
+                        </div>
                         <div id="ikiFull" class="iki-full"></div>
+                        <div id="ikiLainNote" class="iki-lain-note" hidden>⚠️ IKI ini bukan penugasanmu di pohon kinerja. Pastikan IKI ini ada di SKP/KipApp-mu sebelum dilaporkan di CKP.</div>
                         <div id="ikiSuggest" class="iki-suggest"></div>
                     </div>
 
@@ -547,7 +562,7 @@
                     Tahan ikon ⠿ di kiri task, lalu geser ke atas atau bawah untuk mengatur urutan pengerjaan.</p>
 
                     <p><strong>CKP</strong><br>
-                    Task di project bertanda <em>Project CKP</em> (bawaan: KipApp) yang sudah dipilih IKI-nya masuk ke menu ⋯ → CKP Triwulan. Task Title menjadi Uraian Kegiatan, Description menjadi Keterangan/Catatan. Dari sana bisa dibuat Laporan PDF per IKI (lengkap dengan foto bukti dukung) dan Excel rekap CKP.</p>
+                    Task di project bertanda <em>Project CKP</em> (bawaan: KipApp) yang sudah dipilih IKI-nya masuk ke menu ⋯ → CKP Triwulan. Task Title menjadi Uraian Kegiatan, Description menjadi Keterangan/Catatan. Di form task, ketuk kolom IKI untuk mencari IKI (nama kegiatan, tim, kode IK, teks IKI, atau rincian); tiga IKI terakhir dipakai tampil paling atas. IKI tim lain bisa dipilih, tetapi diberi tanda <em>bukan penugasanmu</em>. Setelah IKI dipilih, muncul 💡 saran keterangan dari task sebelumnya dengan IKI yang sama. Dari sana bisa dibuat Laporan PDF per IKI (lengkap dengan foto bukti dukung) dan Excel rekap CKP.</p>
 
                     <p><strong>Tampilan</strong><br>
                     Menu ⋯ → Tampilan: <em>Otomatis</em> mengikuti mode gelap/terang perangkat, atau pilih Terang/Gelap. Pilihan disimpan per perangkat. Laporan PDF CKP selalu putih apa pun temanya.</p>

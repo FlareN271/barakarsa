@@ -223,7 +223,7 @@ function createTaskHTML(task) {
 
     // Badge IKI hanya untuk task CKP, dan hanya bila katalog IKI sudah diimpor
     let ikiBadge = '';
-    if (isCkpTask(task) && ckpCatalog().length) {
+    if (isCkpTask(task) && ckpAllEntries().length) {
         const e = ckpEntry(task.iki);
         ikiBadge = e ? `<span class="badge iki-badge" title="${esc(e.iki_anggota)}">🎯 ${esc(e.short)}</span>`
                      : '<span class="badge ev-missing" title="Pilih IKI supaya masuk CKP">🎯 IKI?</span>';
