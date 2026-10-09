@@ -8,7 +8,7 @@
      3) load (+50 ms)     : sinkron Supabase (tidak menahan tampilan)
    ============================================================ */
 
-const APP_VERSION = '3.3';
+const APP_VERSION = '3.4';
 const NARALOKA_URL = 'https://flaren271.github.io/naraloka/';
 
 // ---------- Menu ⋯ ----------
@@ -26,6 +26,7 @@ function closeToolsMenu() {
 function toolsAction(action) {
     closeToolsMenu();
     if (action === 'ckp') openCkpHub();
+    else if (action === 'pengingat') openPengingatModal();
     else if (action === 'json') exportToJSON();
     else if (action === 'csv') exportToCSV();
     else if (action === 'import') openPasteImportModal();
@@ -94,6 +95,7 @@ function setupEventListeners() {
 setupTheme();
 setupPwa();
 setupBukti();
+setupPengingat();
 
 // Pintasan keyboard: Q = tambah task (seperti Todoist); Esc = tutup pratinjau PDF CKP
 document.addEventListener('keydown', (e) => {

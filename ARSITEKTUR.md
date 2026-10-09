@@ -1,6 +1,6 @@
 # BARAKARSA — Arsitektur
 
-Peta kode Barakarsa mulai versi 3.2.1. Tanpa alat build: semua file langsung disajikan GitHub Pages.
+Peta kode Barakarsa mulai versi 3.2.1 (diperbarui untuk 3.4). Tanpa alat build: semua file langsung disajikan GitHub Pages.
 Rencana versi ada di `ROADMAP.md`, riwayat di `CHANGELOG.md`.
 
 ## Peta file
@@ -8,8 +8,10 @@ Rencana versi ada di `ROADMAP.md`, riwayat di `CHANGELOG.md`.
 ```
 index.html        HTML saja + skrip kecil di <head> (tema & sidebar HP sebelum halaman digambar)
 manifest.json     PWA: nama, ikon, warna, shortcut "Tambah task cepat"
-sw.js             service worker: cache dulu, perbarui di belakang, kabar versi baru
+sw.js             service worker: cache dulu, perbarui di belakang, kabar versi baru,
+                  notifikasi pengingat (push) dan klik notifikasi (3.4)
 icon-192.png, icon-512.png
+icon-badge.png    ikon kecil putih-transparan di bilah status Android (3.4)
 
 css/              dimuat berurutan; urutan ini penting
   tema.css        SEMUA warna: variabel gelap (:root) dan terang ([data-theme="light"])
@@ -17,6 +19,7 @@ css/              dimuat berurutan; urutan ini penting
   komponen.css    statistik, kartu task, badge, tombol, form, modal, toast, tombol ➕
   tampilan.css    Board, Kalender, Reporting
   ckp.css         foto bukti dukung, IKI di form, hub CKP Triwulan
+  pengingat.css   panel 🔔 Pengingat, pilihan 🔔 di form task (3.4)
   cetak.css       halaman Laporan PDF CKP — selalu putih, tidak memakai variabel tema
   hp.css          layar ≤768px (paling akhir supaya menang atas aturan dasar)
 
@@ -30,9 +33,17 @@ js/               skrip biasa dengan defer (bukan ES module), dijalankan berurut
   bukti.js        foto: kompres, IndexedDB, antrean unggah, peringatan "belum ada bukti"
   ckp.js          katalog IKI, pemilih & pencarian IKI, saran IKI, saran keterangan, hub CKP Triwulan, foto solusi
   ekspor.js       backup JSON/CSV, import, stress test, Excel/PDF/Word CKP
-  pwa.js          daftar service worker, "Pasang aplikasi", kabar versi baru, ?quick=1
+  pengingat.js    pengingat: langganan push, pengaturan (sinkron), panel, 🔔 per task (3.4)
+  pwa.js          daftar service worker, "Pasang aplikasi", kabar versi baru, ?quick=1, ?task=, ?view=today
   main.js         menu ⋯, event umum, urutan inisialisasi
 ```
+
+supabase/         TIDAK dimuat aplikasi; berkas untuk dipasang sendiri di Supabase (3.4)
+  01-tabel-pengingat.sql        3 tabel baru + RLS
+  02-penjadwal.sql              pg_cron tiap menit → Edge Function (rahasia diisi saat dijalankan)
+  functions/pengingat/index.ts  Edge Function: penjadwal, info, daftar/lepas perangkat, uji
+  buat-kunci.html               pembuat kunci VAPID & rahasia penjadwal (di browser)
+  PANDUAN-PASANG-3.4.md         langkah pemasangan & pemeriksaan
 
 Karena bukan module, semua fungsi dan variabel tingkat atas berbagi satu ruang global.
 Itu yang membuat `onclick="saveTask(event)"` di HTML tetap bekerja. Konsekuensinya: nama
@@ -57,13 +68,19 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 | localStorage | `barakarsa_photo_trash` | path foto yang menunggu dihapus dari server |
 | localStorage | `barakarsa_mig31_ckp`, `barakarsa_mig31_done` | penanda migrasi 3.1 sudah jalan |
 | localStorage | `barakarsa_stress_backup` | cadangan sementara selama stress test |
+| localStorage | `barakarsa_pengingat` | per perangkat (3.4): `{ uid, atur: { data, updatedAt }, endpoint, vapid, terdaftar }` |
 | IndexedDB | `barakarsa_photos` (`blobs`, `thumbs`) | foto penuh yang belum terunggah, thumbnail |
 | Supabase | tabel `barakarsa_items` | satu baris per task/project/label: `user_id, id, kind, data, deleted, updated_at` |
 | Supabase | tabel `barakarsa_settings` | satu baris per bagian CKP: `user_id, id, data, updated_at` |
+| Supabase | tabel `barakarsa_pengingat` (3.4) | satu baris per akun: `task_on, task_menit, pagi_on, pagi_jam, pagi_hari, zona, updated_at` |
+| Supabase | tabel `barakarsa_push_langganan` (3.4) | satu baris per perangkat: `endpoint, user_id, p256dh, auth, perangkat, dibuat, terakhir_ok, gagal`; ditulis hanya oleh Edge Function |
+| Supabase | tabel `barakarsa_push_log` (3.4) | `user_id, kunci, dikirim_at` — pesan yang sudah terkirim (anti-dobel); hanya server |
 | Supabase | bucket `bukti-dukung` (privat) | `{user}/{taskId}/{fotoId}.jpg`, foto solusi di `{user}/ckp/{periode}/{iki}/…` |
 
 Bentuk task (field yang dipakai):
-`id, title, description, date, dateEnd, time, quadrant (do/schedule/delegate/eliminate = P1–P4), project (teks id), labels (angka id), attachment, status, isInbox, createdAt, completedAt, order, iki, photos[], updatedAt`.
+`id, title, description, date, dateEnd, time, quadrant (do/schedule/delegate/eliminate = P1–P4), project (teks id), labels (angka id), attachment, status, isInbox, createdAt, completedAt, order, iki, photos[], ingat, updatedAt`.
+`ingat` (3.4): menit sebelum jam task; tidak ada = ikut bawaan, `0` = saat waktunya, `-1` = tanpa pengingat.
+Versi lama tidak mengenalnya tetapi tidak membuangnya (`saveTask` membawa field lama dengan `...task lama`).
 
 Bentuk katalog IKI (`katalog.data`, sejak 3.3):
 `{ entries, lain, source, importedAt }`
@@ -135,6 +152,33 @@ ckpApplyDesc(i)                    Description kosong → diisi; sudah berisi �
 ``` `duplicateTask(id)` membuka form kosong, mengisinya dari task
 asal, dan menandai `dupSourceId` supaya salinan diletakkan tepat di bawah aslinya saat Save.
 
+## Alur pengingat (3.4)
+
+```
+Aktifkan (pengingat.js pgAktifkan)
+  Notification.requestPermission() → 'denied': panel "diblokir", tidak ada yang dikirim ke server
+  Edge Function {jenis:'info'}      → kunci publik VAPID (tidak ditulis di kode)
+  pushManager.subscribe()           → Edge Function {jenis:'daftar'} → barakarsa_push_langganan
+  pgSyncAtur(true)                  → pastikan baris barakarsa_pengingat ada (bawaan 5 menit, 07.30, tiap hari)
+
+pg_cron tiap menit → POST /functions/v1/pengingat {jenis:'cron'} + header x-cron-secret
+  per akun yang punya pengaturan & perangkat:
+    task di barakarsa_items dengan data->>date = kemarin/hari ini/besok (zona akun)
+    pengingat task: punya tanggal+jam, status bukan completed/cancelled, ingat ≥ 0,
+                    sekarang di antara (jam − menit) dan (jam + 10 menit)
+    ringkasan pagi: hari dipilih, sekarang di antara jam ringkasan dan +4 jam;
+                    isi = task bertanggal hari ini selain completed/cancelled (berjam dulu, lalu urutan)
+    klaim kunci di barakarsa_push_log (t:{id}:{tanggal}T{jam}:{menit} / p:{tanggal}) → kirim Web Push
+    404/410 dari layanan push → langganan dihapus
+sw.js 'push' → showNotification(judul, isi, tag) ; 'notificationclick' → pesan 'barakarsa-buka' ke tab
+  yang terbuka, atau buka ./?task=ID / ./?view=today → bukaDariTautan() (pwa.js)
+```
+
+- Server hanya membaca task yang **sudah tersinkron**; tidak ada jadwal yang disimpan terpisah.
+- Pengaturan pengingat sinkron seperti pengaturan CKP: `updated_at` terbaru menang (`pgSyncAtur`).
+- Rahasia (`VAPID_PRIVATE_KEY`, `CRON_SECRET`) hanya di Supabase Secrets/Vault; repo memuat placeholder.
+- Web Push ditulis langsung dengan WebCrypto di Edge Function (aes128gcm + VAPID ES256), tanpa pustaka.
+
 ## Aturan menambah kode
 
 - Warna baru: tambahkan variabel di `css/tema.css` (versi gelap **dan** terang), lalu pakai `var(--…)`.
@@ -148,3 +192,5 @@ asal, dan menandai `dupSourceId` supaya salinan diletakkan tepat di bawah asliny
 - Task baru tidak perlu diberi `order` sendiri: `saveData()` memberi nomor pada task yang belum punya.
 - Komentar dan nama baru berbahasa Indonesia.
 - Jangan menulis properti turunan (cache) ke objek di `ckpStore`; pakai `WeakMap` (lihat `ckpKwCache`, `ckpSearchCache`).
+- Field task baru: pastikan form membawa field lama (`...task lama`) dan duplikat ikut menyalinnya bila perlu (contoh `ingat`: `pgMuatForm`, `pgTerapkanKeTask`).
+- File baru yang diperlukan service worker (mis. `icon-badge.png`) juga masuk `ASSETS`; satu file hilang membuat cache baru gagal terpasang.

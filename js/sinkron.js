@@ -220,12 +220,13 @@ function scheduleSync() {
 }
 
 // Satu putaran sinkron lengkap. Setelah task/project/label, sekaligus:
-// antrean foto bukti dukung, pengaturan CKP, serta migrasi dan nomor urutan
+// antrean foto bukti dukung, pengaturan CKP, pengaturan pengingat, serta migrasi dan nomor urutan
 // untuk data yang baru datang dari perangkat lama.
 async function syncNow(showBusy) {
     await syncItems(showBusy);
     evProcessQueue();
     ckpSyncSettings();
+    pengingatSync();                       // pengingat.js: pengaturan & langganan push (3.4)
     const migrated = migrate31();
     if (migrated || hasMissingOrder()) { saveData(); debouncedRender(); }
 }

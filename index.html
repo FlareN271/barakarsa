@@ -48,6 +48,7 @@
     <link rel="stylesheet" href="./css/komponen.css">
     <link rel="stylesheet" href="./css/tampilan.css">
     <link rel="stylesheet" href="./css/ckp.css">
+    <link rel="stylesheet" href="./css/pengingat.css">
     <link rel="stylesheet" href="./css/cetak.css">
     <link rel="stylesheet" href="./css/hp.css">
 
@@ -62,6 +63,7 @@
     <script defer src="./js/bukti.js"></script>
     <script defer src="./js/ckp.js"></script>
     <script defer src="./js/ekspor.js"></script>
+    <script defer src="./js/pengingat.js"></script>
     <script defer src="./js/pwa.js"></script>
     <script defer src="./js/main.js"></script>
 </head>
@@ -181,6 +183,9 @@
                             <div class="tools-menu-item" onclick="toolsAction('json')">💾 Export JSON</div>
                             <div class="tools-menu-item" onclick="toolsAction('csv')">📊 Export CSV</div>
                             <div class="tools-menu-item" onclick="toolsAction('import')">📥 Import Backup</div>
+
+                            <div class="tools-menu-title">Pengingat</div>
+                            <div class="tools-menu-item" onclick="toolsAction('pengingat')">🔔 Pengaturan pengingat</div>
 
                             <div class="tools-menu-title">Tampilan</div>
                             <div class="tools-menu-item theme-option" data-theme-pref="auto" onclick="toolsAction('theme-auto')">🖥️ Otomatis (ikut perangkat)</div>
@@ -415,6 +420,11 @@
                     <div class="form-group">
                         <label>Time</label>
                         <input type="time" id="taskTime">
+                        <!-- 🔔 pengingat per task (3.4); hanya tampil bila jam diisi -->
+                        <div class="ingat-task" id="ingatTaskBaris" hidden>
+                            <span class="ingat-task-ikon" aria-hidden="true">🔔</span>
+                            <select id="taskIngat" aria-label="Pengingat untuk task ini"></select>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -542,6 +552,17 @@
         </div>
     </div>
 
+    <!-- Pengingat (3.4): isi digambar oleh pgRender() di pengingat.js -->
+    <div class="modal" id="pengingatModal" onclick="if (event.target === this) closePengingatModal()">
+        <div class="modal-content modal-simple">
+            <div class="modal-body">
+                <button class="modal-close" onclick="closePengingatModal()">✕</button>
+                <h2 class="modal-title">🔔 Pengingat</h2>
+                <div id="pengingatIsi"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Help -->
     <div class="modal" id="helpModal">
         <div class="modal-content modal-simple">
@@ -563,6 +584,9 @@
 
                     <p><strong>CKP</strong><br>
                     Task di project bertanda <em>Project CKP</em> (bawaan: KipApp) yang sudah dipilih IKI-nya masuk ke menu ⋯ → CKP Triwulan. Task Title menjadi Uraian Kegiatan, Description menjadi Keterangan/Catatan. Di form task, ketuk kolom IKI untuk mencari IKI (nama kegiatan, tim, kode IK, teks IKI, atau rincian); tiga IKI terakhir dipakai tampil paling atas. IKI tim lain bisa dipilih, tetapi diberi tanda <em>bukan penugasanmu</em>. Setelah IKI dipilih, muncul 💡 saran keterangan dari task sebelumnya dengan IKI yang sama. Dari sana bisa dibuat Laporan PDF per IKI (lengkap dengan foto bukti dukung) dan Excel rekap CKP.</p>
+
+                    <p><strong>Pengingat</strong><br>
+                    Menu ⋯ → 🔔 Pengaturan pengingat → <em>Aktifkan di perangkat ini</em> (lakukan di setiap HP/laptop). Task bertanggal dan berjam diingatkan sesuai bawaan (mis. 5 menit sebelumnya), atau pilih sendiri lewat 🔔 di bawah kolom Time. Ringkasan pagi berisi task Today. Notifikasi dikirim server dari task yang sudah tersinkron, jadi tetap muncul walau aplikasi ditutup.</p>
 
                     <p><strong>Tampilan</strong><br>
                     Menu ⋯ → Tampilan: <em>Otomatis</em> mengikuti mode gelap/terang perangkat, atau pilih Terang/Gelap. Pilihan disimpan per perangkat. Laporan PDF CKP selalu putih apa pun temanya.</p>

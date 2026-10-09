@@ -21,6 +21,8 @@ function setupPwa() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', (e) => {
             if (e.data && e.data.type === 'barakarsa-updated') showUpdateToast();
+            // Notifikasi diketuk saat aplikasi sudah terbuka (3.4)
+            if (e.data && e.data.type === 'barakarsa-buka') bukaDariTautan(e.data.url);
         });
     }
 
@@ -67,12 +69,38 @@ function showUpdateToast() {
     document.body.appendChild(el);
 }
 
-// Dibuka lewat shortcut "Tambah task cepat": langsung ke kolom input Inbox
+// Dibuka lewat shortcut atau notifikasi:
+//   ?quick=1   "Tambah task cepat" → kolom input Inbox
+//   ?task=ID   pengingat task diketuk → buka task itu (3.4)
+//   ?view=today ringkasan pagi diketuk → Today (3.4)
 function handleLaunchParams() {
     const params = new URLSearchParams(location.search);
-    if (params.get('quick') !== '1') return;
-    history.replaceState(null, '', location.pathname);
-    switchView('inbox');
-    const input = document.getElementById('quickInput');
-    if (input) setTimeout(() => input.focus(), 150);
+    if (params.get('quick') === '1') {
+        history.replaceState(null, '', location.pathname);
+        switchView('inbox');
+        const input = document.getElementById('quickInput');
+        if (input) setTimeout(() => input.focus(), 150);
+        return;
+    }
+    if (params.has('task') || params.has('view')) {
+        const url = location.href;
+        history.replaceState(null, '', location.pathname);
+        bukaDariTautan(url);
+    }
+}
+
+function bukaDariTautan(url) {
+    let params;
+    try { params = new URL(url, location.href).searchParams; } catch (e) { return; }
+    const id = params.get('task');
+    if (id) {
+        const task = tasks.find(t => String(t.id) === id);
+        if (!task) { switchView('today'); evToast('Task belum ada di perangkat ini. Tunggu sinkron sebentar.'); return; }
+        // Jangan menimpa form yang sedang diisi
+        if (document.getElementById('taskModal').classList.contains('active')) { evToast('⏰ ' + task.title); return; }
+        document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+        editTask(task.id);
+    } else if (params.get('view') === 'today') {
+        switchView('today');
+    }
 }

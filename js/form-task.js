@@ -28,6 +28,7 @@ function openTaskModal() {
 
     evLoad(null);
     ckpLoadTaskForm(null);
+    pgMuatForm(null);
     setEditButtonsVisible(false);
 }
 
@@ -58,6 +59,7 @@ function editTask(id) {
 
     evLoad(task);
     ckpLoadTaskForm(task);
+    pgMuatForm(task);
     setEditButtonsVisible(true);
 }
 
@@ -137,6 +139,7 @@ function saveTask(e) {
         createdAt: before ? before.createdAt : new Date().toISOString()
     };
     ckpApplyToTask(task);                              // IKI & "Sampai tanggal"
+    pgTerapkanKeTask(task);                            // 🔔 pengingat per task (3.4)
     evCommit(task, before ? evPhotos(before) : []);    // foto bukti dukung
 
     const isCopy = !before && dupSourceId !== null;
@@ -174,7 +177,7 @@ function placeCopyBelow(copy, src) {
 // ---------- Duplikat ----------
 // Salinan dibuka di form dulu; baru tercipta saat Save.
 // Ikut disalin: judul, description, project, label, priority, IKI,
-// tanggal, jam, rentang tanggal, status, link. Foto tidak ikut.
+// tanggal, jam, pengingat, rentang tanggal, status, link. Foto tidak ikut.
 function duplicateTask(id) {
     const src = tasks.find(t => t.id === id);
     if (!src) return;
@@ -197,6 +200,7 @@ function duplicateTask(id) {
         if (cb) cb.checked = true;
     });
     ckpLoadTaskForm(src); // IKI, rentang tanggal, tampilan khusus project CKP
+    pgMuatForm(src);      // 🔔 pengingat per task ikut disalin
     evToast('Salinan belum tersimpan. Ubah seperlunya lalu Save. Foto tidak ikut disalin.');
 }
 

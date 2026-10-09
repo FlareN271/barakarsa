@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buat Kunci Pengingat</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --bg:#16110e; --surface:#231b17; --border:#3b2d26; --text:#f4ebe5; --muted:#b8a497; --accent:#cf4219; --ok:#3ccf8e; --warn:#fbbf6a; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#fbf7f4; --surface:#ffffff; --border:#eadbd0; --text:#2b1d16; --muted:#7a6457; --accent:#cf4219; --ok:#11804f; --warn:#9a5b00; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:1.4rem; margin:0 0 4px; }
+  p.lead { color:var(--muted); margin:0 0 20px; }
+  .kartu { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:14px; }
+  .nama { font-weight:700; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .nama small { font-weight:500; color:var(--muted); }
+  code { display:block; margin-top:8px; padding:10px; border-radius:8px; background:var(--bg); border:1px solid var(--border); word-break:break-all; font-size:13px; }
+  button { font:inherit; font-weight:600; border:0; border-radius:8px; padding:8px 14px; cursor:pointer; background:var(--accent); color:#fff; }
+  button.kecil { padding:4px 10px; font-size:13px; background:transparent; color:var(--text); border:1px solid var(--border); }
+  .peringatan { border-color:var(--warn); color:var(--warn); }
+  .ok { color:var(--ok); font-size:13px; margin-left:6px; }
+  ol { padding-left:20px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>🔑 Buat Kunci Pengingat Barakarsa</h1>
+  <p class="lead">Kunci dibuat di browser ini saja, tidak dikirim ke mana pun. Buat <b>sekali</b>, lalu salin ke Supabase.
+    Membuat ulang berarti semua perangkat harus mengaktifkan pengingat lagi.</p>
+
+  <div class="kartu peringatan">
+    ⚠️ <b>VAPID_PRIVATE_KEY</b> dan <b>CRON_SECRET</b> bersifat rahasia: hanya ditempel ke Supabase
+    (Edge Functions → Secrets, dan SQL penjadwal). Jangan ditaruh di repo, chat, atau file yang diunggah.
+  </div>
+
+  <p><button id="buat">Buat kunci</button></p>
+  <div id="hasil"></div>
+
+  <ol>
+    <li>Edge Functions → <b>Secrets</b>: tambahkan <code style="display:inline;padding:2px 6px">VAPID_PUBLIC_KEY</code>,
+      <code style="display:inline;padding:2px 6px">VAPID_PRIVATE_KEY</code>, <code style="display:inline;padding:2px 6px">VAPID_SUBJECT</code>,
+      <code style="display:inline;padding:2px 6px">CRON_SECRET</code> dengan nilai di atas.</li>
+    <li>SQL Editor → <b>02-penjadwal.sql</b>: ganti <i>TEMPEL_RAHASIA_PENJADWAL</i> dengan nilai CRON_SECRET yang sama.</li>
+    <li>Tutup halaman ini setelah selesai. Kunci tidak disimpan di mana pun.</li>
+  </ol>
+</main>
+<script>
+const b64u = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const dariB64u = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+
+function kartu(nama, nilai, ket) {
+  const d = document.createElement('div');
+  d.className = 'kartu';
+  d.innerHTML = `<div class="nama"><span>${nama} <small>${ket}</small></span><span><button class="kecil">Salin</button><span class="ok"></span></span></div><code></code>`;
+  d.querySelector('code').textContent = nilai;
+  d.querySelector('button').onclick = async () => {
+    try { await navigator.clipboard.writeText(nilai); d.querySelector('.ok').textContent = '✓ tersalin'; }
+    catch (e) { d.querySelector('.ok').textContent = 'salin manual'; }
+  };
+  return d;
+}
+
+document.getElementById('buat').onclick = async () => {
+  if (!window.crypto || !crypto.subtle) { alert('Browser ini tidak mendukung WebCrypto. Buka lewat https atau Chrome/Edge terbaru.'); return; }
+  const pasangan = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  const jwk = await crypto.subtle.exportKey('jwk', pasangan.privateKey);
+  const pub = new Uint8Array(65);
+  pub[0] = 4; pub.set(dariB64u(jwk.x), 1); pub.set(dariB64u(jwk.y), 33);
+  const rahasia = b64u(crypto.getRandomValues(new Uint8Array(32)));
+
+  const h = document.getElementById('hasil');
+  h.innerHTML = '';
+  h.append(
+    kartu('VAPID_PUBLIC_KEY', b64u(pub), 'publik'),
+    kartu('VAPID_PRIVATE_KEY', jwk.d, 'RAHASIA'),
+    kartu('VAPID_SUBJECT', 'mailto:ganti-dengan-email-anda@gmail.com', 'ganti dengan email Anda sendiri'),
+    kartu('CRON_SECRET', rahasia, 'RAHASIA — juga untuk 02-penjadwal.sql')
+  );
+  document.getElementById('buat').textContent = 'Buat ulang (mengganti semua kunci)';
+};
+</script>
+</body>
+</html>

@@ -1,12 +1,14 @@
-// BARAKARSA service worker — v3.3
+// BARAKARSA service worker — v3.4
 // Strategi: tampilkan dari cache dulu (cepat, juga saat sinyal lemah atau offline),
 // lalu perbarui cache di belakang layar. Kalau index.html di server berubah,
 // halaman diberi tahu supaya bisa menawarkan "Muat ulang".
+// Sejak 3.4 juga menampilkan notifikasi pengingat (event push) dan membuka
+// aplikasi saat notifikasi diketuk (event notificationclick).
 //
 // Setiap file baru di css/ atau js/ WAJIB ditambahkan ke ASSETS, dan nama
 // CACHE_NAME dinaikkan setiap rilis, supaya aplikasi tetap jalan offline.
 
-const CACHE_NAME = 'barakarsa-v3.3';
+const CACHE_NAME = 'barakarsa-v3.4';
 const APP_SHELL = './index.html';
 const ASSETS = [
   './',
@@ -14,11 +16,13 @@ const ASSETS = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
+  './icon-badge.png',
   './css/tema.css',
   './css/dasar.css',
   './css/komponen.css',
   './css/tampilan.css',
   './css/ckp.css',
+  './css/pengingat.css',
   './css/cetak.css',
   './css/hp.css',
   './js/data.js',
@@ -30,6 +34,7 @@ const ASSETS = [
   './js/bukti.js',
   './js/ckp.js',
   './js/ekspor.js',
+  './js/pengingat.js',
   './js/pwa.js',
   './js/main.js'
 ];
@@ -73,6 +78,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Berkas pemasangan Supabase (supabase/…) bukan bagian aplikasi: langsung dari server
+  if (new URL(request.url).pathname.includes('/supabase/')) return;
+
   const isNav = request.mode === 'navigate';
   // Semua navigasi (termasuk ./?quick=1 dari shortcut) memakai app shell yang sama
   const cacheKey = isNav ? APP_SHELL : request;
@@ -109,4 +117,39 @@ self.addEventListener('fetch', (event) => {
       });
     })
   );
+});
+
+// ---------- Notifikasi pengingat (3.4) ----------
+// Isi pesan dari Edge Function "pengingat": { judul, isi, tag, url, jenis, waktu }
+
+self.addEventListener('push', (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = { isi: event.data ? event.data.text() : '' }; }
+  const opsi = {
+    body: d.isi || '',
+    icon: './icon-192.png',
+    badge: './icon-badge.png',
+    data: { url: d.url || './' },
+    timestamp: d.waktu || Date.now(),
+    lang: 'id'
+  };
+  // tag sama = notifikasi lama diganti, bukan menumpuk (mis. ringkasan pagi)
+  if (d.tag) { opsi.tag = d.tag; opsi.renotify = true; }
+  event.waitUntil(self.registration.showNotification(d.judul || 'Barakarsa', opsi));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || './', self.registration.scope).href;
+  event.waitUntil((async () => {
+    const semua = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const terbuka = semua.find((c) => c.url.startsWith(self.registration.scope));
+    if (terbuka) {
+      // Kirim pesan dulu: focus() bisa ditolak browser, tapi task tetap harus terbuka
+      terbuka.postMessage({ type: 'barakarsa-buka', url });
+      try { await terbuka.focus(); } catch (e) { /* abaikan */ }
+      return;
+    }
+    await self.clients.openWindow(url);
+  })());
 });
