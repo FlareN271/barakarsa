@@ -1,6 +1,6 @@
 # BARAKARSA — Arsitektur
 
-Peta kode Barakarsa mulai versi 3.2.1 (diperbarui untuk 3.4). Tanpa alat build: semua file langsung disajikan GitHub Pages.
+Peta kode Barakarsa mulai versi 3.2.1 (diperbarui untuk 3.5). Tanpa alat build: semua file langsung disajikan GitHub Pages.
 Rencana versi ada di `ROADMAP.md`, riwayat di `CHANGELOG.md`.
 
 ## Peta file
@@ -17,9 +17,10 @@ css/              dimuat berurutan; urutan ini penting
   tema.css        SEMUA warna: variabel gelap (:root) dan terang ([data-theme="light"])
   dasar.css       reset, tata letak, sidebar, header, menu ⋯
   komponen.css    statistik, kartu task, badge, tombol, form, modal, toast, tombol ➕
-  tampilan.css    Board, Kalender, Reporting
+  tampilan.css    Board, Kalender
   ckp.css         foto bukti dukung, IKI di form, hub CKP Triwulan
   pengingat.css   panel 🔔 Pengingat, pilihan 🔔 di form task (3.4)
+  laporan.css     menu Reporting (3.5)
   cetak.css       halaman Laporan PDF CKP — selalu putih, tidak memakai variabel tema
   hp.css          layar ≤768px (paling akhir supaya menang atas aturan dasar)
 
@@ -34,6 +35,7 @@ js/               skrip biasa dengan defer (bukan ES module), dijalankan berurut
   ckp.js          katalog IKI, pemilih & pencarian IKI, saran IKI, saran keterangan, hub CKP Triwulan, foto solusi
   ekspor.js       backup JSON/CSV, import, stress test, Excel/PDF/Word CKP
   pengingat.js    pengingat: langganan push, pengaturan (sinkron), panel, 🔔 per task (3.4)
+  laporan.js      menu Reporting: rentang, angka utama, grafik task selesai, project, lewat tanggal (3.5)
   pwa.js          daftar service worker, "Pasang aplikasi", kabar versi baru, ?quick=1, ?task=, ?view=today
   main.js         menu ⋯, event umum, urutan inisialisasi
 ```
@@ -68,6 +70,7 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 | localStorage | `barakarsa_photo_trash` | path foto yang menunggu dihapus dari server |
 | localStorage | `barakarsa_mig31_ckp`, `barakarsa_mig31_done` | penanda migrasi 3.1 sudah jalan |
 | localStorage | `barakarsa_stress_backup` | cadangan sementara selama stress test |
+| localStorage | `barakarsa_laporan` | rentang Reporting terakhir (`minggu`/`bulan`/`triwulan`); per perangkat (3.5) |
 | localStorage | `barakarsa_pengingat` | per perangkat (3.4): `{ uid, atur: { data, updatedAt }, endpoint, vapid, terdaftar }` |
 | IndexedDB | `barakarsa_photos` (`blobs`, `thumbs`) | foto penuh yang belum terunggah, thumbnail |
 | Supabase | tabel `barakarsa_items` | satu baris per task/project/label: `user_id, id, kind, data, deleted, updated_at` |
@@ -179,6 +182,19 @@ sw.js 'push' → showNotification(judul, isi, tag) ; 'notificationclick' → pes
 - Rahasia (`VAPID_PRIVATE_KEY`, `CRON_SECRET`) hanya di Supabase Secrets/Vault; repo memuat placeholder.
 - Web Push ditulis langsung dengan WebCrypto di Edge Function (aes128gcm + VAPID ES256), tanpa pustaka.
 
+## Reporting (3.5)
+
+```
+render() → lpRender()          laporan.js, saat menu Reporting aktif (tidak mengikuti filter header)
+  lpPeriode(rentang, hari ini)  mulai/akhir, kotak grafik (hari; minggu Min–Sab untuk triwulan),
+                                pembanding = periode lalu sampai titik yang sama
+  lpKumpulkan(P)                satu putaran atas tasks: task selesai, lewat tanggal
+    tanggal selesai             completedAt → tanggal lokal; completedAt null (sebelum 3.1) → dateEnd/date,
+                                kelas 'unk' (tidak dinilai tepat waktu); tanpa tanggal juga → tidak dihitung
+    tepat waktu                 tanggal selesai ≤ (dateEnd || date); Cancelled tidak dihitung
+  lpKartu…                      HTML biasa; batang dengan CSS (tanpa pustaka grafik)
+```
+
 ## Aturan menambah kode
 
 - Warna baru: tambahkan variabel di `css/tema.css` (versi gelap **dan** terang), lalu pakai `var(--…)`.
@@ -193,4 +209,5 @@ sw.js 'push' → showNotification(judul, isi, tag) ; 'notificationclick' → pes
 - Komentar dan nama baru berbahasa Indonesia.
 - Jangan menulis properti turunan (cache) ke objek di `ckpStore`; pakai `WeakMap` (lihat `ckpKwCache`, `ckpSearchCache`).
 - Field task baru: pastikan form membawa field lama (`...task lama`) dan duplikat ikut menyalinnya bila perlu (contoh `ingat`: `pgMuatForm`, `pgTerapkanKeTask`).
+- Tanggal dari waktu ISO (mis. completedAt) diubah ke tanggal lokal (`lpIsoLokal()` di laporan.js), bukan `.slice(0, 10)`.
 - File baru yang diperlukan service worker (mis. `icon-badge.png`) juga masuk `ASSETS`; satu file hilang membuat cache baru gagal terpasang.

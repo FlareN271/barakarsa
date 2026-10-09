@@ -49,6 +49,7 @@
     <link rel="stylesheet" href="./css/tampilan.css">
     <link rel="stylesheet" href="./css/ckp.css">
     <link rel="stylesheet" href="./css/pengingat.css">
+    <link rel="stylesheet" href="./css/laporan.css">
     <link rel="stylesheet" href="./css/cetak.css">
     <link rel="stylesheet" href="./css/hp.css">
 
@@ -64,6 +65,7 @@
     <script defer src="./js/ckp.js"></script>
     <script defer src="./js/ekspor.js"></script>
     <script defer src="./js/pengingat.js"></script>
+    <script defer src="./js/laporan.js"></script>
     <script defer src="./js/pwa.js"></script>
     <script defer src="./js/main.js"></script>
 </head>
@@ -290,31 +292,9 @@
                     <div id="filtersList"></div>
                 </div>
 
-                <!-- Reporting -->
+                <!-- Reporting (3.5): isi digambar oleh lpRender() di laporan.js -->
                 <div id="reportingView" class="view" style="display: none;">
-                    <div class="stats">
-                        <div class="stat-card">
-                            <div class="stat-label">Completion Rate</div>
-                            <div class="stat-number" id="completionRate">0%</div>
-                            <div class="stat-sub" id="completionStat"></div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">This Week Done</div>
-                            <div class="stat-number" id="weekCompleted">0</div>
-                            <div class="stat-sub">tasks</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Prioritas Terbanyak</div>
-                            <div class="stat-number" id="topQuadrant">-</div>
-                            <div class="stat-sub">most used</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Avg Completion</div>
-                            <div class="stat-number" id="avgCompletion">-</div>
-                            <div class="stat-sub">days</div>
-                        </div>
-                    </div>
-                    <div id="detailedReports"></div>
+                    <div id="laporanIsi" class="lp"></div>
                 </div>
             </div>
         </div>
@@ -587,6 +567,9 @@
 
                     <p><strong>Pengingat</strong><br>
                     Menu ⋯ → 🔔 Pengaturan pengingat → <em>Aktifkan di perangkat ini</em> (lakukan di setiap HP/laptop). Task bertanggal dan berjam diingatkan sesuai bawaan (mis. 5 menit sebelumnya), atau pilih sendiri lewat 🔔 di bawah kolom Time. Ringkasan pagi berisi task Today. Notifikasi dikirim server dari task yang sudah tersinkron, jadi tetap muncul walau aplikasi ditutup.</p>
+
+                    <p><strong>Reporting</strong><br>
+                    Pilih Minggu ini, Bulan ini, atau Triwulan ini. Task selesai dihitung menurut waktu dicentang; <em>tepat waktu</em> berarti selesai paling lambat pada tanggal task (atau <em>Sampai tanggal</em>). Task yang selesai sebelum 8 Oktober 2026 tidak punya catatan waktu selesai, jadi tidak dinilai tepat waktu atau terlambat. Ketuk <em>Lewat tanggal</em> untuk melihat task yang tertinggal.</p>
 
                     <p><strong>Tampilan</strong><br>
                     Menu ⋯ → Tampilan: <em>Otomatis</em> mengikuti mode gelap/terang perangkat, atau pilih Terang/Gelap. Pilihan disimpan per perangkat. Laporan PDF CKP selalu putih apa pun temanya.</p>

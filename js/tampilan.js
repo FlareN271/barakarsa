@@ -513,36 +513,7 @@ function updateSidebarCounts() {
 }
 
 // ---------- Reporting ----------
-
-function renderReporting() {
-    const reportTasks = getFilteredTasks(tasks);
-    const completed = reportTasks.filter(t => t.status === 'completed').length;
-    const total = reportTasks.length;
-    const rate = total ? Math.round((completed / total) * 100) : 0;
-
-    const weekStart = weekStartISO();
-    const weekCompleted = reportTasks.filter(t => t.date && t.date >= weekStart && t.status === 'completed').length;
-
-    const quadrants = {};
-    reportTasks.forEach(t => { quadrants[t.quadrant] = (quadrants[t.quadrant] || 0) + 1; });
-    const topQuadrant = Object.keys(quadrants).sort((a, b) => quadrants[b] - quadrants[a])[0] || '-';
-
-    document.getElementById('completionRate').textContent = rate + '%';
-    document.getElementById('completionStat').textContent = `${completed} / ${total}`;
-    document.getElementById('weekCompleted').textContent = weekCompleted;
-    document.getElementById('topQuadrant').textContent = PRIORITY_LABEL[topQuadrant] ? PRIORITY_LABEL[topQuadrant].short : '-';
-    updateAvgCompletion();
-}
-
-// Rata-rata hari dari dibuat sampai selesai (butuh completedAt, dicatat sejak v3.1)
-function updateAvgCompletion() {
-    const el = document.getElementById('avgCompletion');
-    const done = getFilteredTasks(tasks).filter(t => t.status === 'completed' && t.completedAt && t.createdAt);
-    if (!done.length) { el.textContent = '-'; return; }
-    const days = done.map(t => Math.max(0, (Date.parse(t.completedAt) - Date.parse(t.createdAt)) / 86400000));
-    const avg = days.reduce((a, b) => a + b, 0) / days.length;
-    el.textContent = avg < 10 ? avg.toFixed(1).replace('.', ',') : String(Math.round(avg));
-}
+// Sejak 3.5 laporan digambar oleh laporan.js (lpRender).
 
 // ---------- Gambar ulang layar ----------
 
@@ -589,7 +560,7 @@ function render() {
             </div>
         `).join('') : '<div class="empty-state"><p>No labels created yet</p></div>';
     } else if (currentView === 'reporting') {
-        renderReporting();
+        lpRender();
     }
 
     updateSidebarCounts();

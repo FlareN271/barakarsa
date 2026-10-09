@@ -1,0 +1,93 @@
+/* ============================================================
+   laporan.css — menu Reporting (3.5)
+   Semua warna lewat variabel tema.css. Aturan HP di hp.css.
+   ============================================================ */
+
+.lp { display: grid; gap: 1rem; max-width: 1100px; }
+
+/* ---------- Pilihan rentang ---------- */
+.lp-atas { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; justify-content: space-between; }
+.lp-seg { display: inline-flex; background: var(--surface); border: 1px solid var(--border-color); border-radius: 10px; padding: 3px; }
+.lp-seg button {
+    border: 0; background: none; padding: 0.45rem 0.9rem; border-radius: 7px; cursor: pointer;
+    font: inherit; font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap;
+}
+.lp-seg button:hover { color: var(--text-primary); }
+.lp-seg button[aria-selected="true"] { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.lp-judul { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); }
+
+/* ---------- Angka utama ---------- */
+.lp-angka { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
+.lp-tile {
+    background: var(--surface); border: 1px solid var(--border-color); border-radius: 12px;
+    padding: 0.85rem 0.95rem; min-width: 0; text-align: left; font: inherit; color: inherit;
+}
+.lp-tile-btn { cursor: pointer; display: block; width: 100%; }
+.lp-tile-btn:hover { border-color: var(--accent); }
+.lp-tile-btn:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }
+.lp-k { display: block; font-size: 0.74rem; color: var(--text-secondary); font-weight: 600; }
+.lp-v { display: block; font-size: 1.7rem; font-weight: 800; margin: 0.15rem 0 0.1rem; font-variant-numeric: tabular-nums; line-height: 1.15; color: var(--text-primary); }
+.lp-s { display: block; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; }
+.lp-v-sub { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
+.lp-awas .lp-v { color: var(--danger); }
+.lp-naik { color: var(--status-done); font-weight: 600; }
+.lp-turun { color: var(--p2); font-weight: 600; }
+
+/* ---------- Kartu ---------- */
+.lp-card { background: var(--surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.05rem; min-width: 0; }
+.lp-card h3 { margin: 0 0 0.15rem; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.lp-q { margin: 0 0 0.8rem; font-size: 0.78rem; color: var(--text-faint); }
+.lp-dua { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.lp-kosong { font-size: 0.85rem; color: var(--text-secondary); background: var(--hover); border-radius: 8px; padding: 0.75rem 0.85rem; line-height: 1.5; }
+.lp-catatan { font-size: 0.76rem; color: var(--text-secondary); margin: 0.7rem 0 0; line-height: 1.5; }
+.lp-xl span.lp-kini { color: var(--accent-text); font-weight: 700; }
+
+/* ---------- Grafik batang ---------- */
+.lp-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; font-size: 0.74rem; color: var(--text-secondary); margin-bottom: 0.7rem; }
+.lp-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 0.35rem; vertical-align: -1px; }
+.lp-c-on { background: var(--status-done); }
+.lp-c-late { background: var(--p2); }
+.lp-c-nodl { background: var(--p4); }
+.lp-c-unk { background: repeating-linear-gradient(135deg, var(--text-faint) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px var(--text-faint); }
+
+.lp-chart { position: relative; height: 170px; margin: 1.4rem 0 0 2.4rem; }
+.lp-grid { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--border-color); }
+.lp-grid span {
+    position: absolute; right: calc(100% + 6px); top: -0.6em; font-size: 0.68rem; color: var(--text-faint);
+    white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.lp-bars { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 6px; }
+.lp-bin { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column-reverse; position: relative; }
+.lp-lapis { width: 100%; flex: none; }
+.lp-bin .lp-lapis:last-of-type { border-radius: 4px 4px 0 0; }
+.lp-tot {
+    position: absolute; left: 50%; transform: translateX(-50%); font-size: 0.68rem; color: var(--text-secondary);
+    font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.lp-nanti::after { content: ""; position: absolute; inset: 0; border: 1px dashed var(--border-color); border-radius: 4px; }
+.lp-xl { display: flex; gap: 6px; margin: 0.35rem 0 0 2.4rem; }
+.lp-xl span { flex: 1; min-width: 0; text-align: center; font-size: 0.68rem; color: var(--text-faint); white-space: nowrap; overflow: visible; }
+.lp-rapat .lp-bars, .lp-xl.lp-rapat { gap: 2px; }
+.lp-xl.lp-rapat span.lp-minor { visibility: hidden; }
+
+/* ---------- Daftar task lewat tanggal ---------- */
+.lp-daftar { display: grid; }
+.lp-baris {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.2rem 0.8rem; align-items: baseline;
+    border: 0; border-top: 1px solid var(--border-color); background: none; color: inherit; font: inherit;
+    text-align: left; padding: 0.55rem 0.2rem; cursor: pointer;
+}
+.lp-baris:first-child { border-top: 0; }
+.lp-baris:hover { background: var(--hover); }
+.lp-baris:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: -2px; }
+.lp-baris-judul { font-size: 0.85rem; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.lp-baris-ket { font-size: 0.76rem; color: var(--text-secondary); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* ---------- Sebaran per project ---------- */
+.lp-hl { display: grid; gap: 0.65rem; }
+.lp-hr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.2rem 0.6rem; font-size: 0.84rem; align-items: baseline; }
+.lp-hr-nama { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); }
+.lp-hr-angka { font-size: 0.76rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lp-track { grid-column: 1 / -1; height: 7px; background: var(--hover); border-radius: 99px; overflow: hidden; }
+.lp-track div { height: 100%; border-radius: 99px; }
+.lp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.45rem; vertical-align: 1px; }

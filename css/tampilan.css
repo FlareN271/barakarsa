@@ -1,5 +1,5 @@
 /* ============================================================
-   tampilan.css — Board (per status), Kalender bulanan, Reporting
+   tampilan.css — Board (per status), Kalender bulanan (Reporting: laporan.css)
    ============================================================ */
 
 /* Tombol navigasi kecil (‹ › Hari ini), dipakai Board dan Kalender */
@@ -286,5 +286,3 @@
     width: 100%;
 }
 
-/* ---------- Reporting ---------- */
-#topQuadrant { font-size: 2rem; }

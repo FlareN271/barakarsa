@@ -1,4 +1,4 @@
-// BARAKARSA service worker — v3.4
+// BARAKARSA service worker — v3.5
 // Strategi: tampilkan dari cache dulu (cepat, juga saat sinyal lemah atau offline),
 // lalu perbarui cache di belakang layar. Kalau index.html di server berubah,
 // halaman diberi tahu supaya bisa menawarkan "Muat ulang".
@@ -8,7 +8,7 @@
 // Setiap file baru di css/ atau js/ WAJIB ditambahkan ke ASSETS, dan nama
 // CACHE_NAME dinaikkan setiap rilis, supaya aplikasi tetap jalan offline.
 
-const CACHE_NAME = 'barakarsa-v3.4';
+const CACHE_NAME = 'barakarsa-v3.5';
 const APP_SHELL = './index.html';
 const ASSETS = [
   './',
@@ -23,6 +23,7 @@ const ASSETS = [
   './css/tampilan.css',
   './css/ckp.css',
   './css/pengingat.css',
+  './css/laporan.css',
   './css/cetak.css',
   './css/hp.css',
   './js/data.js',
@@ -35,6 +36,7 @@ const ASSETS = [
   './js/ckp.js',
   './js/ekspor.js',
   './js/pengingat.js',
+  './js/laporan.js',
   './js/pwa.js',
   './js/main.js'
 ];

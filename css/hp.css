@@ -140,7 +140,7 @@
     .ev-toast,
     .update-toast { bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); }
 
-    /* Statistik: 2 kolom (Reporting), 1 baris ringkas (Dashboard) */
+    /* Statistik: 1 baris ringkas (Dashboard) */
     .stats { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
     #dashboardView .stats { grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin-bottom: 1rem; }
     #dashboardView .stat-card { padding: 0.5rem 0.2rem; border-radius: 0.5rem; }
@@ -177,4 +177,23 @@
     .iki-opt { padding-top: 0.6rem; padding-bottom: 0.6rem; }
     .iki-more { padding-top: 0.7rem; padding-bottom: 0.7rem; }
     .ds-chip { padding: 0.45rem 0.6rem; }
+}
+
+/* Reporting (3.5) */
+@media (max-width: 768px) {
+    .lp { gap: 0.8rem; }
+    .lp-atas { flex-direction: column; align-items: stretch; }
+    .lp-seg { display: flex; }
+    .lp-seg button { flex: 1; padding: 0.55rem 0.3rem; }
+    .lp-angka { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
+    .lp-tile { padding: 0.7rem 0.75rem; }
+    .lp-v { font-size: 1.4rem; }
+    .lp-card { padding: 0.85rem 0.8rem; }
+    .lp-dua { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; }
+    .lp-chart { height: 140px; margin-left: 2.1rem; }
+    .lp-xl { margin-left: 2.1rem; }
+    .lp-bars, .lp-xl { gap: 3px; }
+    .lp-rapat .lp-bars, .lp-xl.lp-rapat { gap: 1px; }
+    .lp-baris { grid-template-columns: minmax(0, 1fr); }
+    .lp-baris-judul { white-space: normal; }
 }
