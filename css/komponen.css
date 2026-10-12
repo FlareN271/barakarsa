@@ -1,57 +1,8 @@
 /* ============================================================
-   komponen.css — kartu statistik, task, badge, tombol, form,
+   komponen.css — task, badge, tombol, form,
    modal, dialog konfirmasi, menu project, filter, toast, tombol ➕
+   (sejak 3.7 kartu statistik Dashboard dan kolom Inbox cepat dihapus)
    ============================================================ */
-
-/* ---------- Kartu statistik (Dashboard & Reporting) ---------- */
-.stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
-    padding: 1.25rem;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-}
-
-.stat-number {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-}
-
-#statDo { color: var(--accent-text); }
-
-.stat-label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    font-weight: 600;
-}
-
-.stat-sub {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-}
-
-.section-heading {
-    margin-bottom: 1.5rem;
-    font-size: 1.1rem;
-    color: var(--text-primary);
-}
 
 /* ---------- Pencarian & filter ---------- */
 .search-container {
@@ -139,31 +90,7 @@
     border-color: var(--accent);
 }
 
-/* ---------- Inbox: tambah cepat ---------- */
-.quick-task {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
-    padding: 1.25rem;
-    margin-bottom: 2rem;
-    display: flex;
-    gap: 1rem;
-}
-
-.quick-input {
-    flex: 1;
-    background: var(--field-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    padding: 0.85rem;
-    color: var(--text-primary);
-    font-size: 1rem;
-}
-
-.quick-input::placeholder { color: var(--text-secondary); }
-
-.search-input:focus,
-.quick-input:focus {
+.search-input:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-ring);

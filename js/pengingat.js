@@ -452,7 +452,7 @@ async function pgRender() {
         <div class="pg-bagian">
             <div class="pg-baris">
                 <div><div class="pg-judul">☀️ Ringkasan pagi</div>
-                <div class="pg-sub">Daftar task Today, termasuk yang tanpa jam.</div></div>
+                <div class="pg-sub">Daftar task hari ini, termasuk yang tanpa jam.</div></div>
                 <label class="pg-saklar"><input type="checkbox" id="pgPagiOn" ${a.pagi_on ? 'checked' : ''}
                     onchange="pgUbahAtur('pagi_on', this.checked)" aria-label="Ringkasan pagi"><span></span></label>
             </div>
@@ -467,7 +467,7 @@ async function pgRender() {
         <div class="pg-bagian">
             <div class="pg-baris">
                 <div><div class="pg-judul">🌇 Rekap sore</div>
-                <div class="pg-sub">Yang beres hari ini dan yang masih tersisa. Di aplikasi, kartu Bara berubah jadi rekap mulai jam ini.</div></div>
+                <div class="pg-sub">Yang beres hari ini dan yang masih tersisa. Di aplikasi, kartu Bara dan kotak Hari ini di Beranda berubah jadi rekap mulai jam ini.</div></div>
                 <label class="pg-saklar"><input type="checkbox" id="pgSoreOn" ${a.sore_on ? 'checked' : ''}
                     onchange="pgUbahAtur('sore_on', this.checked)" aria-label="Notifikasi rekap sore"><span></span></label>
             </div>

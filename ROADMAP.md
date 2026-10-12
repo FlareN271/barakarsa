@@ -5,7 +5,7 @@ Setiap versi dikerjakan di chat terpisah dalam projek ini. Riwayat perubahan ada
 
 - Aplikasi: https://flaren271.github.io/barakarsa/
 - Repo: github.com/flaren271/barakarsa (GitHub Pages, PWA)
-- Backend: Supabase (tabel `barakarsa_items`, `barakarsa_settings`, bucket `bukti-dukung`; sejak 3.4 juga `barakarsa_pengingat`, `barakarsa_push_langganan`, `barakarsa_push_log`, Edge Function `pengingat`, penjadwal pg_cron). 3.5 tidak menambah apa pun di Supabase; 3.6 menambah 3 kolom rekap sore di `barakarsa_pengingat`.
+- Backend: Supabase (tabel `barakarsa_items`, `barakarsa_settings`, bucket `bukti-dukung`; sejak 3.4 juga `barakarsa_pengingat`, `barakarsa_push_langganan`, `barakarsa_push_log`, Edge Function `pengingat`, penjadwal pg_cron). 3.5 dan 3.7 tidak menambah apa pun di Supabase; 3.6 menambah 3 kolom rekap sore di `barakarsa_pengingat`.
 - Peta kode: `ARSITEKTUR.md` di repo (sejak 3.2.1)
 
 ---
@@ -24,7 +24,8 @@ Setiap versi dikerjakan di chat terpisah dalam projek ini. Riwayat perubahan ada
 | 3.5 | Reporting | Pola task selesai, tepat waktu, lewat tanggal, sebaran project | ✅ Selesai (9 Okt 2026), uji coba di HP berjalan |
 | 3.6 | Persona Bara | Maskot Bara, sapaan, perayaan, rekap sore (+ push), dorongan Inbox | ✅ Selesai (12 Okt 2026), menunggu SQL 3.6 & uji di HP |
 | 3.6.1 | Nama Panggilan | Nama sapaan Bara bisa diatur (bawaan tanpa nama), tersinkron | ✅ Selesai (12 Okt 2026) |
-| 3.7 | Personalisasi | Wallpaper, jam, foto, widget di Dashboard | 🔜 Berikutnya |
+| 3.7 | Personalisasi | Beranda (sampul, jam, widget, album), menu baru, Tambah cepat, prioritas opsional | ✅ Selesai (12 Okt 2026), menunggu uji di HP |
+| 3.7.1 | Hasil uji coba 3.7 | Temuan 3.7 + keputusan centang Not Started | 🔜 Bila diperlukan |
 | 3.4.x | Pengingat CKP | Kegiatan tanpa bukti dukung menjelang akhir triwulan | Ditunda ke versi lain, target sebelum 31 Des 2026 |
 | 4.0 | Teman | Tonggak: persona, personalisasi, AI terasa utuh | Perlu diskusi |
 
@@ -296,15 +297,65 @@ Penomoran: fitur baru yang tidak mengganggu data dan perangkat lama → rilis mi
 - Diputuskan: nama diatur di **⋯ → 👤 Nama panggilan**, bawaan kosong (sapaan netral), tersinkron lewat `barakarsa_settings` (baris `bara`).
 - Keamanan akun (dibahas bersamaan): matikan pendaftaran akun baru di Supabase (*Authentication → Sign In / Providers → Allow new users to sign up*), dan pastikan RLS aktif di `barakarsa_items`, `barakarsa_settings`, dan bucket `bukti-dukung`.
 
-## v3.7 — Personalisasi (rencana)
+## v3.7 — Personalisasi ✅
 
-- Dashboard ala Notion: wallpaper, jam, foto, widget.
-- Pertanyaan terbuka: gambar dari pilihan bawaan atau unggah sendiri? Disimpan per perangkat (IndexedDB) atau ikut sinkron (Supabase Storage)? Widget apa saja (ringkasan hari ini, kutipan, kalender kecil, …)? Tampil juga di HP?
-- Batasan: teks tetap terbaca di gelap dan terang di atas wallpaper; widget yang butuh internet (mis. cuaca) perlu dibahas dulu. Kartu Bara (3.6) ikut tampil di atas wallpaper.
+### Latar belakang (temuan Naufal setelah beberapa hari memakai 3.6)
+1. Angka Total/Active/Completed/Priority 1 di Dashboard kurang menggambarkan progres; Total yang terus naik menurunkan semangat. Priority terasa wajib padahal jarang perlu.
+2. Upcoming jarang dibuka; yang sering dipakai justru Kalender di All Tasks.
+3. Today jarang dibuka karena aplikasi selalu terbuka di Dashboard.
+4. Ingin daftar task belum selesai terpisah, supaya Dashboard jadi tempat yang menyenangkan, menenangkan, dan nyaman untuk memulai hari.
+5. Inbox jarang dipakai: task yang masuk biasanya sudah lengkap, jadi Inbox belum memenuhi tujuannya sebagai entri cepat. Fitur tangkap cepat tetap diinginkan.
+6. Kolom Google Drive Link jarang terisi karena foto sudah bisa langsung diunggah.
+
+### Cakupan
+- **🏠 Beranda** (pengganti Dashboard): sampul ala Notion, kartu Bara di atas sampul, widget ☀️ Hari ini (jadi rekap sore), 🕰️ Jam analog/digital, 📅 Kalender kecil, 🔥 7 hari terakhir, 🎯 CKP Triwulan, 💬 Kutipan, 🖼️ Album; 🎨 Atur Beranda.
+- **Menu baru**: Beranda · 📋 Belum selesai (berkelompok; pengganti All Tasks + Today + Upcoming + Inbox) · 📅 Kalender · Selesai · Reporting; Labels di bawah; bilah bawah di HP.
+- **⚡ Tambah cepat** satu kalimat dengan pengenal tanggal/jam/#project/!prioritas/@label.
+- Prioritas opsional (bawaan tanpa prioritas), kolom Drive disembunyikan.
+
+### Diputuskan saat pengerjaan
+- Rancangan dibahas dulu lewat halaman mockup interaktif (laptop/HP, gelap/terang, pagi–malam, sampul/latar penuh).
+- **Penataan menu: setuju, dicoba dulu.**
+- **Sampul (bukan latar penuh)**: teks tidak pernah berada di atas gambar, jadi tetap terbaca di kedua tema.
+- **Gambar disimpan per perangkat** (IndexedDB `barakarsa_beranda`); HP dan laptop bisa beda. **4 sampul pixel-art bawaan** (pagi/siang/sore/malam) ikut aplikasi; bawaan *Ikut waktu*. Tidak memakai Supabase Storage, jadi tidak ada SQL dan kuota tidak terpakai.
+- Mengikuti rekomendasi (tidak dijawab terpisah): angka Beranda = Hari ini / 7 hari terakhir / CKP; jam analog bawaan dengan pilihan digital dan sakelar detik; kutipan offline berganti tiap hari; prioritas bawaan kosong dengan badge hanya P1–P3; cuaca tidak dimasukkan (butuh internet).
+- Kartu Bara tetap paling atas; pose Bara dipakai di widget Kutipan dan sorak di Hari ini.
+- Sidebar hanya menghitung task lewat tanggal; jumlah Completed dihapus.
+- Task Tambah cepat berstatus In Progress (sama dengan form), tanpa tanggal & project → Belum dipilah (`isInbox`).
+- **Centang task Not Started langsung Completed?** Disetujui arahnya, tetapi **dibahas lagi nanti** (belum diubah di 3.7).
+
+### Cara uji yang dipakai
+- Pengurai Tambah cepat: 21 kasus unit (Node).
+- 104 langkah pemakaian otomatis di Chromium, desktop dan HP.
+- Tangkapan layar 3.6.1 vs 3.7 pada 9 layar yang tidak diubah × desktop/HP × gelap/terang (dengan uji kontrol): identik per piksel kecuali teks panel 🔔 yang memang diganti.
+- 37 keadaan (4 waktu × perangkat × tema, menu baru, lebar 900 px): tanpa luberan/terpotong.
+- Offline (46 file di cache), data 3.7 dibuka di 3.6.1, kecepatan buka di HP (CPU 4× lebih lambat): setara 3.6.1.
+
+### Checklist uji di HP asli
+1. Menu ⋯ → Help menampilkan versi **3.7** di HP dan laptop; aplikasi terbuka di **🏠 Beranda** dengan sampul dan Bara.
+2. Lihat Beranda pagi, siang, sore, malam: sampul dan sapaan berganti; jam berjalan dengan zona **WITA**.
+3. Centang task di kotak **Hari ini** → baris hijau + **↶ Batal**; semua beres → Bara bersorak di kotak itu.
+4. Senin–Jumat ≥ 15.55: kotak berubah jadi **🌇 Rekap hari ini**; notifikasi rekap sore diketuk → Beranda.
+5. Ketuk **➕** di bilah bawah, ketik *Rapat besok 13.30 #kerja !1* → chip muncul → Enter. Cek task-nya di **📋 Task** (kelompok Besok). Coba juga tekan lama ikon aplikasi → Tambah cepat.
+6. Ketik judul tanpa tanggal/project → masuk **📥 Belum dipilah**; ketuk **📅 Hari ini** di task itu.
+7. **📅 Kalender** di bilah bawah; **☰ Lainnya** membuka Selesai, Reporting, project, label.
+8. 🎨 Atur Beranda: unggah foto sampul (geser posisinya), tambah 2–3 foto album, ganti jam digital, matikan satu widget. Tutup aplikasi lalu buka lagi: tetap. Laptop tidak ikut berubah (memang per perangkat).
+9. Form task: Priority bawaan *Tanpa prioritas*; kolom Google Drive hanya muncul di task lama yang sudah punya link.
+10. Perasaan saat membuka aplikasi pagi hari: lebih tenang? Widget mana yang tidak terpakai? Pengurai salah tebak kata apa? (catat untuk 3.7.1)
+
+### Catatan untuk versi berikutnya
+- Pengingat task (push, Edge Function 3.4) masih menulis "P4" untuk task lama ber-P4. Bisa dihapus dengan mengubah satu baris (`PRIORITY` tanpa `eliminate`) saat Edge Function dipasang ulang berikutnya (mis. bersama 3.4.x).
+- Angka di samping nama project (sidebar) masih menghitung semua task termasuk yang selesai; bisa diganti jumlah yang belum selesai bila terasa mengganggu.
+- Kolom Tambah cepat satu baris; kalimat panjang menggulir ke samping. Bila terasa sempit di HP, bisa diganti kotak yang memanjang.
+- Ide lanjutan: sinkron sampul/album lewat Supabase Storage (bucket terpisah) bila nanti ingin sama di semua perangkat; pose Bara khusus akhir pekan; widget cuaca (perlu internet, dibahas dulu); streak hari aktif (4.0).
+
+## v3.7.1 — Hasil uji coba 3.7 (bila diperlukan)
+- Temuan uji coba Beranda, menu baru, dan Tambah cepat.
+- Keputusan **centang task Not Started**: langsung Completed (hapus centang mengembalikan status sebelumnya), atau tetap seperti sekarang.
 
 ## v4.0 — Teman (perlu diskusi)
 Disimpan sebagai **tonggak**: dipakai saat tema "Teman" terasa utuh (persona 3.6 + personalisasi 3.7 + AI), atau bila ada perubahan yang mewajibkan semua perangkat diperbarui (mis. bentuk data/sinkron berubah).
-- Persona Bara → selesai di 3.6; personalisasi → mulai di 3.7. Streak hari produktif (ditunda dari 3.5) bisa menyusul di sini.
+- Persona Bara → selesai di 3.6; personalisasi → selesai di 3.7 (Beranda, sampul, widget, album per perangkat). Streak hari produktif (ditunda dari 3.5) bisa menyusul di sini.
 - "✨ Bantu tulis" description dengan AI, lewat Supabase Edge Function (kunci API tidak boleh di kode publik). Bisa melanjutkan saran keterangan 3.3 (riwayat + kalimat dasar) menjadi kalimat yang lebih luwes.
 - (Opsional) Pindah dari skrip biasa ke ES module. File sudah terpecah sejak 3.2.1; yang tersisa adalah mengganti `onclick="..."` di HTML dengan event listener.
 
@@ -327,3 +378,4 @@ Disimpan sebagai **tonggak**: dipakai saat tema "Teman" terasa utuh (persona 3.6
 - Pengingat (sejak 3.4): berkas Supabase ada di folder `supabase/` di repo (tanpa rahasia), dan langkah pemasangannya di `supabase/PANDUAN-PASANG-3.4.md`.
 - Reporting (sejak 3.5): dihitung di perangkat dari task yang ada (`js/laporan.js`), tanpa data baru. Alurnya di `ARSITEKTUR.md`.
 - Persona Bara (sejak 3.6): `js/bara.js` + `css/bara.css` + gambar di `maskot/`. Kalimat dari data di perangkat; rekap sore push lewat Edge Function `pengingat` (kolom `sore_*`). Langkah pasang di `supabase/PANDUAN-PASANG-3.6.md`.
+- Beranda & menu (sejak 3.7): `js/beranda.js` + `css/beranda.css` + `sampul/`; Tambah cepat di `js/cepat.js` + `css/cepat.css`. Gambar Beranda per perangkat di IndexedDB `barakarsa_beranda` (terpisah dari foto bukti dukung). Id menu internal tetap (`dashboard` = Beranda, `all` = Belum selesai).

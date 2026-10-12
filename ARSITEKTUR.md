@@ -1,6 +1,6 @@
 # BARAKARSA — Arsitektur
 
-Peta kode Barakarsa mulai versi 3.2.1 (diperbarui untuk 3.6). Tanpa alat build: semua file langsung disajikan GitHub Pages.
+Peta kode Barakarsa mulai versi 3.2.1 (diperbarui untuk 3.7). Tanpa alat build: semua file langsung disajikan GitHub Pages.
 Rencana versi ada di `ROADMAP.md`, riwayat di `CHANGELOG.md`.
 
 ## Peta file
@@ -14,6 +14,8 @@ icon-192.png, icon-512.png
 icon-badge.png    ikon kecil putih-transparan di bilah status Android (3.4)
 maskot/           8 pose Bara, .webp transparan 256 px (3.6): bara-{pagi,siap,semangat,rayakan,
                   berpikir,waktu,ups,santai}.webp — semuanya terdaftar di ASSETS sw.js
+sampul/           4 sampul Beranda pixel-art 320×80 (3.7): sampul-{pagi,siang,sore,malam}.png,
+                  ditampilkan dengan image-rendering: pixelated; terdaftar di ASSETS sw.js
 
 css/              dimuat berurutan; urutan ini penting
   tema.css        SEMUA warna: variabel gelap (:root) dan terang ([data-theme="light"])
@@ -23,7 +25,10 @@ css/              dimuat berurutan; urutan ini penting
   ckp.css         foto bukti dukung, IKI di form, hub CKP Triwulan
   pengingat.css   panel 🔔 Pengingat, pilihan 🔔 di form task (3.4)
   laporan.css     menu Reporting (3.5)
-  bara.css        Persona Bara: kartu, rekap, chip & ajakan Inbox, jejak, Bara bersorak, animasi (3.6)
+  bara.css        Persona Bara: kartu, chip & ajakan memilah, jejak, Bara bersorak, animasi (3.6)
+  beranda.css     Beranda: sampul, widget, Atur Beranda, foto album; kelompok Belum selesai,
+                  tombol pilah, sidebar bawah, bilah bawah HP (3.7)
+  cepat.css       Tambah cepat: kotak satu baris + chip, bilah ⚡ di Belum selesai (3.7)
   cetak.css       halaman Laporan PDF CKP — selalu putih, tidak memakai variabel tema
   hp.css          layar ≤768px (paling akhir supaya menang atas aturan dasar)
 
@@ -31,16 +36,20 @@ js/               skrip biasa dengan defer (bukan ES module), dijalankan berurut
   data.js         data task/project/label, muat & simpan, migrasi 3.1, waktu selesai, utilitas
   sinkron.js      Supabase: login, sinkron per item, tombstone
   tema.js         mode terang/gelap
-  tampilan.js     render(), menu, List/Board/Kalender, filter, urutkan, pencarian, drag & drop
-  form-task.js    form task: buka, edit, simpan, duplikat, hapus; Inbox cepat; dialog konfirmasi
+  tampilan.js     render(), menu, Belum selesai berkelompok, Board, Kalender, filter, urutkan,
+                  pencarian, drag & drop, tombol pilah, angka lewat tanggal
+  form-task.js    form task: buka, edit, simpan, duplikat, hapus; centang; dialog konfirmasi
   project-label.js project & label
   bukti.js        foto: kompres, IndexedDB, antrean unggah, peringatan "belum ada bukti"
   ckp.js          katalog IKI, pemilih & pencarian IKI, saran IKI, saran keterangan, hub CKP Triwulan, foto solusi
   ekspor.js       backup JSON/CSV, import, stress test, Excel/PDF/Word CKP
   pengingat.js    pengingat: langganan push, pengaturan (sinkron), panel, 🔔 per task (3.4)
   laporan.js      menu Reporting: rentang, angka utama, grafik task selesai, project, lewat tanggal (3.5)
-  bara.js         Persona Bara: kalimat & pose, kartu Dashboard/Today, rekap sore, jejak + Batal,
-                  Bara bersorak, ajakan Inbox, percik, pergantian waktu (3.6)
+  bara.js         Persona Bara: kalimat & pose, kartu Beranda, jejak + Batal, Bara bersorak,
+                  ajakan memilah, percik, pergantian waktu (3.6)
+  beranda.js      Beranda: sampul, widget Hari ini/Jam/Kalender/7 hari/CKP/Kutipan/Album,
+                  Atur Beranda, IndexedDB barakarsa_beranda (3.7)
+  cepat.js        Tambah cepat: pengurai satu kalimat (cpUrai), kotak, simpan, Detail… (3.7)
   pwa.js          daftar service worker, "Pasang aplikasi", kabar versi baru, ?quick=1, ?task=, ?view=today
   main.js         menu ⋯, event umum, urutan inisialisasi
 ```
@@ -63,9 +72,10 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 ## Urutan mulai
 
 1. `<head>`: skrip kecil memasang `data-theme` (dan `data-sidebar-awal` di HP) sebelum halaman digambar.
-2. Setelah HTML terbaca, file `js/` dijalankan berurutan. `main.js` memasang tema, PWA, event foto, tombol Q, dan resize.
-3. `DOMContentLoaded` (main.js): tutup sidebar di HP → `loadData()` → `setupEventListeners()` → `render()` → shortcut `?quick=1`.
-4. `load` + 50 ms: `initSync()` memuat pustaka Supabase dari CDN, memeriksa sesi, lalu sinkron.
+2. Setelah HTML terbaca, file `js/` dijalankan berurutan. `main.js` memasang tema, PWA, event foto, pengingat, Bara, Beranda (jam), Tambah cepat, tombol Q, dan resize.
+3. `DOMContentLoaded` (main.js): tutup sidebar di HP → `loadData()` → `setupEventListeners()` → `render()` (Beranda) → shortcut `?quick=1`.
+4. `load`: `setupBeranda` memuat sampul unggahan & foto album dari IndexedDB lalu menggambar ulang Beranda (gambar tidak menahan tampilan pertama).
+5. `load` + 50 ms: `initSync()` memuat pustaka Supabase dari CDN, memeriksa sesi, lalu sinkron.
 
 ## Penyimpanan
 
@@ -80,8 +90,10 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 | localStorage | `barakarsa_stress_backup` | cadangan sementara selama stress test |
 | localStorage | `barakarsa_laporan` | rentang Reporting terakhir (`minggu`/`bulan`/`triwulan`); per perangkat (3.5) |
 | localStorage | `barakarsa_pengingat` | per perangkat (3.4): `{ uid, atur: { data, updatedAt }, endpoint, vapid, terdaftar }` |
+| localStorage | `barakarsa_beranda` | per perangkat (3.7), tidak tersinkron: `{ sampul: 'waktu'\|'pagi'\|'siang'\|'sore'\|'malam'\|'unggah', posisi, jam: 'analog'\|'digital', detik, widget: { hariini, jam, kalender, pekan, ckp, kutipan, album }, album: [{ id, dibuat }] }` |
+| IndexedDB | `barakarsa_beranda` (`gambar`) | per perangkat (3.7): `sampul` dan `album:{id}` (Blob JPEG). Terpisah dari foto bukti dukung |
 | localStorage | `barakarsa_bara` | per perangkat (3.6): `{ akhir: [3 kalimat perayaan terakhir], inboxTutup: 'YYYY-MM-DD', tuntas: 'YYYY-MM-DD', profil: { data: { nama }, updatedAt } }` (profil sejak 3.6.1, tersinkron) |
-| IndexedDB | `barakarsa_photos` (`blobs`, `thumbs`) | foto penuh yang belum terunggah, thumbnail |
+| IndexedDB | `barakarsa_photos` (`blobs`, `thumbs`) | foto bukti dukung penuh yang belum terunggah, thumbnail |
 | Supabase | tabel `barakarsa_items` | satu baris per task/project/label: `user_id, id, kind, data, deleted, updated_at` |
 | Supabase | tabel `barakarsa_settings` | satu baris per bagian: `user_id, id, data, updated_at`; id `katalog`/`profil`/`catatan` (CKP) dan sejak 3.6.1 `bara` (`{ nama }`, nama panggilan) |
 | Supabase | tabel `barakarsa_pengingat` (3.4) | satu baris per akun: `task_on, task_menit, pagi_on, pagi_jam, pagi_hari, zona, updated_at`; sejak 3.6 juga `sore_on, sore_jam, sore_hari` (bawaan true, '15:55', {1..5}) |
@@ -90,7 +102,9 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 | Supabase | bucket `bukti-dukung` (privat) | `{user}/{taskId}/{fotoId}.jpg`, foto solusi di `{user}/ckp/{periode}/{iki}/…` |
 
 Bentuk task (field yang dipakai):
-`id, title, description, date, dateEnd, time, quadrant (do/schedule/delegate/eliminate = P1–P4), project (teks id), labels (angka id), attachment, status, isInbox, createdAt, completedAt, order, iki, photos[], ingat, updatedAt`.
+`id, title, description, date, dateEnd, time, quadrant (do/schedule/delegate = P1–P3; kosong atau eliminate = tanpa prioritas sejak 3.7), project (teks id), labels (angka id), attachment, status, isInbox, createdAt, completedAt, order, iki, photos[], ingat, updatedAt`.
+`isInbox: true` = 📥 Belum dipilah (dulu Inbox): diisi Tambah cepat bila tanpa tanggal dan project; jadi `false` saat disimpan dari form atau dipilah (`pilahKe`).
+`attachment` (Google Drive link) tidak lagi ditampilkan di form kecuali sudah terisi (3.7); tetap dibawa, ditampilkan sebagai badge 🔗, dan ikut ekspor CSV.
 `ingat` (3.4): menit sebelum jam task; tidak ada = ikut bawaan, `0` = saat waktunya, `-1` = tanpa pengingat.
 Versi lama tidak mengenalnya tetapi tidak membuangnya (`saveTask` membawa field lama dengan `...task lama`).
 
@@ -209,13 +223,14 @@ render() → lpRender()          laporan.js, saat menu Reporting aktif (tidak me
 ```
 render() → baraRender()             bara.js, di akhir render()
   baraKeadaan(now, view)            situasi → { pose, salam, sub, kunci, rekapAda, d }
+                                    (tuntas + kotak Hari ini aktif → kartu cukup menyapa; sorak ada di kotak)
     baraData(now)                   hariIni (date = hari ini, bukan Cancelled), sisa, beresToday,
                                     beres (completedAt lokal = hari ini, task apa pun), lewat, besok, inbox, berikut
     urutan situasi                  tuntas → rekap sore (jam rekap … +150 menit) → Today kosong → malam → pagi → siang/sore
     baraPilih(kunci, daftar)        satu variasi per situasi, tetap selama sesi (tidak berganti tiap render)
-  #baraDash / #baraToday            kartu (Dashboard: tidak tampil saat filter project)
-  #todayList .empty-state           → Bara bersorak bila semua task Today beres
-  #baraInbox                        ajakan memilah bila Inbox ≥ BARA_INBOX_MIN
+  #baraDash                         kartu di Beranda (3.7: Today dilebur, #baraToday dihapus)
+  #brHariList (beranda.js)          → baraTuntasHTML(d): Bara bersorak bila semua task hari ini beres
+  #baraInbox                        ajakan memilah di atas Belum selesai bila Belum dipilah ≥ BARA_INBOX_MIN
   baraPasangJejak()                 baris hijau di tempat task tadi (sebelum task tetangga berikutnya)
 
 toggleStatus(id) / saveTask()       form-task.js
@@ -234,8 +249,44 @@ setupBara()                         setInterval 60 detik + visibilitychange → 
 - Kalimat hanya dari data di perangkat. Sinkron dari perangkat lain **tidak** memicu perayaan (hanya `toggleStatus` dan `saveTask` yang memanggil Bara).
 - Jam & hari rekap dibaca dari `pgAtur()` (pengingat.js): `sore_jam`, `sore_hari`. Bawaan di `PENGINGAT_BAWAAN`.
 - Semua gerakan lewat kelas CSS di `bara.css` dan dimatikan oleh `prefers-reduced-motion`; `baraGerakBoleh()` juga melewati percik dan penundaan render.
-- Rekap sore push: `rekapJatuhTempo` + `susunRekap` di Edge Function. Kunci anti-dobel `s:{tanggal}`, diklaim pada menit pertama; tidak dikirim bila tidak ada apa-apa hari itu. Task yang dicentang hari ini diambil dengan `data->>status = completed` dan `data->>completedAt ≥ sekarang − 26 jam`, lalu disaring per tanggal lokal zona akun. URL `./?view=today&rekap=1` → `baraBukaRekap()` (perangkat 3.5 membuka Today biasa).
+- Rekap sore push: `rekapJatuhTempo` + `susunRekap` di Edge Function. Kunci anti-dobel `s:{tanggal}`, diklaim pada menit pertama; tidak dikirim bila tidak ada apa-apa hari itu. Task yang dicentang hari ini diambil dengan `data->>status = completed` dan `data->>completedAt ≥ sekarang − 26 jam`, lalu disaring per tanggal lokal zona akun. URL `./?view=today&rekap=1` → `baraBukaRekap()` → Beranda (3.7; perangkat 3.5–3.6 membuka Today).
+- Wadah jejak per menu: `BARA_DAFTAR_VIEW` (`dashboard` → `brHariList`, `all` → `allList`, `completed` → `completedList`). Baris di kotak Hari ini memakai kelas `task-item` + `data-task-id` + `.task-checkbox`, jadi jejak, percik, dan ↶ Batal bekerja sama seperti di daftar biasa.
 - `pgSyncAtur`: bila server belum punya kolom `sore_*` (SQL 3.6 belum dijalankan), `pgKolomSore = false` dan baris disimpan tanpa kolom itu; panel 🔔 memberi tahu.
+
+## Menu & Beranda (3.7)
+
+```
+Menu (id internal tetap, supaya kode lama & tautan aman):
+  dashboard  🏠 Beranda       brRender() di beranda.js
+  all        📋 Belum selesai  renderKelompok() (List) / renderBoardView() (Board) di tampilan.js
+  kalender   📅 Kalender       renderCalendarView() — juga task selesai (pudar)
+  completed  ✅ Selesai · filters 🏷️ Labels · reporting 📈 Reporting (tidak berubah)
+  VIEW_LAMA  today → dashboard, inbox → all, upcoming → all (switchView menerjemahkan)
+
+kelompokTask(t)   batal → dipilah (isInbox) → tanpa (tanpa tanggal) → lewat (tenggat < hari ini)
+                  → hariini (date ≤ hari ini) → besok → pekan (≤ +7 hari) → nanti
+updateSidebarCounts()  hanya jumlah lewat tanggal (#lewatCount, #lewatCountBawah)
+filterByProject(id)    → Belum selesai dengan currentProjectFilter
+
+brRender()        sampul (brGambarSampul) + widget aktif, urutan: jam, hariini, kalender, pekan, ckp, album, kutipan
+                  (urutan di HP diatur CSS order di hp.css)
+  brHariHTML      baraData(now) dari bara.js; rekap = hari rekap & menit ≥ jam rekap (pgAtur)
+  brPekanHTML     lpSelesai() dari laporan.js (tanggal selesai) untuk 7 hari terakhir
+  brCkpHTML       triwulan berjalan (quarterRange), ckpCatalog(), isCkpTask, evIsMissing
+  brTikJam()      setInterval 1 detik; hanya mengubah atribut jarum & teks jam (tanpa render)
+Gambar            evLoadBitmap/evDraw (bukti.js) → Blob JPEG → IndexedDB barakarsa_beranda
+                  → URL blob: di brUrl; dimuat saat 'load' (setupBeranda)
+
+cpUrai(teks, hariIni, abaikan)   cepat.js, fungsi murni → { judul, token[], date, time, project, quadrant, labels }
+  urutan: tanggal → jam → #project → !prioritas → @label; satu token per jenis (label boleh banyak)
+  ✕ chip → jenis:teks masuk cpAbaikan → kata itu tetap jadi judul
+simpanCepat()     task baru (status in-progress, isInbox bila tanpa tanggal & project) → saveData()
+cepatKeDetail()   openTaskModal() lalu isi field + event change/input (kolom IKI, 🔔 per task)
+```
+
+- Prioritas yang ditampilkan: `prioAktif(q)` (tampilan.js). Jangan menampilkan badge untuk `eliminate`.
+- Widget Beranda baru: tambahkan ke `BR_WIDGET` dan `BR_BAWAAN.widget`, buat fungsi `br…HTML(now)` yang mengembalikan `<section class="br-w br-w-{k}">`, panggil di `brRender()`, dan hitung dari data di perangkat (tanpa internet).
+- Gambar Beranda tidak boleh disimpan di `barakarsa_photos` atau bucket `bukti-dukung`.
 
 ## Aturan menambah kode
 
@@ -252,6 +303,7 @@ setupBara()                         setInterval 60 detik + visibilitychange → 
 - Jangan menulis properti turunan (cache) ke objek di `ckpStore`; pakai `WeakMap` (lihat `ckpKwCache`, `ckpSearchCache`).
 - Field task baru: pastikan form membawa field lama (`...task lama`) dan duplikat ikut menyalinnya bila perlu (contoh `ingat`: `pgMuatForm`, `pgTerapkanKeTask`).
 - Tanggal dari waktu ISO (mis. completedAt) diubah ke tanggal lokal (`lpIsoLokal()` di laporan.js), bukan `.slice(0, 10)`.
-- File baru yang diperlukan service worker (mis. `icon-badge.png`, gambar di `maskot/`) juga masuk `ASSETS`; satu file hilang membuat cache baru gagal terpasang.
+- File baru yang diperlukan service worker (mis. `icon-badge.png`, gambar di `maskot/` dan `sampul/`) juga masuk `ASSETS`; satu file hilang membuat cache baru gagal terpasang.
+- Teks yang dilihat pengguna memakai nama menu 3.7: Beranda, Belum selesai, Belum dipilah, Hari ini, Kalender, Selesai (bukan Dashboard/Inbox/Today/Upcoming).
 - Kalimat Bara baru: tambahkan ke daftar variasi di `bara.js` (bukan di tempat lain), pakai `{n}`-style isian lewat `baraIsi`, dan teks dari pengguna (judul task) lewat `esc()`.
 - Kolom baru di `barakarsa_pengingat`: tambahkan ke `PENGINGAT_FIELD` dan `PENGINGAT_BAWAAN`, buat file SQL `add column if not exists … default …`, dan pastikan aplikasi tetap menyimpan bila kolom belum ada (contoh `pgKolomSore`).

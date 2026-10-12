@@ -3,8 +3,8 @@
 
    Satu alur utuh untuk form task: field biasa, IKI & rentang
    tanggal (ckp.js), foto bukti dukung (bukti.js), waktu selesai
-   (data.js) dan posisi salinan. Juga Inbox cepat, centang selesai,
-   dan dialog konfirmasi hapus.
+   (data.js) dan posisi salinan. Juga centang selesai dan dialog
+   konfirmasi hapus. Tambah cepat (dulu Inbox cepat) ada di cepat.js sejak 3.7.
    ============================================================ */
 
 let editingTaskId = null;   // id task yang sedang diedit (null = task baru)
@@ -19,8 +19,9 @@ function openTaskModal() {
     document.getElementById('taskDetailsForm').reset();
     document.getElementById('taskModalTitle').textContent = '✏️ Add Task';
     document.getElementById('taskStatus').value = 'in-progress';
-    document.getElementById('taskQuadrant').value = 'eliminate'; // Priority 4 sebagai bawaan (seperti Todoist)
+    document.getElementById('taskQuadrant').value = '';   // 3.7: tanpa prioritas sebagai bawaan
     setDefaultDate();
+    tampilkanLinkDrive('');
     renderTaskLabels();
     renderProjectSelect();
     clearTaskLabelSelection();
@@ -43,11 +44,12 @@ function editTask(id) {
     document.getElementById('taskDesc').value = task.description;
     document.getElementById('taskDate').value = task.date;
     document.getElementById('taskTime').value = task.time;
-    document.getElementById('taskQuadrant').value = PRIORITY_LABEL[task.quadrant] ? task.quadrant : 'eliminate';
+    document.getElementById('taskQuadrant').value = prioAktif(task.quadrant) ? task.quadrant : '';
     renderProjectSelect(); // isi opsi dulu, supaya nilai project tidak hilang saat edit pertama setelah halaman dibuka
     document.getElementById('taskProject').value = task.project || '';
     document.getElementById('taskStatus').value = task.status;
-    document.getElementById('taskAttachment').value = task.attachment;
+    document.getElementById('taskAttachment').value = task.attachment || '';
+    tampilkanLinkDrive(task.attachment);
 
     renderTaskLabels();
     task.labels.forEach(lid => {
@@ -61,6 +63,12 @@ function editTask(id) {
     ckpLoadTaskForm(task);
     pgMuatForm(task);
     setEditButtonsVisible(true);
+}
+
+// Kolom Google Drive Link (3.7): hanya untuk task yang sudah punya link.
+// Foto bukti dukung menggantikannya; link lama tetap bisa dibuka atau dihapus.
+function tampilkanLinkDrive(link) {
+    document.getElementById('attachmentGroup').hidden = !String(link || '').trim();
 }
 
 // Tombol Hapus & Duplikat di footer hanya untuk task yang sudah ada
@@ -193,10 +201,11 @@ function duplicateTask(id) {
     document.getElementById('taskDesc').value = src.description || '';
     document.getElementById('taskDate').value = src.date || '';
     document.getElementById('taskTime').value = src.time || '';
-    document.getElementById('taskQuadrant').value = PRIORITY_LABEL[src.quadrant] ? src.quadrant : 'eliminate';
+    document.getElementById('taskQuadrant').value = prioAktif(src.quadrant) ? src.quadrant : '';
     document.getElementById('taskProject').value = src.project || '';
     document.getElementById('taskStatus').value = src.status || 'in-progress';
     document.getElementById('taskAttachment').value = src.attachment || '';
+    tampilkanLinkDrive(src.attachment);
     clearTaskLabelSelection();
     (src.labels || []).forEach(lid => {
         const cb = document.querySelector(`input[name="label-${lid}"]`);
@@ -242,31 +251,7 @@ function deleteTask(id) {
     }
 }
 
-// ---------- Inbox cepat & centang selesai ----------
-
-function addQuickTask() {
-    const input = document.getElementById('quickInput');
-    const title = input.value.trim();
-    if (!title) return;
-
-    tasks.push({
-        id: Date.now(),
-        title,
-        description: '',
-        date: '',
-        time: '',
-        quadrant: '',
-        project: null,
-        labels: [],
-        attachment: '',
-        status: 'not-started',
-        isInbox: true,
-        createdAt: new Date().toISOString()
-    });
-    saveData();
-    input.value = '';
-    debouncedRender();
-}
+// ---------- Centang selesai ----------
 
 function toggleStatus(id) {
     const lama = tasks.find(t => t.id === id);

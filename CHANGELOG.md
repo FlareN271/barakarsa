@@ -7,6 +7,62 @@ Format setiap rilis: **Baru** (fitur baru), **Diubah** (perilaku yang berubah), 
 
 ---
 
+## [3.7] — Personalisasi (12 Oktober 2026)
+
+File yang berubah: `index.html`, `sw.js` (cache `barakarsa-v3.7`), `manifest.json` (teks shortcut), `js/main.js` (nomor versi, menu), `js/tampilan.js`, `js/form-task.js`, `js/pwa.js`, `js/bara.js`, `js/pengingat.js` (dua kalimat panel), `css/komponen.css`, `css/bara.css`, `css/hp.css`, `ARSITEKTUR.md`, `CHANGELOG.md`, `ROADMAP.md`.
+File baru: `js/beranda.js`, `js/cepat.js`, `css/beranda.css`, `css/cepat.css`, folder `sampul/` (4 sampul pixel-art, ±3 KB per gambar).
+Supabase: **tidak ada perubahan**. Edge Function tidak perlu dipasang ulang.
+
+### Baru
+- **🏠 Beranda** menggantikan Dashboard, sebagai tempat memulai hari:
+  - **Sampul** di atas (gaya Notion). Bawaan: 4 sampul pixel-art yang berganti mengikuti waktu (pagi, siang, sore, malam). Bisa juga dikunci ke satu suasana, atau **unggah foto sendiri** (dikompres ke sisi terpanjang 1920 px, ±150–300 KB; posisi foto bisa digeser).
+  - **Kartu Bara** tetap paling atas. Bara menyembul dari tepi bawah sampul.
+  - **☀️ Hari ini**: task bertanggal hari ini dalam cincin *"1 dari 3 beres"*, bisa dicentang langsung (jejak hijau + ↶ Batal tetap ada), *＋ Tambah untuk hari ini*, dan *✓ n dicentang hari ini ▾*. Mulai jam rekap sore, kotak ini menjadi **🌇 Rekap hari ini**, dan Bara bersorak di sini saat semua beres.
+  - **🕰️ Jam** analog (atau digital), dengan zona waktu (WIB/WITA/WIT) dan tanggal. Jarum detik bisa dimatikan.
+  - **📅 Kalender kecil**: titik di tanggal yang ada task-nya. Ketuk tanggal untuk melihat daftarnya, ketuk judul bulan untuk membuka menu Kalender.
+  - **🔥 7 hari terakhir**: jumlah task selesai dan batang per hari, plus *"Aktif n dari 7 hari"*.
+  - **🎯 CKP Triwulan**: IKI yang sudah ada kegiatannya (atau jumlah kegiatan CKP bila katalog belum diimpor), sisa hari triwulan, dan chip *📷 belum ada bukti* / *🎯 belum ada IKI*.
+  - **💬 Kutipan** yang berganti tiap hari (peribahasa dan kalimat Bara, tanpa internet); ↻ untuk kutipan lain.
+  - **🖼️ Album**: sampai 12 foto (dikompres 1280 px). Foto utama berganti tiap hari; ketuk untuk memperbesar, geser, atau hapus.
+- **🎨 Atur Beranda** (tombol di sampul, atau ⋯ → Tampilan): pilih sampul, gaya jam, detik, dan nyala/mati tiap widget.
+- **📋 Belum selesai**: semua task yang belum dicentang, dikelompokkan menjadi 📥 Belum dipilah · ⚠️ Lewat tanggal · Hari ini · Besok · 7 hari ke depan · Nanti · Tanpa tanggal · ❌ Dibatalkan. List/Board, cari, filter, urutkan, dan seret urutan tetap ada. Task Belum dipilah punya tombol **📅 Hari ini · Besok · Lengkapi…**.
+- **⚡ Tambah cepat** (pengganti Inbox cepat): satu kalimat, misalnya *Rapat SE2026 besok 13.30 #kerja !1*. Yang dikenali: tanggal (hari ini, besok, lusa, nama hari, *jumat depan*, *tgl 15*, *15 okt*, *15/10*), jam (*13.30*, *jam 9*, *pukul 9.15*), *#project*, prioritas *!1–!3* atau *p1–p3*, dan *@label*. Hasilnya tampil sebagai chip; ✕ membatalkan tebakan yang salah. Enter menyimpan; **Detail…** membuka form lengkap yang sudah terisi. Dibuka dari tombol Tambah task, ➕, tombol **Q**, bilah ⚡ di Belum selesai, *＋ Tambah untuk hari ini*, dan tekan lama ikon aplikasi.
+- **📅 Kalender** jadi menu sendiri (sebelumnya tombol di All Tasks).
+- **HP: bilah bawah** Beranda · Task · ➕ · Kalender · ☰ Lainnya (Lainnya membuka sidebar: Selesai, Reporting, project, label, dst.).
+
+### Diubah
+- **Sidebar**: Beranda · Belum selesai · Kalender · Selesai · Reporting, lalu My Projects; Labels pindah ke bawah. **Inbox, Today, dan Upcoming dilebur**: isinya kini ada di Belum selesai dan kotak Hari ini.
+- **Angka Total / Active / Completed / Priority 1 dihapus.** Pengganti di Beranda hanya memakai angka yang bisa "habis" (hari ini) atau hanya bertambah karena kerja (7 hari terakhir, CKP). Sidebar hanya menghitung task **lewat tanggal** (kuning); jumlah di menu Completed dihapus.
+- **Prioritas**: bawaan form kini **— Tanpa prioritas**; pilihan P1–P3. Badge ⚑ hanya untuk P1–P3. Task lama ber-P4 diperlakukan sebagai tanpa prioritas (datanya tidak diubah sampai task itu disimpan lagi). Filter *Priority 4* menjadi *Tanpa prioritas*.
+- **Google Drive Link** hilang dari form, kecuali task lama yang sudah punya link (tetap bisa dibuka, diubah, atau dihapus). Badge 🔗 dan ekspor CSV tetap.
+- Klik project di sidebar membuka **Belum selesai** khusus project itu (sebelumnya Dashboard).
+- Task dari Tambah cepat berstatus **In Progress** (sama dengan bawaan form), jadi satu centang langsung menyelesaikannya. Task Not Started lama masih perlu dua centang (lihat ROADMAP, ditunda untuk dibahas).
+- Notifikasi ringkasan pagi dan rekap sore (`?view=today`) membuka **Beranda**; shortcut ikon aplikasi (`?quick=1`) membuka **Tambah cepat**.
+- Chip Bara di Beranda: *"📥 n belum dipilah →"* (membuka Belum selesai). Ajakan memilah tampil di atas Belum selesai. Kalimat yang menyebut "Today" atau "Inbox" disesuaikan.
+- Peringatan *"n kegiatan CKP selesai tanpa bukti dukung"* pindah dari Dashboard ke atas Belum selesai (dan chip di widget CKP).
+- Panel 🔔: "Daftar task Today" → "Daftar task hari ini"; rekap sore menyebut kotak Hari ini.
+
+### Dibuang
+- Kartu statistik Dashboard, kolom Inbox cepat, tombol *Lihat rekap ▾* di Today (CSS dan JS-nya ikut dihapus).
+
+### Catatan kompatibilitas
+- **Tidak ada field task, tabel, bucket, atau baris pengaturan baru.** Data task dari Tambah cepat memakai bentuk yang sama dengan form (`isInbox` tetap dipakai untuk Belum dipilah).
+- Perangkat 3.6.1 tetap sinkron: task dari 3.7 muncul di Inbox/Today/Upcoming-nya seperti biasa; task tanpa prioritas dibuka sebagai P4 di form lama.
+- Sampul unggahan, album, dan pengaturan Beranda **hanya di perangkat ini** (IndexedDB `barakarsa_beranda`, localStorage `barakarsa_beranda`), tidak tersinkron dan tidak memakai kuota Supabase. Foto bukti dukung tetap di `barakarsa_photos` / bucket `bukti-dukung`, tidak tercampur.
+- Bila data situs dihapus browser, sampul kembali ke bawaan dan album kosong; data task tidak terpengaruh.
+
+### Diuji
+- **Pengurai Tambah cepat**: 21 kasus (besok/lusa, nama hari, *jumat depan*, *minggu ini* tidak dianggap hari Minggu, *tgl 3* yang sudah lewat → bulan depan, *5 jan* → tahun depan, *15/10*, jam bebas/`jam 9`/`pukul`, versi *3.6* tidak dianggap jam, #project/@label tidak dikenal dibiarkan, ✕ chip).
+- **104 langkah pemakaian** di Chromium (desktop dan HP): centang di Hari ini → jejak + Batal; semua beres → Bara bersorak tanpa dobel di kartu; Tambah cepat (Q / ➕), chip, Enter, Belum dipilah, ✕, Esc, Detail… (kolom IKI & 🔔 ikut tampil); form: prioritas kosong, P4 lama, Drive link; kelompok Belum selesai, tombol pilah, cari, Board, jejak; project → Belum selesai; Kalender; tautan lama `today`/`inbox`/`?view=today&rekap=1`/`?quick=1`; Atur Beranda (jam digital, widget mati, unggah sampul 4000×2500 → <400 KB, album 3 foto, perbesar, hapus 2× ketuk); muat ulang (sampul, album, pengaturan tetap); IndexedDB bukti dukung tidak tersentuh; ☰ Lainnya di HP. Tanpa error JavaScript.
+- **Tampilan 3.6.1 vs 3.7** pada layar yang tidak diubah (Reporting, Selesai, Labels, Board, hub CKP, panel 🔔, Nama panggilan, form task kiri) × desktop/HP × gelap/terang: **identik per piksel**, kecuali dua kalimat panel 🔔 yang memang diganti. Kalender: ukuran baris sama persis; selisih 1–2 px karena kini berada di menu sendiri (posisi sub-piksel). Uji kontrol 3.6.1 vs 3.6.1 untuk menyaring derau.
+- **37 keadaan** Beranda pagi/siang/sore/malam, Belum selesai, Tambah cepat, Atur Beranda, Kalender × desktop/HP × gelap/terang, plus lebar 900 px: tanpa isi yang meluber, terpotong, atau halaman melebar.
+- **Offline**: 46 file (termasuk 4 sampul dan file baru) tersimpan di cache; Beranda, maskot, dan sampul tampil tanpa jaringan; Tambah cepat menyimpan.
+- **Kecocokan**: data 3.7 dibuka di 3.6.1 tanpa error (semua menu lama).
+- **Kecepatan buka di HP** (CPU diperlambat 4×, 340 task, median 5 kali): tampilan pertama 3.6.1 312 ms, 3.7 332 ms. Gambar unggahan dimuat setelah tampilan pertama.
+- Belum diuji di HP asli.
+
+---
+
 ## [3.6.1] — Nama Panggilan (12 Oktober 2026)
 
 File yang berubah: `index.html`, `sw.js` (cache `barakarsa-v3.6.1`), `js/main.js` (nomor versi, menu), `js/bara.js`, `js/sinkron.js`, `css/bara.css`, `ARSITEKTUR.md`, `CHANGELOG.md`, `ROADMAP.md`.

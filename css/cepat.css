@@ -1,0 +1,81 @@
+/* ============================================================
+   cepat.css — ⚡ Tambah cepat (3.7): kotak satu baris + chip,
+   dan bilah pemicunya di atas Belum selesai. Aturan HP di hp.css.
+   ============================================================ */
+
+/* Bilah pemicu di Belum selesai (tampak seperti kolom isian) */
+.cp-bilah {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.8rem 0.9rem;
+    font: inherit;
+    text-align: left;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    cursor: text;
+}
+.cp-bilah:hover { border-color: var(--accent); }
+.cp-bilah:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cp-bilah-teks { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cp-bilah-kunci { font-size: 0.72rem; font-weight: 700; padding: 0 0.4rem; border: 1px solid var(--border-color); border-radius: 5px; color: var(--text-faint); }
+
+/* Kotak Tambah cepat: di atas layar (desktop), dari bawah (HP) */
+.modal.cp-modal { align-items: flex-start; padding-top: 12vh; }
+.cp-kotak {
+    width: 100%;
+    max-width: 620px;
+    padding: 1rem 1.1rem 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+}
+.cp-judul { margin: 0 0 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-faint); }
+.cp-input {
+    width: 100%;
+    padding: 0.4rem 0.1rem 0.7rem;
+    font: inherit;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--border-color);
+    outline: none;
+}
+.cp-input:focus { border-bottom-color: var(--accent); }
+.cp-input::placeholder { color: var(--text-faint); }
+
+.cp-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.7rem 0; min-height: 2.9rem; }
+.cp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.22rem 0.35rem 0.22rem 0.7rem;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--hover);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+}
+.cp-chip i { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 8px; }
+.cp-chip.prio-do, .cp-chip.prio-schedule, .cp-chip.prio-delegate { background: none; }
+.cp-tanggal { color: var(--status-progress); }
+.cp-x {
+    display: grid; place-items: center; width: 1.3rem; height: 1.3rem; padding: 0; font: inherit; font-size: 0.7rem;
+    color: var(--text-secondary); background: none; border: 0; border-radius: 50%; cursor: pointer;
+}
+.cp-x:hover { color: var(--text-primary); background: var(--tint-hover); }
+.cp-saran { padding-right: 0.75rem; color: var(--text-secondary); background: none; border-style: dashed; cursor: pointer; }
+.cp-saran:hover { color: var(--accent-text); border-color: var(--accent); }
+
+.cp-kaki { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; padding-top: 0.7rem; border-top: 1px solid var(--border-color); }
+.cp-petunjuk { flex: 1 1 14rem; min-width: 0; font-size: 0.8rem; color: var(--text-secondary); }
+.cp-tombol { display: flex; gap: 0.5rem; margin-left: auto; }
+.cp-tombol .btn:disabled { opacity: 0.5; cursor: default; }

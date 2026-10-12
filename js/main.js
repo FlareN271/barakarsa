@@ -8,7 +8,7 @@
      3) load (+50 ms)     : sinkron Supabase (tidak menahan tampilan)
    ============================================================ */
 
-const APP_VERSION = '3.6.1';
+const APP_VERSION = '3.7';
 const NARALOKA_URL = 'https://flaren271.github.io/naraloka/';
 
 // ---------- Menu ⋯ ----------
@@ -28,6 +28,7 @@ function toolsAction(action) {
     if (action === 'ckp') openCkpHub();
     else if (action === 'pengingat') openPengingatModal();
     else if (action === 'nama') openNamaModal();
+    else if (action === 'beranda') openBerandaModal();
     else if (action === 'json') exportToJSON();
     else if (action === 'csv') exportToCSV();
     else if (action === 'import') openPasteImportModal();
@@ -57,22 +58,17 @@ function setupEventListeners() {
         sidebar.classList.toggle('collapsed');
     };
 
-    document.getElementById('sidebarAddTaskBtn').onclick = () => openTaskModal();
+    document.getElementById('sidebarAddTaskBtn').onclick = () => openCepat();
     document.getElementById('addLabelBtn').onclick = () => openLabelModal();
     document.getElementById('addProjectBtn').onclick = () => openProjectModal();
     document.getElementById('toolsMenuBtn').onclick = (e) => toggleToolsMenu(e);
     document.getElementById('importFile').onchange = (e) => importFromFile(e);
-    document.getElementById('quickAddBtn').onclick = () => addQuickTask();
-    document.getElementById('quickInput').onkeypress = (e) => {
-        if (e.key === 'Enter') addQuickTask();
-    };
 
     document.getElementById('globalSearchInput').addEventListener('input', (e) => {
         performGlobalSearch(e.target.value.trim().toLowerCase());
     });
     document.getElementById('searchInput').addEventListener('input', () => performSearch());
     document.getElementById('allFilterBtn').addEventListener('click', () => toggleFilterPanel('all'));
-    document.getElementById('todayFilterBtn').addEventListener('click', () => toggleFilterPanel('today'));
 
     // Klik di luar menu menutup menu ⋯ dan menu project
     document.addEventListener('click', (e) => {
@@ -83,7 +79,7 @@ function setupEventListeners() {
     // HP: tutup sidebar setelah memilih menu atau project
     sidebar.addEventListener('click', (e) => {
         if (window.innerWidth > 768) return;
-        if (e.target.closest('.sidebar-item, .project-item')) sidebar.classList.add('collapsed');
+        if (e.target.closest('.sidebar-item, .project-item, .sidebar-add-task')) sidebar.classList.add('collapsed');
     });
 
     setupSortSelect();
@@ -98,8 +94,10 @@ setupPwa();
 setupBukti();
 setupPengingat();
 setupBara();
+setupBeranda();
+setupCepat();
 
-// Pintasan keyboard: Q = tambah task (seperti Todoist); Esc = tutup pratinjau PDF CKP
+// Pintasan keyboard: Q = tambah cepat (seperti Todoist); Esc = tutup pratinjau PDF CKP
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.getElementById('ckpPrint')) { ckpClosePrint(); return; }
     if (e.key !== 'q' && e.key !== 'Q') return;
@@ -108,8 +106,7 @@ document.addEventListener('keydown', (e) => {
     if (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
     if (document.querySelector('.modal.active') || document.getElementById('ckpPrint')) return;
     e.preventDefault();
-    openTaskModal();
-    setTimeout(() => document.getElementById('taskTitle').focus(), 50);
+    openCepat();
 });
 
 // Kalender memakai 2 atau 3 jalur task tergantung lebar layar (batas 600px)
@@ -127,7 +124,7 @@ window.addEventListener('resize', (() => {
 // ---------- Saat HTML siap ----------
 
 window.addEventListener('DOMContentLoaded', () => {
-    // Di HP, buka aplikasi langsung ke daftar task (sidebar tertutup).
+    // Di HP, buka aplikasi langsung ke Beranda (sidebar tertutup).
     // Skrip di <head> sudah menyembunyikannya sebelum halaman digambar.
     if (window.innerWidth <= 768) document.getElementById('sidebar').classList.add('collapsed');
     document.documentElement.removeAttribute('data-sidebar-awal');
@@ -135,8 +132,10 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('appVersionLabel').textContent = APP_VERSION;
 
     loadData();
+    document.body.dataset.view = currentView;
     setupEventListeners();
     setDefaultDate();
+    document.getElementById('sortSelect').style.display = 'none';   // Beranda: tanpa pilihan urutan
     render();
     handleLaunchParams();
 });

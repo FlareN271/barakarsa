@@ -70,17 +70,15 @@ function showUpdateToast() {
 }
 
 // Dibuka lewat shortcut atau notifikasi:
-//   ?quick=1   "Tambah task cepat" → kolom input Inbox
+//   ?quick=1   "Tambah task cepat" → Tambah cepat (3.7; dulu kolom input Inbox)
 //   ?task=ID   pengingat task diketuk → buka task itu (3.4)
-//   ?view=today ringkasan pagi diketuk → Today (3.4)
-//   ?view=today&rekap=1 rekap sore diketuk → Today, rekap terbuka (3.6)
+//   ?view=today ringkasan pagi diketuk → Beranda (3.7; dulu Today)
+//   ?view=today&rekap=1 rekap sore diketuk → Beranda, kotak Hari ini berisi rekap (3.6/3.7)
 function handleLaunchParams() {
     const params = new URLSearchParams(location.search);
     if (params.get('quick') === '1') {
         history.replaceState(null, '', location.pathname);
-        switchView('inbox');
-        const input = document.getElementById('quickInput');
-        if (input) setTimeout(() => input.focus(), 150);
+        openCepat();
         return;
     }
     if (params.has('task') || params.has('view')) {
@@ -96,14 +94,14 @@ function bukaDariTautan(url) {
     const id = params.get('task');
     if (id) {
         const task = tasks.find(t => String(t.id) === id);
-        if (!task) { switchView('today'); evToast('Task belum ada di perangkat ini. Tunggu sinkron sebentar.'); return; }
+        if (!task) { switchView('dashboard'); evToast('Task belum ada di perangkat ini. Tunggu sinkron sebentar.'); return; }
         // Jangan menimpa form yang sedang diisi
         if (document.getElementById('taskModal').classList.contains('active')) { evToast('⏰ ' + task.title); return; }
         document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
         editTask(task.id);
     } else if (params.get('view') === 'today') {
-        // ?rekap=1: notifikasi rekap sore (3.6) → Today dengan rekap terbuka
+        // ?rekap=1: notifikasi rekap sore (3.6) → Beranda; kotak Hari ini berisi rekap
         if (params.get('rekap') === '1') baraBukaRekap();
-        else switchView('today');
+        else switchView('dashboard');
     }
 }

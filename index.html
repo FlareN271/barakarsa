@@ -51,6 +51,8 @@
     <link rel="stylesheet" href="./css/pengingat.css">
     <link rel="stylesheet" href="./css/laporan.css">
     <link rel="stylesheet" href="./css/bara.css">
+    <link rel="stylesheet" href="./css/beranda.css">
+    <link rel="stylesheet" href="./css/cepat.css">
     <link rel="stylesheet" href="./css/cetak.css">
     <link rel="stylesheet" href="./css/hp.css">
 
@@ -68,75 +70,54 @@
     <script defer src="./js/pengingat.js"></script>
     <script defer src="./js/laporan.js"></script>
     <script defer src="./js/bara.js"></script>
+    <script defer src="./js/beranda.js"></script>
+    <script defer src="./js/cepat.js"></script>
     <script defer src="./js/pwa.js"></script>
     <script defer src="./js/main.js"></script>
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- Sidebar -->
+        <!-- Sidebar (3.7: Beranda · Belum selesai · Kalender · Selesai · Reporting) -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="app-title" id="toggleSidebar" title="Click to toggle sidebar">🔥 <span class="sidebar-text">BARAKARSA</span></div>
             </div>
 
-            <button class="sidebar-add-task" id="sidebarAddTaskBtn">
+            <button class="sidebar-add-task" id="sidebarAddTaskBtn" title="Tambah cepat (tombol Q)">
                 <span>➕</span>
-                <span class="sidebar-text">Add task</span>
+                <span class="sidebar-text">Tambah task</span>
             </button>
 
-            <input type="text" id="globalSearchInput" class="sidebar-search" placeholder="🔍 Search tasks..." />
+            <input type="text" id="globalSearchInput" class="sidebar-search" placeholder="🔍 Cari task..." />
 
             <nav class="sidebar-nav">
                 <div class="sidebar-item active" data-view="dashboard" onclick="switchView('dashboard')">
                     <div class="sidebar-item-left">
-                        <span class="sidebar-item-icon">📊</span>
-                        <span class="sidebar-item-text">Dashboard</span>
-                    </div>
-                </div>
-
-                <div class="sidebar-item" data-view="inbox" onclick="switchView('inbox')">
-                    <div class="sidebar-item-left">
-                        <span class="sidebar-item-icon">📬</span>
-                        <span class="sidebar-item-text">Inbox</span>
-                    </div>
-                    <span class="sidebar-item-count" id="inboxCount">0</span>
-                </div>
-
-                <div class="sidebar-item" data-view="today" onclick="switchView('today')">
-                    <div class="sidebar-item-left">
-                        <span class="sidebar-item-icon">📅</span>
-                        <span class="sidebar-item-text">Today</span>
-                    </div>
-                    <span class="sidebar-item-count" id="todayCount">0</span>
-                </div>
-
-                <div class="sidebar-item" data-view="upcoming" onclick="switchView('upcoming')">
-                    <div class="sidebar-item-left">
-                        <span class="sidebar-item-icon">📆</span>
-                        <span class="sidebar-item-text">Upcoming</span>
+                        <span class="sidebar-item-icon">🏠</span>
+                        <span class="sidebar-item-text">Beranda</span>
                     </div>
                 </div>
 
                 <div class="sidebar-item" data-view="all" onclick="switchView('all')">
                     <div class="sidebar-item-left">
-                        <span class="sidebar-item-icon">📚</span>
-                        <span class="sidebar-item-text">All Tasks</span>
+                        <span class="sidebar-item-icon">📋</span>
+                        <span class="sidebar-item-text">Belum selesai</span>
                     </div>
-                    <span class="sidebar-item-count" id="allCount">0</span>
+                    <!-- Hanya jumlah task lewat tanggal (3.7) -->
+                    <span class="sidebar-item-count count-lewat" id="lewatCount" title="Task lewat tanggal" hidden>0</span>
+                </div>
+
+                <div class="sidebar-item" data-view="kalender" onclick="switchView('kalender')">
+                    <div class="sidebar-item-left">
+                        <span class="sidebar-item-icon">📅</span>
+                        <span class="sidebar-item-text">Kalender</span>
+                    </div>
                 </div>
 
                 <div class="sidebar-item" data-view="completed" onclick="switchView('completed')">
                     <div class="sidebar-item-left">
                         <span class="sidebar-item-icon">✅</span>
-                        <span class="sidebar-item-text">Completed</span>
-                    </div>
-                    <span class="sidebar-item-count" id="completedCount">0</span>
-                </div>
-
-                <div class="sidebar-item" data-view="filters" onclick="switchView('filters')">
-                    <div class="sidebar-item-left">
-                        <span class="sidebar-item-icon">🏷️</span>
-                        <span class="sidebar-item-text">Labels</span>
+                        <span class="sidebar-item-text">Selesai</span>
                     </div>
                 </div>
 
@@ -156,6 +137,15 @@
                 <div class="project-items" id="projectsList"></div>
             </div>
 
+            <nav class="sidebar-nav sidebar-bawah">
+                <div class="sidebar-item sidebar-item-kecil" data-view="filters" onclick="switchView('filters')">
+                    <div class="sidebar-item-left">
+                        <span class="sidebar-item-icon">🏷️</span>
+                        <span class="sidebar-item-text">Labels</span>
+                    </div>
+                </div>
+            </nav>
+
             <input type="file" id="importFile" accept=".json,.csv" hidden />
         </div>
 
@@ -165,7 +155,7 @@
             <div class="header">
                 <div class="header-left">
                     <button class="hamburger-btn" id="hamburgerBtn">☰</button>
-                    <div class="header-title" id="headerTitle">Dashboard</div>
+                    <div class="header-title" id="headerTitle">🏠 Beranda</div>
                 </div>
                 <div class="header-right">
                     <select id="sortSelect" class="sort-select" title="Urutkan task">
@@ -195,6 +185,7 @@
                             <div class="tools-menu-item" onclick="toolsAction('nama')">👤 Nama panggilan</div>
 
                             <div class="tools-menu-title">Tampilan</div>
+                            <div class="tools-menu-item" onclick="toolsAction('beranda')">🎨 Atur Beranda</div>
                             <div class="tools-menu-item theme-option" data-theme-pref="auto" onclick="toolsAction('theme-auto')">🖥️ Otomatis (ikut perangkat)</div>
                             <div class="tools-menu-item theme-option" data-theme-pref="light" onclick="toolsAction('theme-light')">☀️ Terang</div>
                             <div class="tools-menu-item theme-option" data-theme-pref="dark" onclick="toolsAction('theme-dark')">🌙 Gelap</div>
@@ -214,68 +205,25 @@
 
             <!-- Content -->
             <div class="content" id="content">
-                <!-- Dashboard -->
+                <!-- Beranda (3.7): sampul, kartu Bara, widget. Isi widget digambar oleh brRender() di beranda.js -->
                 <div id="dashboardView" class="view" style="display: block;">
-                    <!-- Kartu Bara: sapaan, rekap sore, chip Inbox (diisi oleh baraRender, 3.6) -->
+                    <div class="br-sampul" id="brSampul">
+                        <button type="button" class="br-sampul-atur" onclick="openBerandaModal()" title="Atur sampul, jam, dan widget" aria-label="Atur Beranda">🎨<span class="br-panjang"> Atur Beranda</span></button>
+                    </div>
+                    <!-- Kartu Bara: sapaan, rekap sore, chip Belum dipilah (diisi oleh baraRender, 3.6) -->
                     <div id="baraDash" class="bara-slot"></div>
-                    <div class="stats">
-                        <div class="stat-card">
-                            <div class="stat-number" id="statTotal">0</div>
-                            <div class="stat-label">Total Tasks</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="statActive">0</div>
-                            <div class="stat-label">Active</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="statCompleted">0</div>
-                            <div class="stat-label">Completed</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="statDo">0</div>
-                            <div class="stat-label">Priority 1</div>
-                        </div>
-                    </div>
-
-                    <h3 class="section-heading">📋 Undone Tasks</h3>
-                    <!-- Peringatan "kegiatan CKP selesai tanpa bukti dukung" (diisi oleh evUpdateBanners) -->
-                    <div id="evBanner" class="ev-banner" style="display: none;"></div>
-                    <div id="dashboardList"></div>
+                    <div class="br-grid" id="brGrid"></div>
                 </div>
 
-                <!-- Inbox -->
-                <div id="inboxView" class="view" style="display: none;">
-                    <div class="quick-task">
-                        <input type="text" class="quick-input" id="quickInput" placeholder="💡 Task title only... (press Enter to add, edit later for details)">
-                        <button class="btn btn-primary" id="quickAddBtn">Add</button>
-                    </div>
-                    <!-- Ajakan memilah bila Inbox menumpuk (3.6) -->
-                    <div id="baraInbox" class="bara-inbox" hidden></div>
-                    <div id="inboxList"></div>
-                </div>
-
-                <!-- Today -->
-                <div id="todayView" class="view" style="display: none;">
-                    <div id="baraToday" class="bara-slot"></div>
-                    <div class="search-container">
-                        <input type="text" class="search-input" id="todaySearch" placeholder="🔍 Search tasks...">
-                        <button class="filter-btn" id="todayFilterBtn">🔽 Filter</button>
-                    </div>
-                    <div id="filterPanel" style="display: none;">
-                        <div class="filter-panel" id="todayFilterPanel"></div>
-                    </div>
-                    <div id="todayList"></div>
-                </div>
-
-                <!-- Upcoming -->
-                <div id="upcomingView" class="view" style="display: none;">
-                    <div id="upcomingList"></div>
-                </div>
-
-                <!-- All Tasks -->
+                <!-- Belum selesai (3.7): pengganti All Tasks, Today, Upcoming, dan Inbox -->
                 <div id="allView" class="view" style="display: none;">
+                    <button type="button" class="cp-bilah" onclick="openCepat()">
+                        <span class="cp-bilah-ikon" aria-hidden="true">⚡</span>
+                        <span class="cp-bilah-teks">Tambah cepat… mis. "Rapat SE2026 besok 13.30 #kerja"</span>
+                        <span class="cp-bilah-kunci" aria-hidden="true">Q</span>
+                    </button>
                     <div class="search-container">
-                        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search tasks...">
+                        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Cari task...">
                         <button class="filter-btn" id="allFilterBtn">🔽 Filter</button>
                     </div>
                     <div id="allFilterPanel" style="display: none;">
@@ -284,12 +232,20 @@
                     <div id="allViewToggle" class="view-toggle">
                         <button class="view-btn active" data-view="list" onclick="switchAllView('list')">📋 List</button>
                         <button class="view-btn" data-view="board" onclick="switchAllView('board')">📊 Board</button>
-                        <button class="view-btn" data-view="calendar" onclick="switchAllView('calendar')">📅 Calendar</button>
                     </div>
+                    <!-- Peringatan "kegiatan CKP selesai tanpa bukti dukung" (diisi oleh evUpdateBanners) -->
+                    <div id="evBanner" class="ev-banner" style="display: none;"></div>
+                    <!-- Ajakan memilah bila Belum dipilah menumpuk (3.6) -->
+                    <div id="baraInbox" class="bara-inbox" hidden></div>
                     <div id="allList"></div>
                 </div>
 
-                <!-- Completed -->
+                <!-- Kalender (3.7: menu sendiri; sebelumnya tombol di All Tasks) -->
+                <div id="kalenderView" class="view" style="display: none;">
+                    <div id="kalenderList"></div>
+                </div>
+
+                <!-- Selesai -->
                 <div id="completedView" class="view" style="display: none;">
                     <!-- Muncul saat menampilkan "kegiatan CKP tanpa bukti dukung" -->
                     <div id="evChip" class="ev-banner" style="display: none;"></div>
@@ -309,6 +265,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Bilah bawah HP (3.7): menggantikan tombol ➕ melayang di layar ≤768px -->
+    <nav class="bilah-bawah" id="bilahBawah" aria-label="Menu utama">
+        <button type="button" class="bb-item active" data-view="dashboard" onclick="switchView('dashboard')"><span class="bb-ikon">🏠</span><span>Beranda</span></button>
+        <button type="button" class="bb-item" data-view="all" onclick="switchView('all')"><span class="bb-ikon">📋</span><span>Task</span><span class="bb-angka" id="lewatCountBawah" hidden></span></button>
+        <button type="button" class="bb-tambah" onclick="openCepat()" aria-label="Tambah task cepat"><span>+</span></button>
+        <button type="button" class="bb-item" data-view="kalender" onclick="switchView('kalender')"><span class="bb-ikon">📅</span><span>Kalender</span></button>
+        <button type="button" class="bb-item" data-view="lainnya" onclick="bukaSidebarHp(event)"><span class="bb-ikon">☰</span><span>Lainnya</span></button>
+    </nav>
 
     <!-- Hub CKP Triwulan (diisi oleh ckpRenderHub). Diletakkan sebelum form task
          supaya form task yang dibuka dari hub tampil di atasnya. -->
@@ -419,11 +384,12 @@
 
                     <div class="form-group">
                         <label>Priority</label>
+                        <!-- 3.7: bawaan tanpa prioritas; nilai lama "eliminate" (P4) dibaca sebagai tanpa prioritas -->
                         <select id="taskQuadrant">
+                            <option value="">— Tanpa prioritas</option>
                             <option value="do">🔴 Priority 1</option>
                             <option value="schedule">🟠 Priority 2</option>
                             <option value="delegate">🔵 Priority 3</option>
-                            <option value="eliminate">⚪ Priority 4</option>
                         </select>
                     </div>
 
@@ -432,7 +398,8 @@
                         <div id="taskLabelsForm"></div>
                     </div>
 
-                    <div class="form-group">
+                    <!-- 3.7: hanya tampil bila task lama sudah punya link (foto bukti dukung menggantikannya) -->
+                    <div class="form-group" id="attachmentGroup" hidden>
                         <label>Google Drive Link</label>
                         <input type="url" id="taskAttachment" placeholder="https://drive.google.com/...">
                     </div>
@@ -585,11 +552,14 @@
                     <p><strong>Projects vs Labels</strong><br>
                     Project adalah folder — satu task hanya masuk satu project (KipApp, Kerja, Personal). Ubah nama, warna, atau penanda CKP lewat ⋯ di samping nama project. Label adalah penanda tambahan — satu task boleh punya beberapa label (Urgent, Review).</p>
 
-                    <p><strong>Priority</strong><br>
-                    Priority 1 = paling penting/mendesak, sampai Priority 4 = paling ringan. Task baru otomatis Priority 4 (seperti Todoist). Pakai urutan ⇅ Prioritas untuk menampilkan P1 paling atas.</p>
+                    <p><strong>Menu</strong><br>
+                    🏠 <em>Beranda</em> tempat memulai hari: sampul, Bara, jam, task hari ini, dan widget. 📋 <em>Belum selesai</em> berisi semua task yang belum dicentang, dikelompokkan: Belum dipilah, Lewat tanggal, Hari ini, Besok, 7 hari ke depan, Nanti. 📅 <em>Kalender</em>, ✅ <em>Selesai</em>, dan 📈 <em>Reporting</em> tetap seperti sebelumnya. Di HP, menu ada di bilah bawah; ☰ <em>Lainnya</em> membuka project, label, dan menu lain. Beranda diatur lewat 🎨 <em>Atur Beranda</em> (tombol di sampul atau ⋯ → Tampilan); sampul unggahan dan album disimpan di perangkat ini saja.</p>
 
-                    <p><strong>Inbox</strong><br>
-                    Tempat menangkap ide cepat. Cukup ketik judul lalu Enter — tanggal, status, dan kuadran diisi belakangan lewat klik judul task.</p>
+                    <p><strong>Tambah cepat</strong><br>
+                    Tombol ➕, tombol Q, atau tekan lama ikon aplikasi. Ketik satu kalimat, mis. <em>Rapat SE2026 besok 13.30 #kerja !1</em>: tanggal (hari ini, besok, lusa, nama hari, 15 okt, tgl 15), jam (13.30, jam 9), <em>#project</em>, <em>!1–!3</em> atau <em>p1–p3</em> untuk prioritas, dan <em>@label</em> dikenali langsung. Ketuk ✕ di chip bila salah tebak. Enter menyimpan; <em>Detail…</em> membuka form lengkap. Task tanpa tanggal dan project masuk <em>📥 Belum dipilah</em>.</p>
+
+                    <p><strong>Priority</strong><br>
+                    Bawaan: tanpa prioritas. Pilih Priority 1–3 hanya bila memang perlu ditandai; badge ⚑ hanya muncul untuk P1–P3. Pakai urutan ⇅ Prioritas untuk menampilkan P1 paling atas.</p>
 
                     <p><strong>Mengurutkan task</strong><br>
                     Tahan ikon ⠿ di kiri task, lalu geser ke atas atau bawah untuk mengatur urutan pengerjaan.</p>
@@ -598,13 +568,13 @@
                     Task di project bertanda <em>Project CKP</em> (bawaan: KipApp) yang sudah dipilih IKI-nya masuk ke menu ⋯ → CKP Triwulan. Task Title menjadi Uraian Kegiatan, Description menjadi Keterangan/Catatan. Di form task, ketuk kolom IKI untuk mencari IKI (nama kegiatan, tim, kode IK, teks IKI, atau rincian); tiga IKI terakhir dipakai tampil paling atas. IKI tim lain bisa dipilih, tetapi diberi tanda <em>bukan penugasanmu</em>. Setelah IKI dipilih, muncul 💡 saran keterangan dari task sebelumnya dengan IKI yang sama. Dari sana bisa dibuat Laporan PDF per IKI (lengkap dengan foto bukti dukung) dan Excel rekap CKP.</p>
 
                     <p><strong>Pengingat</strong><br>
-                    Menu ⋯ → 🔔 Pengaturan pengingat → <em>Aktifkan di perangkat ini</em> (lakukan di setiap HP/laptop). Task bertanggal dan berjam diingatkan sesuai bawaan (mis. 5 menit sebelumnya), atau pilih sendiri lewat 🔔 di bawah kolom Time. Ringkasan pagi berisi task Today. Notifikasi dikirim server dari task yang sudah tersinkron, jadi tetap muncul walau aplikasi ditutup.</p>
+                    Menu ⋯ → 🔔 Pengaturan pengingat → <em>Aktifkan di perangkat ini</em> (lakukan di setiap HP/laptop). Task bertanggal dan berjam diingatkan sesuai bawaan (mis. 5 menit sebelumnya), atau pilih sendiri lewat 🔔 di bawah kolom Time. Ringkasan pagi berisi task hari ini. Notifikasi dikirim server dari task yang sudah tersinkron, jadi tetap muncul walau aplikasi ditutup.</p>
 
                     <p><strong>Reporting</strong><br>
                     Pilih Minggu ini, Bulan ini, atau Triwulan ini. Task selesai dihitung menurut waktu dicentang; <em>tepat waktu</em> berarti selesai paling lambat pada tanggal task (atau <em>Sampai tanggal</em>). Task yang selesai sebelum 8 Oktober 2026 tidak punya catatan waktu selesai, jadi tidak dinilai tepat waktu atau terlambat. Ketuk <em>Lewat tanggal</em> untuk melihat task yang tertinggal.</p>
 
                     <p><strong>Bara</strong><br>
-                    Bara menyapa di Dashboard dan Today sesuai waktu, ikut senang saat task dicentang (salah centang? ketuk <em>↶ Batal</em> di baris hijau), dan bersorak saat semua task hari ini beres. Mulai jam rekap sore (bawaan Senin–Jumat 15.55) kartunya berisi rekap; di Today ketuk <em>Lihat rekap ▾</em> untuk melihat yang beres dan yang tersisa. Rekap sore juga dikirim sebagai notifikasi (atur di 🔔 Pengaturan pengingat). Ketuk Bara untuk kalimat lain. Nama yang dipakai Bara diatur di ⋯ → 👤 Nama panggilan (kosong = sapaan tanpa nama).</p>
+                    Bara menyapa di Beranda sesuai waktu, ikut senang saat task dicentang (salah centang? ketuk <em>↶ Batal</em> di baris hijau), dan bersorak di kotak Hari ini saat semua task hari ini beres. Mulai jam rekap sore (bawaan Senin–Jumat 15.55) kotak Hari ini berubah menjadi rekap: yang beres dan yang tersisa. Rekap sore juga dikirim sebagai notifikasi (atur di 🔔 Pengaturan pengingat). Ketuk Bara untuk kalimat lain. Nama yang dipakai Bara diatur di ⋯ → 👤 Nama panggilan (kosong = sapaan tanpa nama).</p>
 
                     <p><strong>Tampilan</strong><br>
                     Menu ⋯ → Tampilan: <em>Otomatis</em> mengikuti mode gelap/terang perangkat, atau pilih Terang/Gelap. Pilihan disimpan per perangkat. Laporan PDF CKP selalu putih apa pun temanya.</p>
@@ -695,8 +665,41 @@
         <div class="project-menu-item danger" onclick="confirmDeleteProject(currentContextProjectId)">🗑️ Delete</div>
     </div>
 
-    <!-- Tombol ➕ melayang -->
-    <button id="fabAddTask" class="fab-add" type="button" title="Tambah task (tombol Q)" aria-label="Tambah task"
-        onclick="event.stopPropagation(); openTaskModal()"><span class="fab-plus">+</span><span class="fab-label">Add task</span></button>
+    <!-- Tambah cepat (3.7): satu kalimat, tanggal/jam/#project/!prioritas/@label dikenali (cepat.js) -->
+    <div class="modal cp-modal" id="cepatModal" onclick="if (event.target === this) closeCepat()">
+        <div class="cp-kotak" role="dialog" aria-modal="true" aria-labelledby="cepatJudul" onclick="event.stopPropagation()">
+            <h2 class="cp-judul" id="cepatJudul">⚡ Tambah cepat</h2>
+            <input type="text" id="cepatInput" class="cp-input" autocomplete="off" enterkeyhint="done"
+                placeholder="mis. Rapat SE2026 besok 13.30 #kerja !1" aria-describedby="cepatPetunjuk">
+            <div class="cp-chips" id="cepatChips"></div>
+            <div class="cp-kaki">
+                <span class="cp-petunjuk" id="cepatPetunjuk"></span>
+                <span class="cp-tombol">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="cepatKeDetail()">Detail…</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="cepatSimpanBtn" onclick="simpanCepat()">Simpan ↵</button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Atur Beranda (3.7): isi digambar oleh brRenderAtur() di beranda.js -->
+    <div class="modal" id="berandaModal" onclick="if (event.target === this) closeBerandaModal()">
+        <div class="modal-content modal-simple">
+            <div class="modal-body">
+                <button class="modal-close" onclick="closeBerandaModal()">✕</button>
+                <h2 class="modal-title">🎨 Atur Beranda</h2>
+                <div id="berandaAturIsi"></div>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="brSampulInput" accept="image/*" hidden onchange="brPilihSampul(this)">
+    <input type="file" id="brAlbumInput" accept="image/*" multiple hidden onchange="brTambahAlbum(this)">
+
+    <!-- Foto album diperbesar (3.7) -->
+    <div class="br-lihat" id="brLihat" hidden onclick="if (event.target === this) brTutupFoto()"></div>
+
+    <!-- Tombol ➕ melayang (desktop; di HP diganti bilah bawah sejak 3.7) -->
+    <button id="fabAddTask" class="fab-add" type="button" title="Tambah cepat (tombol Q)" aria-label="Tambah task"
+        onclick="event.stopPropagation(); openCepat()"><span class="fab-plus">+</span><span class="fab-label">Tambah task</span></button>
 </body>
 </html>

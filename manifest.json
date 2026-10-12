@@ -33,7 +33,7 @@
     {
       "name": "Tambah task cepat",
       "short_name": "Tambah cepat",
-      "description": "Langsung ke kolom tambah task di Inbox",
+      "description": "Buka Tambah cepat: ketik satu kalimat, langsung tersimpan",
       "url": "./index.html?quick=1",
       "icons": [
         {

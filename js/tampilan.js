@@ -1,28 +1,34 @@
 /* ============================================================
    tampilan.js — menggambar layar
 
-   Menu (Dashboard, Inbox, Today, Upcoming, All Tasks, Completed,
-   Labels, Reporting), tampilan List / Board / Kalender, urutkan,
-   filter, pencarian, project di sidebar, dan drag & drop urutan.
+   Menu sejak 3.7: Beranda (id 'dashboard', isi di beranda.js),
+   Belum selesai (id 'all', berkelompok atau Board), Kalender,
+   Selesai (id 'completed'), Labels, Reporting. Juga urutkan, filter,
+   pencarian, project di sidebar, bilah bawah HP, dan drag & drop urutan.
    Semua perubahan layar lewat render().
    ============================================================ */
 
 // ---------- Status tampilan ----------
 let currentView = 'dashboard';
-let currentAllDisplayView = 'list';   // All Tasks: list / board / calendar
+let currentAllDisplayView = 'list';   // Belum selesai: list (berkelompok) / board
 let currentProjectFilter = null;      // id project yang sedang dilihat (klik di sidebar)
 let activeFilters = { status: [], quadrant: [], labels: [] };
 
 const VIEW_TITLES = {
-    dashboard: '📊 Dashboard',
-    inbox: '📬 Inbox',
-    today: '📅 Today',
-    upcoming: '📆 Upcoming',
-    all: '📚 All Tasks',
-    completed: '✅ Completed',
+    dashboard: '🏠 Beranda',
+    all: '📋 Belum selesai',
+    kalender: '📅 Kalender',
+    completed: '✅ Selesai',
     filters: '🏷️ Labels',
     reporting: '📈 Reporting'
 };
+
+// Menu lama (≤3.6) yang dilebur di 3.7. Tautan lama (?view=today dari notifikasi)
+// dan pemanggilan lama tetap mendarat di tempat yang benar.
+const VIEW_LAMA = { today: 'dashboard', inbox: 'all', upcoming: 'all' };
+
+// Prioritas yang ditampilkan (3.7). "eliminate" (P4) dan kosong = tanpa prioritas.
+const prioAktif = q => q === 'do' || q === 'schedule' || q === 'delegate';
 
 const STATUS_EMOJI = { 'not-started': '🟡', 'in-progress': '🔵', 'on-hold': '⏸️', 'completed': '✅', 'cancelled': '❌' };
 const STATUS_LABEL = { 'not-started': 'Not Started', 'in-progress': 'In Progress', 'on-hold': 'On Hold', 'completed': 'Completed', 'cancelled': 'Cancelled' };
@@ -38,25 +44,31 @@ function debouncedRender() {
 // ---------- Pindah menu ----------
 
 function switchView(view, clearFilters = true) {
+    view = VIEW_LAMA[view] || view;
+    if (!VIEW_TITLES[view]) view = 'dashboard';
     if (view !== 'completed') evMissingOnly = false;
+    const pindah = view !== currentView;
     currentView = view;
     if (clearFilters) {
         currentProjectFilter = null;
         activeFilters = { status: [], quadrant: [], labels: [] };
     }
 
-    document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
-    document.querySelector(`.sidebar-item[data-view="${view}"]`).classList.add('active');
+    document.querySelectorAll('.sidebar-item').forEach(item => item.classList.toggle('active', item.dataset.view === view));
+    document.querySelectorAll('.bb-item').forEach(item => item.classList.toggle('active', item.dataset.view === view));
     document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
     document.getElementById('headerTitle').textContent = VIEW_TITLES[view];
     document.getElementById(view + 'View').style.display = 'block';
+    document.body.dataset.view = view;
+    if (pindah) document.getElementById('content').scrollTop = 0;
     render();
 
-    // Pilihan urutan tidak berguna di Labels dan Reporting
-    document.getElementById('sortSelect').style.display = (view === 'filters' || view === 'reporting') ? 'none' : '';
+    // Pilihan urutan hanya berguna di daftar task
+    document.getElementById('sortSelect').style.display = (view === 'all' || view === 'completed') ? '' : 'none';
 }
 
 function switchAllView(displayView) {
+    if (displayView !== 'board') displayView = 'list';
     currentAllDisplayView = displayView;
     document.querySelectorAll('#allViewToggle .view-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`#allViewToggle [data-view="${displayView}"]`).classList.add('active');
@@ -71,11 +83,18 @@ function closeSidebarOnMobile() {
     }
 }
 
+// HP: tombol ☰ Lainnya di bilah bawah membuka sidebar (project, label, menu lain)
+function bukaSidebarHp(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('sidebar').classList.remove('collapsed');
+}
+
 // v3.1: klik project selalu menampilkan project itu (dulu klik kedua membatalkan
-// filter, sehingga klik ganda terasa "bolak-balik"). Keluar lewat menu Dashboard.
+// filter, sehingga klik ganda terasa "bolak-balik"). Sejak 3.7 project ditampilkan
+// di Belum selesai; keluar lewat menu Belum selesai atau menu lain.
 function filterByProject(projectId) {
     currentProjectFilter = projectId;
-    switchView('dashboard', false);
+    switchView('all', false);
 }
 
 // ---------- Filter ----------
@@ -110,7 +129,7 @@ function renderFilterPanel(panelName) {
                 ${opt('quadrant', 'do', '🔴 Priority 1')}
                 ${opt('quadrant', 'schedule', '🟠 Priority 2')}
                 ${opt('quadrant', 'delegate', '🔵 Priority 3')}
-                ${opt('quadrant', 'eliminate', '⚪ Priority 4')}
+                ${opt('quadrant', 'none', '⚪ Tanpa prioritas')}
             </div>
         </div>
         ${labels.length > 0 ? `
@@ -136,7 +155,7 @@ function getFilteredTasks(taskList) {
     let filtered = taskList;
     if (currentProjectFilter !== null) filtered = filtered.filter(t => t.project == currentProjectFilter);
     if (activeFilters.status.length) filtered = filtered.filter(t => activeFilters.status.includes(t.status));
-    if (activeFilters.quadrant.length) filtered = filtered.filter(t => activeFilters.quadrant.includes(t.quadrant));
+    if (activeFilters.quadrant.length) filtered = filtered.filter(t => activeFilters.quadrant.includes(prioAktif(t.quadrant) ? t.quadrant : 'none'));
     if (activeFilters.labels.length) filtered = filtered.filter(t => t.labels.some(l => activeFilters.labels.includes(l)));
     if (evMissingOnly && currentView === 'completed') filtered = filtered.filter(evIsMissing);
     return sortMode === 'manual' ? filtered : sortTaskList(filtered);
@@ -145,7 +164,7 @@ function getFilteredTasks(taskList) {
 // ---------- Urutkan ----------
 // 'manual' = urutan drag & drop (field order). Pilihan disimpan per perangkat.
 let sortMode = localStorage.getItem('barakarsa_sort') || 'manual';
-const Q_RANK = { do: 0, schedule: 1, delegate: 2, eliminate: 3 };
+const Q_RANK = { do: 0, schedule: 1, delegate: 2 };     // lainnya (tanpa prioritas, P4 lama) paling bawah
 const S_RANK = { 'in-progress': 0, 'not-started': 1, 'on-hold': 2, 'completed': 3, 'cancelled': 4 };
 
 const byDateAsc = (a, b) => {
@@ -160,7 +179,7 @@ function sortTaskList(list) {
     if (sortMode === 'date-asc') arr.sort(byDateAsc);
     else if (sortMode === 'date-desc') arr.sort((a, b) => (!a.date ? 1 : !b.date ? -1 : -byDateAsc(a, b)));
     else if (sortMode === 'name') arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'id', { sensitivity: 'base', numeric: true }));
-    else if (sortMode === 'priority') arr.sort((a, b) => ((Q_RANK[a.quadrant] ?? 9) - (Q_RANK[b.quadrant] ?? 9)) || byDateAsc(a, b));
+    else if (sortMode === 'priority') arr.sort((a, b) => ((Q_RANK[a.quadrant] ?? 3) - (Q_RANK[b.quadrant] ?? 3)) || byDateAsc(a, b));
     else if (sortMode === 'status') arr.sort((a, b) => ((S_RANK[a.status] ?? 9) - (S_RANK[b.status] ?? 9)) || byDateAsc(a, b));
     return arr;
 }
@@ -182,17 +201,18 @@ function setupSortSelect() {
 // ---------- Pencarian ----------
 
 function performSearch() {
-    const query = document.getElementById('searchInput').value.toLowerCase();
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    if (!query) { render(); return; }      // kotak cari dikosongkan → kembali berkelompok
     const results = tasks.filter(t =>
         t.status !== 'completed' && (
             t.title.toLowerCase().includes(query) ||
             t.description.toLowerCase().includes(query)
         )
     );
-    renderTaskList(document.getElementById('allList'), results, currentAllDisplayView);
+    renderTaskList(document.getElementById('allList'), getFilteredTasks(results), currentAllDisplayView);
 }
 
-// Pencarian di sidebar: mencari di semua task (termasuk yang selesai), hasil di All Tasks
+// Pencarian di sidebar: mencari di semua task (termasuk yang selesai), hasil di Belum selesai
 function performGlobalSearch(query) {
     if (query === '') {
         switchView('all');
@@ -211,7 +231,7 @@ function performGlobalSearch(query) {
 // Teks dari pengguna (judul, description, nama project/label) selalu lewat esc(),
 // supaya karakter seperti < > & tampil apa adanya, bukan dibaca sebagai HTML.
 function createTaskHTML(task) {
-    const prio = PRIORITY_LABEL[task.quadrant];
+    const prio = prioAktif(task.quadrant) ? PRIORITY_LABEL[task.quadrant] : null;
     const project = task.project ? projects.find(p => p.id == task.project) : null;
 
     let dateStr = '';
@@ -247,6 +267,11 @@ function createTaskHTML(task) {
                     ${dateStr ? `<span class="badge">📅 ${dateStr}${timeStr}</span>` : ''}
                     ${task.attachment ? `<span class="badge">🔗 Link</span>` : ''}
                 </div>
+                ${task.isInbox && task.status !== 'completed' ? `<div class="pilah-aksi">
+                    <button type="button" class="pilah-btn" onclick="pilahKe(${task.id}, 0)">📅 Hari ini</button>
+                    <button type="button" class="pilah-btn" onclick="pilahKe(${task.id}, 1)">Besok</button>
+                    <button type="button" class="pilah-btn" onclick="editTask(${task.id})">Lengkapi…</button>
+                </div>` : ''}
             </div>
             <div class="task-actions">
                 <button class="btn btn-secondary btn-sm" title="Duplikat task" onclick="duplicateTask(${task.id})">⧉</button>
@@ -271,6 +296,64 @@ function renderTaskList(container, taskList, displayView = 'list') {
     if (displayView === 'board') renderBoardView(container, taskList);
     else if (displayView === 'calendar') renderCalendarView(container, taskList);
     else container.innerHTML = taskList.map(createTaskHTML).join('') + ADD_TASK_INLINE;
+}
+
+// ---------- Belum selesai: dikelompokkan menurut waktu (3.7) ----------
+// Urutan di dalam kelompok mengikuti urutan pilihan (manual/tanggal/…).
+
+const KELOMPOK = [
+    { k: 'dipilah', judul: '📥 Belum dipilah', ket: 'tanpa tanggal & project' },
+    { k: 'lewat', judul: '⚠️ Lewat tanggal' },
+    { k: 'hariini', judul: 'Hari ini' },
+    { k: 'besok', judul: 'Besok' },
+    { k: 'pekan', judul: '7 hari ke depan' },
+    { k: 'nanti', judul: 'Nanti' },
+    { k: 'tanpa', judul: 'Tanpa tanggal' },
+    { k: 'batal', judul: '❌ Dibatalkan' }
+];
+
+function kelompokTask(t, today, besok, pekan) {
+    if (t.status === 'cancelled') return 'batal';
+    if (t.isInbox) return 'dipilah';
+    if (!t.date) return 'tanpa';
+    const tenggat = t.dateEnd && t.dateEnd > t.date ? t.dateEnd : t.date;
+    if (tenggat < today) return 'lewat';
+    if (t.date <= today) return 'hariini';
+    if (t.date === besok) return 'besok';
+    if (t.date <= pekan) return 'pekan';
+    return 'nanti';
+}
+
+function renderKelompok(container, list) {
+    if (!list.length) {
+        container.innerHTML = emptyState('🎉', currentProjectFilter != null ? 'Tidak ada task yang belum selesai di project ini.' : 'Tidak ada yang tertunda. Semua beres!', '➕ Tambah task');
+        return;
+    }
+    const today = todayISO();
+    const besok = lpGeser(today, 1), pekan = lpGeser(today, 7);
+    const grup = {};
+    list.forEach(t => { const k = kelompokTask(t, today, besok, pekan); (grup[k] = grup[k] || []).push(t); });
+    const judulHari = { hariini: ' · ' + fmtHariPendek(today), besok: ' · ' + fmtHariPendek(besok) };
+    container.innerHTML = KELOMPOK.filter(g => grup[g.k]).map(g => `
+        <section class="kl-grup kl-${g.k}" aria-label="${g.judul.replace(/^\W+\s/, '')}">
+            <h3 class="kl-judul">${g.judul}${judulHari[g.k] || ''}<span class="kl-n">${grup[g.k].length}</span>${g.ket ? `<span class="kl-ket">${g.ket}</span>` : ''}</h3>
+            ${grup[g.k].map(createTaskHTML).join('')}
+        </section>`).join('') + ADD_TASK_INLINE;
+}
+
+// "Sen 12 Okt"
+function fmtHariPendek(iso) {
+    const d = lpD(iso);
+    return `${['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][d.getDay()]} ${d.getDate()} ${LP_BULAN_PENDEK[d.getMonth()]}`;
+}
+
+// Tombol cepat di task Belum dipilah: beri tanggal (hari ini/besok) → keluar dari Belum dipilah
+function pilahKe(id, geser) {
+    const date = lpGeser(todayISO(), geser);
+    tasks = tasks.map(t => t.id === id ? { ...t, date, isInbox: false } : t);
+    saveData();
+    debouncedRender();
+    evToast(geser ? 'Dipindah ke besok.' : 'Dipindah ke hari ini.');
 }
 
 // ---------- Board (per status, dengan pilihan bulan) ----------
@@ -406,8 +489,8 @@ function calShowDay(dateIso) {
 }
 
 function renderCalendarView(container, taskList) {
-    // Di "All Tasks", kalender juga menampilkan task yang sudah selesai (tampil pudar)
-    const list = currentView === 'all' ? getFilteredTasks(tasks.slice()) : taskList;
+    // Menu Kalender juga menampilkan task yang sudah selesai (tampil pudar)
+    const list = currentView === 'kalender' ? getFilteredTasks(tasks.slice()) : taskList;
     calLastList = list;
     const y = calendarYear, m = calendarMonth;
     const first = new Date(y, m, 1), last = new Date(y, m + 1, 0);
@@ -497,19 +580,17 @@ function renderProjects() {
     }).join('');
 }
 
-function updateStats() {
-    document.getElementById('statTotal').textContent = tasks.length;
-    document.getElementById('statActive').textContent = tasks.filter(t => t.status !== 'completed').length;
-    document.getElementById('statCompleted').textContent = tasks.filter(t => t.status === 'completed').length;
-    document.getElementById('statDo').textContent = tasks.filter(t => t.quadrant === 'do' && t.status !== 'completed').length;
-}
-
+// Sejak 3.7 sidebar hanya menampilkan jumlah task lewat tanggal (bukan seluruh tumpukan)
 function updateSidebarCounts() {
     const today = todayISO();
-    document.getElementById('inboxCount').textContent = tasks.filter(t => t.isInbox && t.status !== 'completed').length;
-    document.getElementById('todayCount').textContent = tasks.filter(t => t.date === today && t.status !== 'completed').length;
-    document.getElementById('allCount').textContent = tasks.filter(t => t.status !== 'completed').length;
-    document.getElementById('completedCount').textContent = tasks.filter(t => t.status === 'completed').length;
+    const n = tasks.filter(t => t.date && t.status !== 'completed' && t.status !== 'cancelled' && lpTenggat(t) < today).length;
+    [['lewatCount', n], ['lewatCountBawah', n]].forEach(([id, v]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = v;
+        el.hidden = !v;
+        el.title = v ? `${v} task lewat tanggal` : '';
+    });
 }
 
 // ---------- Reporting ----------
@@ -518,32 +599,18 @@ function updateSidebarCounts() {
 // ---------- Gambar ulang layar ----------
 
 function render() {
-    updateStats();
-    const today = todayISO();
     const undone = t => t.status !== 'completed';
 
     if (currentView === 'dashboard') {
-        const list = getFilteredTasks(tasks.filter(undone));
-        document.getElementById('dashboardList').innerHTML = list.length
-            ? list.map(createTaskHTML).join('') + ADD_TASK_INLINE
-            : emptyState('🎉', 'All done! Great job!');
-    } else if (currentView === 'inbox') {
-        const list = getFilteredTasks(tasks.filter(t => t.isInbox && undone(t)));
-        document.getElementById('inboxList').innerHTML = list.length
-            ? list.map(createTaskHTML).join('') + ADD_TASK_INLINE
-            : emptyState('📬', 'Inbox is empty', '➕ Add first task');
-    } else if (currentView === 'today') {
-        const list = getFilteredTasks(tasks.filter(t => t.date === today && undone(t)));
-        document.getElementById('todayList').innerHTML = list.length
-            ? list.map(createTaskHTML).join('') + ADD_TASK_INLINE
-            : emptyState('📅', 'No tasks for today', '➕ Add task for today');
-    } else if (currentView === 'upcoming') {
-        const list = getFilteredTasks(tasks.filter(t => t.date && t.date > today && undone(t)));
-        document.getElementById('upcomingList').innerHTML = list.length
-            ? list.map(createTaskHTML).join('') + ADD_TASK_INLINE
-            : emptyState('📆', 'No upcoming tasks', '➕ Add upcoming task');
+        brRender();                     // sampul & widget (beranda.js, 3.7)
     } else if (currentView === 'all') {
-        renderTaskList(document.getElementById('allList'), getFilteredTasks(tasks.filter(undone)), currentAllDisplayView);
+        const list = getFilteredTasks(tasks.filter(undone));
+        const wadah = document.getElementById('allList');
+        if (document.getElementById('searchInput').value.trim()) performSearch();
+        else if (currentAllDisplayView === 'board') renderTaskList(wadah, list, 'board');
+        else renderKelompok(wadah, list);
+    } else if (currentView === 'kalender') {
+        renderCalendarView(document.getElementById('kalenderList'), []);
     } else if (currentView === 'completed') {
         renderTaskList(document.getElementById('completedList'), getFilteredTasks(tasks.filter(t => t.status === 'completed')));
     } else if (currentView === 'filters') {
@@ -567,20 +634,19 @@ function render() {
     renderProjects();
 
     // Pasang ulang drag & drop pada kartu task yang baru digambar
-    document.querySelectorAll('#dashboardList, #inboxList, #todayList, #upcomingList, #allList, #completedList')
-        .forEach(setupDragAndDrop);
+    document.querySelectorAll('#allList, #completedList').forEach(setupDragAndDrop);
 
     evUpdateBanners();
     ckpRefreshHubIfIdle();
-    baraRender();                       // kartu Bara, jejak, ajakan Inbox (3.6)
+    baraRender();                       // kartu Bara, jejak, ajakan Belum dipilah (3.6)
 
-    // Saat melihat satu project: judul header = nama project, dan menu Dashboard
-    // tidak tampak aktif (klik Dashboard = keluar dari project)
-    if (currentView === 'dashboard') {
+    // Saat melihat satu project: judul header = nama project, dan menu Belum selesai
+    // tidak tampak aktif (klik Belum selesai = keluar dari project)
+    if (currentView === 'all') {
         const p = currentProjectFilter != null ? projects.find(x => x.id == currentProjectFilter) : null;
         if (currentProjectFilter != null && !p) currentProjectFilter = null;
-        document.getElementById('headerTitle').textContent = p ? '📁 ' + p.name : VIEW_TITLES.dashboard;
-        document.querySelector('.sidebar-item[data-view="dashboard"]').classList.toggle('active', !p);
+        document.getElementById('headerTitle').textContent = p ? '📁 ' + p.name : VIEW_TITLES.all;
+        document.querySelector('.sidebar-item[data-view="all"]').classList.toggle('active', !p);
     }
 }
 

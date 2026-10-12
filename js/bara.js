@@ -6,10 +6,10 @@
    disusun dari data di perangkat (tanpa AI, jalan offline),
    diambil dari kumpulan variasi supaya tidak terasa berulang.
 
-   Tempat tampil (wadah ada di index.html):
-     #baraDash   kartu Bara di Dashboard (+ chip Inbox)
-     #baraToday  kartu Bara di Today (+ Bara bersorak bila Today tuntas)
-     #baraInbox  ajakan memilah di Inbox (≥ BARA_INBOX_MIN task)
+   Tempat tampil (wadah ada di index.html; sejak 3.7 Today & Inbox dilebur):
+     #baraDash   kartu Bara di Beranda (+ chip Belum dipilah)
+     #brHariList kotak "Hari ini" di Beranda (beranda.js): Bara bersorak bila hari ini tuntas
+     #baraInbox  ajakan memilah di Belum selesai (≥ BARA_INBOX_MIN task Belum dipilah)
      jejak       baris hijau di tempat task yang baru dicentang (+ ↶ Batal)
 
    Dipanggil dari file lain:
@@ -17,6 +17,7 @@
      baraCatatPosisi(id)     sebelum status task berubah (toggleStatus, saveTask)
      baraSetelahUbah(...)    sesudah status task berubah
      baraBukaRekap()         ?rekap=1 dari notifikasi rekap sore (pwa.js)
+     baraTuntasHTML(d)       Bara bersorak di kotak Hari ini (beranda.js)
 
    Tidak ada field task atau tabel baru. Satu kunci per perangkat:
    barakarsa_bara = { akhir: [3 kalimat terakhir], inboxTutup: tanggal, tuntas: tanggal,
@@ -29,7 +30,7 @@
 
 const BARA_KEY = 'barakarsa_bara';
 const BARA_NAMA_MAKS = 20;           // panjang nama panggilan
-const BARA_INBOX_MIN = 5;            // dorongan Inbox mulai dari jumlah ini
+const BARA_INBOX_MIN = 5;            // dorongan memilah (Belum dipilah) mulai dari jumlah ini
 const BARA_JEJAK_MS = 5000;          // lama baris jejak tampil
 const BARA_REKAP_KALIMAT = 150;      // menit kalimat rekap tampil sejak jam rekap
 const BARA_POSE = ['pagi', 'siap', 'semangat', 'rayakan', 'berpikir', 'waktu', 'ups', 'santai'];
@@ -39,8 +40,8 @@ let baraPilihan = {};                // kunci situasi → nomor variasi (tetap s
 let baraJejak = null;                // { id, judul, kalimat, pose, view, nextId, statusLama, sampai, baru, batal }
 let baraJejakTimer = null;
 let baraLoncat = false;              // Bara di kartu melompat sekali pada gambar berikutnya
-let baraSorak = false;               // Today baru saja tuntas → animasi sorak sekali
-let baraRekapBuka = false;
+let baraSorak = false;               // hari ini baru saja tuntas → animasi sorak sekali
+let baraRekapBuka = false;           // notifikasi rekap diketuk → kotak Hari ini menampilkan semua yang beres
 let baraSelesaiBaru = [];            // waktu centang terakhir (untuk "3 beres sekaligus")
 let baraTandaWaktu = '';             // berubah → kartu digambar ulang (lihat baraJagaWaktu)
 
@@ -200,7 +201,7 @@ const BARA_SALAM = {
 };
 const BARA_TUNTAS_SALAM = ['Semua task hari ini beres! 🎉', `Bersih, {nama}! 🎉`, 'Hari ini tuntas! 🎉'];
 const BARA_TUNTAS_SUB = {
-    siang: ['{t} dari {t} tuntas. Mantap!', 'Semua {t} task hari ini sudah dicentang. Bara bangga 🔥', 'Today bersih. Sisa hari bisa buat yang lain.'],
+    siang: ['{t} dari {t} tuntas. Mantap!', 'Semua {t} task hari ini sudah dicentang. Bara bangga 🔥', 'Hari ini bersih. Sisa hari bisa buat yang lain.'],
     malam: ['Hari ini {t} beres semua. Istirahat yang enak ya.', 'Tuntas semua. Waktunya rehat 🔥']
 };
 // Ketuk maskot: kalimat tambahan di luar situasi
@@ -227,8 +228,8 @@ function baraKeadaan(now, view) {
     if (t > 0 && s === 0) {
         kunci = 'tuntas-' + kunciMalam;
         pose = 'rayakan';
-        if (view === 'today') {
-            // Di Today sudah ada Bara bersorak di bawahnya; kartu cukup menyapa
+        if (view === 'today' || (view === 'dashboard' && brWidgetAktif('hariini'))) {
+            // Kotak Hari ini (3.7, dulu Today) sudah berisi Bara bersorak; kartu cukup menyapa
             salam = baraPilih('salam-' + w, BARA_SALAM[w]);
             sub = baraIsi('<b>{t} dari {t}</b> beres — semua sudah dicentang.', v);
         } else {
@@ -246,8 +247,8 @@ function baraKeadaan(now, view) {
         pose = w === 'malam' ? 'santai' : 'berpikir';
         salam = baraPilih('salam-' + w, BARA_SALAM[w]);
         if (w === 'malam') sub = d.besokN ? baraIsi('Hari ini lapang. Besok ada <b>{n} task</b>.', v) : 'Hari ini lapang. Istirahat dulu.';
-        else if (d.lewat) sub = baraIsi('Today masih kosong. Ada <b>{l} task</b> lewat tanggal — mau dijadwalkan ulang?', v);
-        else if (d.inbox) sub = 'Today masih kosong. Mau ambil dari Inbox?';
+        else if (d.lewat) sub = baraIsi('Hari ini masih kosong. Ada <b>{l} task</b> lewat tanggal — mau dijadwalkan ulang?', v);
+        else if (d.inbox) sub = 'Hari ini masih kosong. Mau ambil dari yang belum dipilah?';
         else sub = baraPilih(kunci, ['Hari ini masih lapang.', 'Belum ada task untuk hari ini.']);
     } else if (w === 'malam') {
         kunci = 'malam-' + (x ? 'ada' : 'nol');
@@ -285,14 +286,11 @@ function baraKartuHTML(view, now) {
     const k = baraKeadaan(now, view);
     let chip = '';
     if (view === 'dashboard' && k.d.inbox >= BARA_INBOX_MIN && baraStore.inboxTutup !== k.d.today) {
-        chip = `<span class="bara-chip"><button type="button" class="bara-chip-buka" onclick="baraKeInbox()">📬 Inbox: ${k.d.inbox} menunggu dipilah →</button>` +
+        chip = `<span class="bara-chip"><button type="button" class="bara-chip-buka" onclick="baraKeInbox()">📥 ${k.d.inbox} belum dipilah →</button>` +
             `<button type="button" class="bara-chip-tutup" onclick="baraTutupInbox()" title="Sembunyikan sampai besok" aria-label="Sembunyikan sampai besok">✕</button></span>`;
     }
-    // Daftar rekap hanya di Today (isinya memang task Today); Dashboard cukup kalimatnya
-    const rekap = k.rekapAda && view === 'today'
-        ? `<button type="button" class="bara-tombol" onclick="baraToggleRekap()" aria-expanded="${baraRekapBuka}">${baraRekapBuka ? 'Tutup rekap ▴' : 'Lihat rekap ▾'}</button>`
-        : '';
-    const baris = rekap || chip ? `<div class="bara-aksi">${rekap}${chip}</div>` : '';
+    // Daftar rekap (≤3.6 di Today) sejak 3.7 ada di kotak Hari ini Beranda; kartu cukup kalimatnya
+    const baris = chip ? `<div class="bara-aksi">${chip}</div>` : '';
     const loncat = baraLoncat && baraGerakBoleh() ? ' bara-loncat' : '';
     return `<div class="bara-kartu">
         <button type="button" class="bara-ava${loncat}" onclick="baraKetuk()" title="Ketuk Bara" aria-label="Bara — ketuk untuk kalimat lain">${baraImg(k.pose)}</button>
@@ -300,28 +298,16 @@ function baraKartuHTML(view, now) {
             <div class="bara-salam">${esc(baraSapa(k.salam))}</div>
             <div class="bara-sub">${baraSapa(k.sub, true)}</div>
             ${baris}
-            ${k.rekapAda && view === 'today' && baraRekapBuka ? baraRekapHTML(k.d) : ''}
         </div>
     </div>`;
 }
 
-function baraRekapHTML(d) {
-    const MAKS = 6;
-    const lebih = (n) => n > MAKS ? `<li class="bara-lagi">+ ${n - MAKS} lainnya</li>` : '';
-    const beres = d.beres.slice(0, MAKS).map(t => `<li class="ok">✓ <span>${esc(t.title)}</span></li>`).join('') + lebih(d.beres.length);
-    const sisa = d.sisa.slice(0, MAKS).map(t => `<li>○ ${esc(t.title)}${t.time ? ' · ' + baraJamTitik(t.time) : ''}</li>`).join('') + lebih(d.sisa.length);
-    return `<div class="bara-rekap">
-        <div><h4>Beres hari ini (${d.beres.length})</h4><ul>${beres || '<li class="bara-kosong">Belum ada</li>'}</ul></div>
-        <div><h4>Masih tersisa (${d.sisa.length})</h4><ul>${sisa || '<li class="bara-kosong">Tidak ada 🎉</li>'}</ul></div>
-    </div>`;
-}
-
-// Bara bersorak di Today saat semua task hari ini beres (pengganti "No tasks for today")
+// Bara bersorak saat semua task hari ini beres (3.7: di kotak Hari ini Beranda)
 function baraTuntasHTML(d) {
     const akhir = d.beres.length ? new Date(d.beres[d.beres.length - 1].completedAt) : null;
     const jam = akhir ? `${String(akhir.getHours()).padStart(2, '0')}.${String(akhir.getMinutes()).padStart(2, '0')}` : '';
     const malam = baraWaktu(new Date()) === 'malam';
-    const t1 = baraPilih('tuntas-t1', [`Bersih, {nama}!`, 'Today tuntas!', 'Semua beres!']);
+    const t1 = baraPilih('tuntas-t1', [`Bersih, {nama}!`, 'Hari ini tuntas!', 'Semua beres!']);
     const t2 = malam ? 'Semua task hari ini tuntas. Istirahat yang enak ya.'
         : baraPilih('tuntas-t2', ['Semua task hari ini tuntas. Bara bangga 🔥', 'Tidak ada yang tersisa hari ini. Mantap!']);
     const sorak = baraSorak && baraGerakBoleh() ? ' bara-sorak' : '';
@@ -339,37 +325,23 @@ function baraRender() {
     const now = new Date();
     baraTandaWaktu = baraTanda(now);
     const dash = document.getElementById('baraDash');
-    const today = document.getElementById('baraToday');
     const inbox = document.getElementById('baraInbox');
-    if (!dash || !today || !inbox) return;
+    if (!dash || !inbox) return;
 
-    // Dashboard: tidak tampil saat sedang melihat satu project
-    dash.innerHTML = currentView === 'dashboard' && currentProjectFilter == null ? baraKartuHTML('dashboard', now) : '';
-    today.innerHTML = currentView === 'today' ? baraKartuHTML('today', now) : '';
+    // Beranda: kartu selalu tampil (sejak 3.7 project dilihat di Belum selesai)
+    dash.innerHTML = currentView === 'dashboard' ? baraKartuHTML('dashboard', now) : '';
 
-    if (currentView === 'today') {
-        const d = baraData(now);
-        const list = document.getElementById('todayList');
-        const kosong = list.querySelector(':scope > .empty-state');
-        if (d.hariIni.length && !d.sisa.length && kosong) {
-            kosong.outerHTML = baraTuntasHTML(d);
-            if (!list.querySelector('.add-task-inline')) list.insertAdjacentHTML('beforeend', ADD_TASK_INLINE);
-        }
-    }
-
-    if (currentView === 'inbox') {
-        const n = tasks.filter(t => t.isInbox && t.status !== 'completed').length;
-        inbox.hidden = n < BARA_INBOX_MIN;
-        if (n >= BARA_INBOX_MIN) {
-            const kal = baraIsi(baraPilih('inbox', [
-                '<b>{n} task</b> menunggu dipilah. Beri tanggal atau project satu per satu, biar Today makin jelas.',
-                'Inbox mulai penuh (<b>{n}</b>). Pilah sebentar, Today jadi lebih jelas.',
-                'Ada <b>{n} ide</b> nganggur di Inbox. Kasih tanggal yuk.'
-            ]), { n });
-            inbox.innerHTML = `${baraImg('berpikir')}<span>${kal}</span>`;
-        }
-    } else {
-        inbox.hidden = true;
+    // Ajakan memilah di atas Belum selesai (tidak saat melihat satu project atau Board)
+    const n = tasks.filter(t => t.isInbox && t.status !== 'completed').length;
+    const tampil = currentView === 'all' && currentProjectFilter == null && n >= BARA_INBOX_MIN;
+    inbox.hidden = !tampil;
+    if (tampil) {
+        const kal = baraIsi(baraPilih('inbox', [
+            '<b>{n} task</b> belum dipilah. Beri tanggal atau project satu per satu, biar Hari ini makin jelas.',
+            'Yang belum dipilah mulai menumpuk (<b>{n}</b>). Pilah sebentar, Hari ini jadi lebih jelas.',
+            'Ada <b>{n} ide</b> nganggur belum dipilah. Kasih tanggal yuk.'
+        ]), { n });
+        inbox.innerHTML = `${baraImg('berpikir')}<span>${kal}</span>`;
     }
 
     baraPasangJejak();
@@ -379,7 +351,8 @@ function baraRender() {
 
 // ---------- Saat status task berubah ----------
 
-const BARA_DAFTAR_VIEW = { dashboard: 'dashboardList', inbox: 'inboxList', today: 'todayList', upcoming: 'upcomingList', all: 'allList', completed: 'completedList' };
+// Wadah daftar task per menu (3.7: Beranda = kotak Hari ini)
+const BARA_DAFTAR_VIEW = { dashboard: 'brHariList', all: 'allList', completed: 'completedList' };
 
 // Catat posisi kartu task sebelum berubah, supaya jejak muncul di tempat yang sama
 function baraCatatPosisi(id) {
@@ -546,18 +519,16 @@ function baraKetuk() {
     baraRender();
 }
 
-function baraToggleRekap() {
-    baraRekapBuka = !baraRekapBuka;
-    baraRender();
-}
-
+// Notifikasi rekap sore diketuk → Beranda, kotak Hari ini (berisi rekap) terlihat
 function baraBukaRekap() {
     baraRekapBuka = true;
-    switchView('today');
+    switchView('dashboard');
+    const el = document.getElementById('brHari');
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest' });
 }
 
 function baraKeInbox() {
-    switchView('inbox');
+    switchView('all');
 }
 
 function baraTutupInbox() {
@@ -577,7 +548,7 @@ function baraTanda(now) {
 
 function baraJagaWaktu() {
     if (document.hidden) return;
-    if (currentView !== 'dashboard' && currentView !== 'today') return;
+    if (currentView !== 'dashboard') return;
     if (baraTanda(new Date()) !== baraTandaWaktu) render();
 }
 
