@@ -5,7 +5,7 @@ Setiap versi dikerjakan di chat terpisah dalam projek ini. Riwayat perubahan ada
 
 - Aplikasi: https://flaren271.github.io/barakarsa/
 - Repo: github.com/flaren271/barakarsa (GitHub Pages, PWA)
-- Backend: Supabase (tabel `barakarsa_items`, `barakarsa_settings`, bucket `bukti-dukung`; sejak 3.4 juga `barakarsa_pengingat`, `barakarsa_push_langganan`, `barakarsa_push_log`, Edge Function `pengingat`, penjadwal pg_cron). 3.5 tidak menambah apa pun di Supabase.
+- Backend: Supabase (tabel `barakarsa_items`, `barakarsa_settings`, bucket `bukti-dukung`; sejak 3.4 juga `barakarsa_pengingat`, `barakarsa_push_langganan`, `barakarsa_push_log`, Edge Function `pengingat`, penjadwal pg_cron). 3.5 tidak menambah apa pun di Supabase; 3.6 menambah 3 kolom rekap sore di `barakarsa_pengingat`.
 - Peta kode: `ARSITEKTUR.md` di repo (sejak 3.2.1)
 
 ---
@@ -20,10 +20,12 @@ Setiap versi dikerjakan di chat terpisah dalam projek ini. Riwayat perubahan ada
 | 3.2.2 | Perbaikan Help | Isi Panduan Singkat tidak meluber keluar kotak | ✅ Selesai (8 Okt 2026) |
 | 3.2.3 | Perbaikan Kecil | Tanggal lokal, nomor urutan task, escape teks | ✅ Selesai (8 Okt 2026) |
 | 3.3 | CKP Pintar | Seluruh pohon kinerja, pencarian IKI, saran keterangan | ✅ Selesai (8 Okt 2026) |
-| 3.4 | Pengingat | Notifikasi push: pengingat task & ringkasan pagi | ✅ Selesai (9 Okt 2026), menunggu pemasangan Supabase & uji di HP |
-| 3.5 | Reporting | Pola task selesai, tepat waktu, lewat tanggal, sebaran project | ✅ Selesai (9 Okt 2026), menunggu uji di HP |
-| 3.4.x | Pengingat CKP | Kegiatan tanpa bukti dukung menjelang akhir triwulan | 🔜 Berikutnya, target sebelum 31 Des 2026 |
-| 4.0 | Teman | Persona asisten, personalisasi, AI | Perlu diskusi |
+| 3.4 | Pengingat | Notifikasi push: pengingat task & ringkasan pagi | ✅ Selesai (9 Okt 2026), terpasang & berjalan baik di HP |
+| 3.5 | Reporting | Pola task selesai, tepat waktu, lewat tanggal, sebaran project | ✅ Selesai (9 Okt 2026), uji coba di HP berjalan |
+| 3.6 | Persona Bara | Maskot Bara, sapaan, perayaan, rekap sore (+ push), dorongan Inbox | ✅ Selesai (12 Okt 2026), menunggu SQL 3.6 & uji di HP |
+| 3.7 | Personalisasi | Wallpaper, jam, foto, widget di Dashboard | 🔜 Berikutnya |
+| 3.4.x | Pengingat CKP | Kegiatan tanpa bukti dukung menjelang akhir triwulan | Ditunda ke versi lain, target sebelum 31 Des 2026 |
+| 4.0 | Teman | Tonggak: persona, personalisasi, AI terasa utuh | Perlu diskusi |
 
 ---
 
@@ -197,7 +199,7 @@ Diputuskan: tiga temuan 3.2.1 dibereskan dulu sebagai rilis kecil, supaya 3.3 bi
 - Bila ternyata dibutuhkan: tombol "Tunda 10 menit", pengingat untuk task beberapa hari yang sedang berjalan, atau pilihan per perangkat (mis. laptop hanya pengingat task). Infrastrukturnya sudah ada (log, langganan per perangkat).
 - iPhone: aplikasi harus dipasang ke Home Screen dulu (iOS 16.4+).
 
-## v3.4.x — Pengingat CKP (berikutnya)
+## v3.4.x — Pengingat CKP (ditunda ke versi lain)
 Target: bisa dipakai **sebelum akhir Triwulan IV (31 Desember 2026)**.
 - Menjelang akhir triwulan: kegiatan KipApp yang belum ada bukti dukung (dan/atau belum dipilih IKI).
 - Tinggal menambah satu jenis pesan di Edge Function `pengingat` dan satu bagian di panel 🔔. Tabel dan penjadwal yang ada bisa dipakai ulang.
@@ -240,13 +242,66 @@ Dipakai untuk evaluasi pribadi; dibuka di laptop dan HP; tidak perlu diunduh/dic
 - Kandidat lain: sebaran per IKI, ringkasan mingguan di ringkasan pagi Senin.
 
 
+## v3.6 — Persona Bara ✅
+
+Bagian pertama tema "Teman", dipecah dari v4.0 supaya bisa dicoba satu per satu.
+Penomoran: fitur baru yang tidak mengganggu data dan perangkat lama → rilis minor (3.6), bukan 4.0.
+
+### Cakupan (semua usulan dipilih)
+1. ✅ **Sapaan sesuai waktu** di kartu Bara (Dashboard dan Today).
+2. ✅ **Perayaan saat task dicentang**: kalimat + animasi ringan, ↶ Batal; Bara bersorak saat semua task Today beres.
+3. ✅ **Rekap sore** di aplikasi dan sebagai notifikasi push (Edge Function 3.4).
+4. ✅ **Dorongan Inbox** mulai 5 task belum dipilah.
+
+### Diputuskan saat pengerjaan
+- Rancangan dibahas dulu lewat halaman mockup (8 tangkapan layar dari aplikasi 3.5 + demo animasi + 4 konsep maskot SVG).
+- **Wujud Bara: maskot buatan Naufal** (penyihir api bertopi, 8 pose), menggantikan keempat konsep usulan. Pose: pagi (sapaan pagi), siap (siang/sore), semangat (task dicentang, rekap tanpa sisa), rayakan (semua beres), berpikir (Today kosong, Inbox menumpuk), waktu (rekap masih ada sisa), ups (↶ Batal), santai (malam). Disimpan sebagai `.webp` transparan 256 px (±15–21 KB per pose).
+- Nada **santai-akrab**, panggilan **Nopal**.
+- Perayaan: **kalimat + animasi ringan** (setelah mencoba demo). Animasi mati bila perangkat diatur *kurangi gerakan*.
+- **↶ Batal** di baris jejak: ya.
+- Rekap sore: **15.55, Senin–Jumat**; jam dan hari bisa diubah di panel 🔔 (tersinkron). Rekap di aplikasi mengikuti jam & hari yang sama; notifikasinya bisa dimatikan sendiri.
+- Persona **tidak bisa dimatikan** (ciri khas Barakarsa). Chip Inbox di Dashboard bisa ditutup ✕ untuk hari itu.
+- Ketuk Bara → kalimat lain: ya.
+- Daftar rekap (*Lihat rekap ▾*) hanya di Today; Dashboard cukup kalimatnya, supaya kartu di HP tidak terlalu tinggi.
+- Di Today saat semua beres, kartu cukup menyapa ("5 dari 5 beres — semua sudah dicentang"); perayaan besarnya ada di Bara bersorak di bawahnya, supaya kata "tuntas" tidak berulang.
+- Notifikasi rekap tidak dikirim bila hari itu tidak ada task Today dan tidak ada yang dicentang. Diklaim sekali per hari pada menit pertama, jadi task yang ditambah belakangan tidak memicu rekap terlambat.
+
+### Cara uji yang dipakai
+- Edge Function di Deno dengan Supabase tiruan + layanan push tiruan (pesan didekripsi): 8 kelompok uji rekap sore, ringkasan pagi 3.4 tetap sama, `deno check` bersih.
+- Sinkron pengaturan 3.5/3.6 × server dengan/tanpa kolom sore.
+- Tangkapan layar 3.5 vs 3.6: 13 layar yang tidak diubah × desktop/HP × gelap/terang identik per piksel (dengan uji kontrol 3.5 vs 3.5).
+- 132 keadaan kartu Bara (11 situasi × 3 menu × desktop/HP × gelap/terang): tanpa luberan/terpotong.
+- Langkah pemakaian yang sama di 3.5 dan 3.6 menghasilkan data sama; offline; *kurangi gerakan*.
+
+### Checklist uji di HP asli
+1. Menu ⋯ → Help menampilkan versi **3.6**; kartu Bara muncul di Dashboard dan Today dengan gambar maskot (juga saat offline).
+2. Pagi/siang/sore/malam: sapaan dan pose berganti (cukup lihat sekilas di jam berbeda).
+3. Centang task In Progress → kartu bergeser keluar, percik bara, baris hijau dengan kalimat; ketuk **↶ Batal** → task kembali.
+4. Centang semua task Today → Bara bersorak menggantikan "No tasks for today".
+5. Inbox ≥ 5 → chip kuning di Dashboard (✕ → hilang sampai besok) dan baris ajakan di Inbox.
+6. Senin–Jumat 15.55: kartu berubah jadi rekap; di Today ketuk **Lihat rekap ▾**.
+7. Setelah SQL 3.6 + Edge Function dipasang: notifikasi **🌇 Rekap sore** muncul di HP & laptop pukul 15.55; diketuk → Today dengan rekap terbuka.
+8. Kalimat terasa pas, tidak mengganggu, tidak terlalu sering berulang? (catat yang janggal).
+
+### Temuan selama pengerjaan (belum diubah)
+- **Mencentang task Not Started tidak langsung menyelesaikannya**: centang pertama mengubah status ke *In Progress* (kotak tampak kosong lagi), centang kedua baru *Completed*. Perilaku ini sudah ada sejak sebelum 3.0 (`toggleStatus`) dan tidak diubah di 3.6. Bila memang tidak disengaja, bisa diperbaiki sebagai rilis kecil (centang = langsung Completed). Perayaan Bara hanya muncul saat task benar-benar Completed.
+
+### Catatan untuk versi berikutnya
+- Ambang dorongan Inbox (5) dievaluasi setelah dipakai beberapa minggu (`BARA_INBOX_MIN` di `js/bara.js`).
+- Ide lanjutan: streak hari produktif (4.0), Bara di ringkasan pagi push, pose tambahan (mis. akhir pekan), kalimat khusus akhir triwulan CKP (bisa bersama 3.4.x).
+
+## v3.7 — Personalisasi (rencana)
+
+- Dashboard ala Notion: wallpaper, jam, foto, widget.
+- Pertanyaan terbuka: gambar dari pilihan bawaan atau unggah sendiri? Disimpan per perangkat (IndexedDB) atau ikut sinkron (Supabase Storage)? Widget apa saja (ringkasan hari ini, kutipan, kalender kecil, …)? Tampil juga di HP?
+- Batasan: teks tetap terbaca di gelap dan terang di atas wallpaper; widget yang butuh internet (mis. cuaca) perlu dibahas dulu. Kartu Bara (3.6) ikut tampil di atas wallpaper.
+
 ## v4.0 — Teman (perlu diskusi)
-- Persona asisten (ide: maskot "Bara"): sapaan sesuai waktu, rekap sore, perayaan kecil saat task selesai, dorongan halus saat Inbox menumpuk. Streak hari produktif (ditunda dari 3.5) cocok di sini.
-- Personalisasi ala Notion: wallpaper, jam, foto, widget.
+Disimpan sebagai **tonggak**: dipakai saat tema "Teman" terasa utuh (persona 3.6 + personalisasi 3.7 + AI), atau bila ada perubahan yang mewajibkan semua perangkat diperbarui (mis. bentuk data/sinkron berubah).
+- Persona Bara → selesai di 3.6; personalisasi → mulai di 3.7. Streak hari produktif (ditunda dari 3.5) bisa menyusul di sini.
 - "✨ Bantu tulis" description dengan AI, lewat Supabase Edge Function (kunci API tidak boleh di kode publik). Bisa melanjutkan saran keterangan 3.3 (riwayat + kalimat dasar) menjadi kalimat yang lebih luwes.
 - (Opsional) Pindah dari skrip biasa ke ES module. File sudah terpecah sejak 3.2.1; yang tersisa adalah mengganti `onclick="..."` di HTML dengan event listener.
 
-Pertanyaan terbuka: nada asisten santai-akrab atau rapi-profesional?
 
 ## Ide yang ditunda
 - Impor katalog IKI format .xlsx (sheet IKI + Penugasan + Padanan; contoh sudah dibuat). Berguna untuk pohon kinerja tahun depan atau bila pegawai lain ikut memakai Barakarsa.
@@ -265,3 +320,4 @@ Pertanyaan terbuka: nada asisten santai-akrab atau rapi-profesional?
 - Katalog IKI: `entries` = penugasan (dibaca versi lama), `lain` = IKI tim lain (sejak 3.3). Rincian di `ARSITEKTUR.md`.
 - Pengingat (sejak 3.4): berkas Supabase ada di folder `supabase/` di repo (tanpa rahasia), dan langkah pemasangannya di `supabase/PANDUAN-PASANG-3.4.md`.
 - Reporting (sejak 3.5): dihitung di perangkat dari task yang ada (`js/laporan.js`), tanpa data baru. Alurnya di `ARSITEKTUR.md`.
+- Persona Bara (sejak 3.6): `js/bara.js` + `css/bara.css` + gambar di `maskot/`. Kalimat dari data di perangkat; rekap sore push lewat Edge Function `pengingat` (kolom `sore_*`). Langkah pasang di `supabase/PANDUAN-PASANG-3.6.md`.

@@ -8,7 +8,7 @@
      3) load (+50 ms)     : sinkron Supabase (tidak menahan tampilan)
    ============================================================ */
 
-const APP_VERSION = '3.5';
+const APP_VERSION = '3.6';
 const NARALOKA_URL = 'https://flaren271.github.io/naraloka/';
 
 // ---------- Menu ⋯ ----------
@@ -96,6 +96,7 @@ setupTheme();
 setupPwa();
 setupBukti();
 setupPengingat();
+setupBara();
 
 // Pintasan keyboard: Q = tambah task (seperti Todoist); Esc = tutup pratinjau PDF CKP
 document.addEventListener('keydown', (e) => {

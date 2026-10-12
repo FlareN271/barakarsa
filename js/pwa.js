@@ -73,6 +73,7 @@ function showUpdateToast() {
 //   ?quick=1   "Tambah task cepat" → kolom input Inbox
 //   ?task=ID   pengingat task diketuk → buka task itu (3.4)
 //   ?view=today ringkasan pagi diketuk → Today (3.4)
+//   ?view=today&rekap=1 rekap sore diketuk → Today, rekap terbuka (3.6)
 function handleLaunchParams() {
     const params = new URLSearchParams(location.search);
     if (params.get('quick') === '1') {
@@ -101,6 +102,8 @@ function bukaDariTautan(url) {
         document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
         editTask(task.id);
     } else if (params.get('view') === 'today') {
-        switchView('today');
+        // ?rekap=1: notifikasi rekap sore (3.6) → Today dengan rekap terbuka
+        if (params.get('rekap') === '1') baraBukaRekap();
+        else switchView('today');
     }
 }

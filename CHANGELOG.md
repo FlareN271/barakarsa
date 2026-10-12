@@ -7,6 +7,52 @@ Format setiap rilis: **Baru** (fitur baru), **Diubah** (perilaku yang berubah), 
 
 ---
 
+## [3.6] — Persona Bara (12 Oktober 2026)
+
+File yang berubah: `index.html`, `sw.js` (cache `barakarsa-v3.6`), `js/main.js` (nomor versi), `js/tampilan.js`, `js/form-task.js`, `js/pwa.js`, `js/pengingat.js`, `css/tema.css`, `css/hp.css`, `css/pengingat.css`, `supabase/functions/pengingat/index.ts`, `ARSITEKTUR.md`.
+File baru: `js/bara.js`, `css/bara.css`, folder `maskot/` (8 pose, `.webp`), `supabase/03-rekap-sore.sql`, `supabase/PANDUAN-PASANG-3.6.md`.
+Supabase: 3 kolom baru di `barakarsa_pengingat` (`sore_on`, `sore_jam`, `sore_hari`) dan Edge Function `pengingat` dipasang ulang. Tidak ada tabel baru.
+
+### Baru
+- **Bara, maskot Barakarsa** (gambar buatan Naufal, 8 pose: pagi, siap, semangat, rayakan, berpikir, waktu, ups, santai). Pose dipilih sesuai keadaan.
+- **Kartu Bara di Dashboard dan Today**: sapaan sesuai waktu (pagi 04.00–10.59, siang 11.00–14.59, sore 15.00–18.29, malam 18.30–03.59) dan keadaan hari ini, mis. *"Pagi, Nopal! — 4 task hari ini, pertama jam 09.00"* atau *"2 dari 5 beres. Sisa 3, pelan-pelan aja."* Today kosong: menyarankan Inbox atau task lewat tanggal. Malam: menutup hari, tidak menyuruh lanjut kerja. Kalimat berganti sendiri saat pergantian waktu tanpa perlu membuka ulang aplikasi.
+- **Perayaan saat task dicentang**: kartu task bergeser keluar, percik bara naik dari kotak centang, lalu di tempatnya muncul baris hijau berisi kalimat Bara selama ±5 detik. Kalimat khusus didahulukan bila cocok: task KipApp tanpa foto (*"Jangan lupa foto bukti dukungnya 📷"*), task lewat tanggal, P1, tinggal satu, 3 centang dalam 10 detik, dan malam hari.
+- **↶ Batal** di baris hijau mengembalikan task ke status sebelumnya (salah ketuk).
+- **Semua task Today beres**: Bara bersorak menggantikan "No tasks for today", dengan jumlah task dan jam centang terakhir. Animasi soraknya sekali per hari per perangkat.
+- **Rekap sore** mulai **15.55, Senin–Jumat** (jam dan hari bisa diubah): kartu Bara berisi *"Rekap sore: 3 beres ✓ · 2 tersisa"*; di Today ketuk **Lihat rekap ▾** untuk daftar yang beres hari ini (termasuk task lama yang baru dicentang) dan yang masih tersisa.
+- **🌇 Notifikasi rekap sore** dari Edge Function 3.4, misalnya *"🌇 Rekap sore · 3 beres, 2 tersisa"* dengan daftar yang tersisa. Diketuk → Today dengan rekap terbuka. Tidak dikirim bila hari itu tidak ada task Today dan tidak ada yang dicentang. Diatur di ⋯ → 🔔 Pengaturan pengingat, bagian baru **🌇 Rekap sore** (sakelar, jam, hari; tersinkron ke semua perangkat).
+- **Dorongan Inbox** saat ≥ 5 task belum dipilah: chip *"📬 Inbox: 6 menunggu dipilah →"* di kartu Dashboard (✕ menyembunyikannya sampai besok) dan satu baris ajakan di atas daftar Inbox.
+- **Ketuk Bara** → kalimat lain dan Bara melompat.
+- Panduan Singkat (Help) menjelaskan Bara.
+
+### Diubah
+- Dashboard dan Today diawali kartu Bara (±90 px di desktop, ±75 px di HP). Saat melihat satu project, kartu tidak tampil.
+- Mencentang task (dan menyimpan task menjadi Completed dari form) menunggu ±0,3 detik sebelum daftar digambar ulang, untuk animasi keluar. Data tersimpan seketika.
+
+### Aturan (diputuskan saat diskusi)
+- Nada santai-akrab, panggilan **Nopal**. Persona selalu aktif (tidak ada sakelar), karena dimaksudkan sebagai ciri khas Barakarsa. Yang bisa dimatikan hanya notifikasi rekap sore.
+- Perayaan memakai kalimat **dan** animasi ringan (tanpa suara, tanpa konfeti satu layar, ±1 detik). Bila perangkat diatur *kurangi gerakan*, yang tampil hanya kalimat.
+- Kalimat dari data di perangkat (tanpa AI, jalan offline). Sapaan tetap sama selama sesi untuk situasi yang sama; kalimat perayaan tidak mengulang 3 kalimat terakhir.
+- Hitungan Bara: *task hari ini* = bertanggal hari ini selain Cancelled; *beres hari ini* = dicentang hari ini apa pun tanggal task-nya.
+- Dorongan Inbox mulai 5 task (satu konstanta `BARA_INBOX_MIN`, mudah diubah).
+
+### Catatan kompatibilitas
+- Tidak ada field task, tabel, atau bucket baru. Satu kunci localStorage baru per perangkat: `barakarsa_bara` (3 kalimat terakhir, tanggal chip Inbox ditutup, tanggal perayaan besar).
+- Perangkat 3.4/3.5 tetap sinkron. Saat menyimpan pengaturan pengingat, mereka hanya mengirim kolom yang mereka kenal, jadi pengaturan rekap sore tidak tertimpa. Notifikasi rekap sore yang diketuk di perangkat 3.5 membuka Today biasa.
+- Aplikasi 3.6 aman dipasang sebelum SQL 3.6 dijalankan: rekap di aplikasi tetap jalan, pengaturan lain tetap tersimpan (kolom sore dilewati), dan panel 🔔 memberi tahu langkah yang kurang. Edge Function 3.6 juga aman dipasang sebelum SQL: rekap sore dilewati, pengingat task dan ringkasan pagi tetap jalan.
+- Reporting 3.5 tidak diubah.
+
+### Diuji
+- **Edge Function di Deno** dengan Supabase tiruan dan layanan push tiruan (pesan didekripsi): rekap tepat 15.55 WITA dan tidak dobel; 15.54, lewat 2 jam, Sabtu, dan sakelar mati tidak mengirim; jam/hari lain dari pengaturan; task lama yang dicentang hari ini ikut, yang dicentang 23.30 kemarin tidak; hari kosong tidak dikirim dan task yang ditambah belakangan tidak memicu rekap terlambat; kolom belum ada → pengingat task tetap jalan; ringkasan pagi 3.4 tidak berubah. Pemeriksaan tipe (`deno check`) bersih.
+- **Sinkron pengaturan pengingat** 3.5 dan 3.6 × server dengan/tanpa kolom sore: tidak ada yang tertimpa; 3.6 menyimpan ulang tanpa kolom sore bila kolomnya belum ada.
+- **Tampilan 3.5 vs 3.6** di 13 layar yang tidak diubah (Inbox < 5, Upcoming, All Tasks List/Board/Kalender, Completed, Labels, Reporting, form task baru/edit, menu ⋯, Help bagian atas, hub CKP) × desktop/HP × gelap/terang: **identik per piksel** (selain derau di tombol ⋯ dan tepi gulir yang juga muncul di uji kontrol 3.5 vs 3.5).
+- **Kartu Bara** di 11 keadaan (06.30, 12.10, 15.20, 16.10, 16.10 rekap terbuka, 19.30, Today kosong, tuntas siang/malam, Sabtu, judul panjang + 46 Inbox) × Dashboard/Today/Inbox × desktop/HP × gelap/terang = 132 keadaan: tidak ada isi yang meluber, terpotong, atau membuat halaman melebar; tanpa error JavaScript.
+- Langkah pemakaian yang sama di 3.5 dan 3.6 (centang, centang task Not Started, form → Completed, buka lagi di Completed, Inbox cepat, duplikat): data tersimpan sama.
+- Centang → jejak → ↶ Batal (status kembali, `completedAt` terhapus); centang semua Today → Bara bersorak; pergantian 10.59 → 11.00 dan 15.54 → 15.55 tanpa memuat ulang; *kurangi gerakan* tanpa percik; offline: 38 file termasuk 8 pose maskot tersimpan di cache dan aplikasi terbuka tanpa jaringan.
+- Belum diuji di HP asli dan dengan Supabase/layanan push sungguhan (checklist di `supabase/PANDUAN-PASANG-3.6.md` bagian D).
+
+---
+
 ## [3.5] — Reporting (9 Oktober 2026)
 
 File yang berubah: `index.html`, `sw.js` (cache `barakarsa-v3.5`), `js/main.js` (nomor versi), `js/tampilan.js`, `css/tampilan.css`, `css/hp.css`, `ARSITEKTUR.md`.

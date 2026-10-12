@@ -1,0 +1,210 @@
+/* ============================================================
+   bara.css — Persona Bara (3.6): kartu sapaan, rekap sore, chip & ajakan Inbox,
+   jejak task dicentang, Bara bersorak, percik bara.
+   Warna lewat variabel tema.css. Aturan HP ada di hp.css.
+   Semua gerakan mati bila perangkat diatur "kurangi gerakan".
+   ============================================================ */
+
+.bara-slot:empty { display: none; }
+
+/* ---------- Kartu Bara ---------- */
+.bara-kartu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem 0.75rem 0.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: linear-gradient(100deg, var(--accent-soft) 0%, transparent 60%), var(--surface);
+}
+#baraToday .bara-kartu { margin-bottom: 1.25rem; }
+
+.bara-ava {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    width: 68px;
+    height: 68px;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.bara-ava img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.bara-ava:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.bara-teks { flex: 1; min-width: 0; align-self: center; }
+.bara-salam { font-weight: 700; font-size: 1rem; line-height: 1.3; color: var(--text-primary); }
+.bara-sub { font-size: 0.86rem; line-height: 1.45; color: var(--text-secondary); margin-top: 0.15rem; overflow-wrap: anywhere; }
+.bara-sub b { color: var(--text-primary); font-weight: 600; }
+
+.bara-aksi { display: flex; flex-wrap: wrap; gap: 0.4rem 0.5rem; margin-top: 0.5rem; }
+
+/* Tombol rekap sore */
+.bara-tombol {
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--hover);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+.bara-tombol:hover { border-color: var(--accent); }
+
+/* Chip Inbox (Dashboard) */
+.bara-chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    border-radius: 999px;
+    border: 1px solid var(--warn-border);
+    background: var(--warn-bg);
+}
+.bara-chip button {
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--warn);
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+.bara-chip-buka { padding: 0.3rem 0.4rem 0.3rem 0.75rem; text-align: left; }
+.bara-chip-tutup { padding: 0.3rem 0.7rem 0.3rem 0.35rem; opacity: 0.7; }
+.bara-chip-tutup:hover { opacity: 1; }
+
+/* Rekap sore (dibuka dari kartu) */
+.bara-rekap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.75rem 1.25rem;
+    margin-top: 0.7rem;
+}
+.bara-rekap h4 {
+    margin: 0 0 0.25rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+.bara-rekap ul { margin: 0; padding: 0; list-style: none; font-size: 0.84rem; color: var(--text-secondary); }
+.bara-rekap li { padding: 0.15rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bara-rekap li.ok { color: var(--status-done); }
+.bara-rekap li.ok span { color: var(--text-secondary); text-decoration: line-through; text-decoration-color: var(--text-faint); }
+.bara-rekap .bara-lagi, .bara-rekap .bara-kosong { color: var(--text-faint); }
+
+/* ---------- Ajakan memilah di Inbox ---------- */
+.bara-inbox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem 0.5rem 0.5rem;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--warn-border);
+    background: var(--warn-bg);
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    line-height: 1.45;
+}
+.bara-inbox[hidden] { display: none; }
+.bara-inbox img { width: 48px; height: 48px; flex: 0 0 auto; object-fit: contain; }
+.bara-inbox span { min-width: 0; }
+
+/* ---------- Jejak task dicentang ---------- */
+.bara-jejak {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.15rem 0.6rem;
+    padding: 0.55rem 0.9rem 0.55rem 0.6rem;
+    margin-bottom: 0.75rem;
+    border-radius: 12px;
+    border: 1px dashed var(--bara-jejak-border);
+    background: var(--bara-jejak-bg);
+    font-size: 0.86rem;
+    color: var(--text-primary);
+}
+.bara-jejak img { width: 40px; height: 40px; flex: 0 0 auto; object-fit: contain; }
+.bara-ok { color: var(--status-done); font-weight: 700; }
+.bara-jj {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 40%;
+    color: var(--text-secondary);
+    text-decoration: line-through;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bara-kk { flex: 1 1 12rem; min-width: 0; font-weight: 600; }
+.bara-batal {
+    order: 5;
+    margin-left: auto;
+    padding: 0.2rem 0.3rem;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent-text);
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+.bara-batal:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.bara-jejak-batal { border-color: var(--border-color); background: var(--tint-hover); }
+.bara-jejak-batal .bara-ok { color: var(--text-secondary); }
+.bara-jejak-batal .bara-jj { text-decoration: none; }
+
+/* ---------- Bara bersorak: semua task Today beres ---------- */
+.bara-tuntas {
+    text-align: center;
+    padding: 1.75rem 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--surface);
+}
+.bara-tuntas img { width: 150px; height: 150px; object-fit: contain; }
+.bara-t1 { font-size: 1.25rem; font-weight: 700; margin-top: 0.4rem; color: var(--text-primary); }
+.bara-t2 { font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.3rem; }
+.bara-stat { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem 1rem; margin-top: 0.8rem; font-size: 0.82rem; color: var(--text-secondary); }
+
+/* ---------- Gerakan (animasi ringan) ---------- */
+.task-item.bara-pergi { animation: bara-pergi 0.3s ease-in forwards; pointer-events: none; }
+@keyframes bara-pergi { to { opacity: 0; transform: scale(0.97); } }
+
+.bara-jejak.bara-baru { animation: bara-masuk 0.25s ease-out; }
+@keyframes bara-masuk { from { opacity: 0; transform: scale(0.97); } }
+.bara-jejak.bara-hilang { animation: bara-pudar 0.4s ease-in forwards; }
+@keyframes bara-pudar { to { opacity: 0; } }
+
+.bara-ava.bara-loncat img { animation: bara-loncat 0.6s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes bara-loncat { 30% { transform: translateY(-8px) scale(1.06); } 60% { transform: translateY(0) scale(0.97); } }
+
+.bara-tuntas.bara-sorak img { animation: bara-sorak 1s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes bara-sorak { 0% { transform: scale(0.6); opacity: 0; } 40% { transform: scale(1.1) translateY(-8px); opacity: 1; } 70% { transform: scale(0.97); } }
+
+.bara-percik {
+    position: fixed;
+    z-index: 3000;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: bara-percik 0.8s ease-out forwards;
+}
+.bara-percik-0 { background: var(--bara-percik-1); }
+.bara-percik-1 { background: var(--bara-percik-2); }
+.bara-percik-2 { background: var(--bara-percik-3); }
+@keyframes bara-percik { to { transform: translate(var(--dx), var(--dy)) scale(0.3); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .task-item.bara-pergi, .bara-jejak.bara-baru, .bara-jejak.bara-hilang,
+    .bara-ava.bara-loncat img, .bara-tuntas.bara-sorak img { animation: none; }
+    .bara-percik { display: none; }
+}

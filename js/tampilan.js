@@ -572,6 +572,7 @@ function render() {
 
     evUpdateBanners();
     ckpRefreshHubIfIdle();
+    baraRender();                       // kartu Bara, jejak, ajakan Inbox (3.6)
 
     // Saat melihat satu project: judul header = nama project, dan menu Dashboard
     // tidak tampak aktif (klik Dashboard = keluar dari project)

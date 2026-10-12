@@ -197,3 +197,26 @@
     .lp-baris { grid-template-columns: minmax(0, 1fr); }
     .lp-baris-judul { white-space: normal; }
 }
+
+/* Persona Bara (3.6) */
+@media (max-width: 768px) {
+    .bara-kartu { gap: 0.6rem; padding: 0.55rem 0.75rem 0.55rem 0.5rem; margin-bottom: 1rem; border-radius: 12px; }
+    #baraToday .bara-kartu { margin-bottom: 1rem; }
+    .bara-ava { width: 56px; height: 56px; }
+    .bara-salam { font-size: 1.05rem; }
+    .bara-sub { font-size: 0.9rem; }
+    .bara-judul { display: none; }               /* judul task berikutnya: desktop saja */
+    .bara-rekap { grid-template-columns: minmax(0, 1fr); gap: 0.5rem; }
+    .bara-rekap li { padding: 0.25rem 0; }
+    .bara-chip button, .bara-tombol { font-size: 0.86rem; }
+    .bara-tombol { padding: 0.4rem 0.8rem; }
+    .bara-chip-buka { padding: 0.4rem 0.3rem 0.4rem 0.75rem; }
+    .bara-chip-tutup { padding: 0.4rem 0.8rem 0.4rem 0.4rem; }
+    .bara-inbox img { width: 44px; height: 44px; }
+    .bara-jejak { padding: 0.5rem 0.75rem 0.55rem 0.5rem; }
+    .bara-jejak img { width: 36px; height: 36px; }
+    .bara-jj { flex: 1 1 0; max-width: none; }
+    .bara-batal { order: 4; padding: 0.35rem 0.4rem; }
+    .bara-kk { flex-basis: 100%; order: 6; padding-left: calc(36px + 0.6rem); }
+    .bara-tuntas img { width: 120px; height: 120px; }
+}

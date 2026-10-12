@@ -43,6 +43,8 @@
     --danger: #ff6b5e;
     --danger-border: rgba(255, 107, 94, 0.45);
     --danger-soft: rgba(255, 107, 94, 0.12);
+    --bara-jejak-bg: rgba(60, 207, 142, 0.10);    /* jejak task dicentang (3.6) */
+    --bara-jejak-border: rgba(60, 207, 142, 0.55);
 
     /* Priority 1–4 */
     --p1: #ff6b5e; --p1-border: rgba(255, 107, 94, 0.45);
@@ -63,6 +65,9 @@
     --scrim-strong: rgba(0, 0, 0, 0.88);  /* latar foto diperbesar */
     --on-scrim: #ffffff;
     --no-project: #6b7280;                /* garis kalender untuk task tanpa project */
+    --bara-percik-1: #ff9a4d;             /* percik bara saat task dicentang (3.6) */
+    --bara-percik-2: #ffc078;
+    --bara-percik-3: #e4532a;
 
     --sidebar-width: 320px;
 }
@@ -99,6 +104,8 @@
     --danger: #c8352a;
     --danger-border: #efb8b2;
     --danger-soft: #fdecea;
+    --bara-jejak-bg: #e6f5ec;
+    --bara-jejak-border: #7fcca4;
 
     --p1: #c8352a; --p1-border: #efb8b2;
     --p2: #a65c06; --p2-border: #ecd0a6;

@@ -142,6 +142,7 @@ function saveTask(e) {
     pgTerapkanKeTask(task);                            // 🔔 pengingat per task (3.4)
     evCommit(task, before ? evPhotos(before) : []);    // foto bukti dukung
 
+    const posisi = before ? baraCatatPosisi(before.id) : null;   // tempat jejak Bara (3.6)
     const isCopy = !before && dupSourceId !== null;
     const src = isCopy ? tasks.find(t => t.id === dupSourceId) : null;
     if (before) {
@@ -155,7 +156,9 @@ function saveTask(e) {
 
     saveData();
     closeTaskModal();
-    debouncedRender();
+    // Bara: task yang disunting menjadi Completed ikut dirayakan
+    if (before && baraSetelahUbah(task.id, before.status, posisi)) setTimeout(debouncedRender, 280);
+    else debouncedRender();
     evProcessQueue();
     if (isCopy) evToast('Salinan task dibuat.');
 }
@@ -266,11 +269,16 @@ function addQuickTask() {
 }
 
 function toggleStatus(id) {
+    const lama = tasks.find(t => t.id === id);
+    const statusLama = lama ? lama.status : null;
+    const posisi = baraCatatPosisi(id);                 // tempat jejak Bara (3.6)
     tasks = tasks.map(t => t.id === id
         ? { ...t, status: t.status === 'in-progress' ? 'completed' : 'in-progress' }
         : t);
     saveData();
-    debouncedRender();
+    // Bara: perayaan bila task jadi Completed; kartu digeser keluar dulu (±0,3 detik)
+    if (baraSetelahUbah(id, statusLama, posisi)) setTimeout(debouncedRender, 280);
+    else debouncedRender();
 }
 
 // ---------- Dialog konfirmasi hapus (task, project, label) ----------

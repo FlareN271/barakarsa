@@ -12,14 +12,24 @@
    task.ingat (menit): tidak ada = ikut bawaan, 0 = saat waktunya,
    -1 = tanpa pengingat. Perangkat lama membiarkan field ini utuh.
    Penerimaan notifikasi & klik ada di sw.js.
+
+   Sejak 3.6: rekap sore (sore_on, sore_jam, sore_hari). Kolomnya ditambah
+   lewat supabase/03-rekap-sore.sql; selama kolom belum ada, pengaturan lain
+   tetap tersimpan (kolom sore dilewati) dan panel memberi tahu.
+   Perangkat 3.4/3.5 hanya mengirim kolom yang mereka kenal, jadi tidak
+   menimpa pengaturan rekap sore.
    ============================================================ */
 
 const PENGINGAT_KEY = 'barakarsa_pengingat';          // per perangkat: { uid, atur, endpoint, vapid, terdaftar }
 const PENGINGAT_TABLE = 'barakarsa_pengingat';
 const LANGGANAN_TABLE = 'barakarsa_push_langganan';
 const PENGINGAT_FUNGSI = SUPABASE_URL + '/functions/v1/pengingat';
-const PENGINGAT_BAWAAN = { task_on: true, task_menit: 5, pagi_on: true, pagi_jam: '07:30', pagi_hari: [0, 1, 2, 3, 4, 5, 6] };
-const PENGINGAT_FIELD = ['task_on', 'task_menit', 'pagi_on', 'pagi_jam', 'pagi_hari', 'zona'];
+const PENGINGAT_BAWAAN = {
+    task_on: true, task_menit: 5, pagi_on: true, pagi_jam: '07:30', pagi_hari: [0, 1, 2, 3, 4, 5, 6],
+    sore_on: true, sore_jam: '15:55', sore_hari: [1, 2, 3, 4, 5]          // rekap sore (3.6)
+};
+const PENGINGAT_FIELD = ['task_on', 'task_menit', 'pagi_on', 'pagi_jam', 'pagi_hari', 'zona', 'sore_on', 'sore_jam', 'sore_hari'];
+const PENGINGAT_FIELD_SORE = ['sore_on', 'sore_jam', 'sore_hari'];
 const PILIHAN_MENIT = [
     [0, 'Saat waktunya'], [5, '5 menit sebelumnya'], [10, '10 menit sebelumnya'],
     [15, '15 menit sebelumnya'], [30, '30 menit sebelumnya'], [60, '1 jam sebelumnya']
@@ -34,6 +44,7 @@ let pgSibuk = false;
 let pgPesan = null;              // { jenis: 'ok' | 'galat', teks }
 let pgSyncTimer = null;
 let pgSudahDiperiksa = false;
+let pgKolomSore = null;          // kolom rekap sore ada di server? (null = belum tahu)
 
 // ---------- Penyimpanan lokal ----------
 
@@ -145,11 +156,15 @@ function pgUbahAtur(field, nilai) {
     clearTimeout(pgSyncTimer);
     pgSyncTimer = setTimeout(() => pgSyncAtur(false), 800);
     pgRender();
+    if (field.indexOf('sore_') === 0 && typeof render === 'function') render();   // kartu Bara ikut jam/hari rekap (3.6)
 }
 
 function pgBarisServer(d, updatedAt) {
     const row = { user_id: currentUser.id, updated_at: updatedAt };
-    PENGINGAT_FIELD.forEach(k => { if (d[k] !== undefined) row[k] = d[k]; });
+    PENGINGAT_FIELD.forEach(k => {
+        if (pgKolomSore === false && PENGINGAT_FIELD_SORE.includes(k)) return;   // SQL 3.6 belum dijalankan
+        if (d[k] !== undefined) row[k] = d[k];
+    });
     if (!row.zona) row.zona = pgZona();
     return row;
 }
@@ -166,6 +181,7 @@ async function pgSyncAtur(pastikanAda) {
             return;
         }
         const r = rows && rows[0];
+        if (r) pgKolomSore = 'sore_on' in r;
         const l = pgStore.atur;
         const lt = l ? Date.parse(l.updatedAt) : 0;
         const rt = r ? Date.parse(r.updated_at) : 0;
@@ -181,8 +197,15 @@ async function pgSyncAtur(pastikanAda) {
                 pgStore.atur = { data: { ...PENGINGAT_BAWAAN, zona: pgZona() }, updatedAt: new Date().toISOString() };
                 pgSimpanLokal();
             }
-            const { error: e2 } = await sb.from(PENGINGAT_TABLE)
+            let { error: e2 } = await sb.from(PENGINGAT_TABLE)
                 .upsert(pgBarisServer(pgStore.atur.data, pgStore.atur.updatedAt), { onConflict: 'user_id' });
+            // Kolom rekap sore belum ada (SQL 3.6 belum dijalankan): simpan sisanya saja
+            if (e2 && /sore_/.test(e2.message) && pgKolomSore !== false) {
+                pgKolomSore = false;
+                ({ error: e2 } = await sb.from(PENGINGAT_TABLE)
+                    .upsert(pgBarisServer(pgStore.atur.data, pgStore.atur.updatedAt), { onConflict: 'user_id' }));
+                pgRender();
+            }
             if (e2) console.warn('Simpan pengaturan pengingat gagal:', e2.message);
         }
     } catch (err) { console.warn('Sinkron pengaturan pengingat error:', err); }
@@ -398,8 +421,13 @@ async function pgRender() {
 
     const a = pgAtur();
     const opsiMenit = PILIHAN_MENIT.map(([m, t]) => `<option value="${m}" ${m === a.task_menit ? 'selected' : ''}>${t}</option>`).join('');
-    const hari = URUTAN_HARI.map(h => `<button type="button" class="pg-hari-item ${a.pagi_hari.includes(h) ? 'on' : ''}"
-        aria-pressed="${a.pagi_hari.includes(h)}" onclick="pgToggleHari(${h})">${NAMA_HARI_PENDEK[h]}</button>`).join('');
+    const tombolHari = (field) => URUTAN_HARI.map(h => `<button type="button" class="pg-hari-item ${a[field].includes(h) ? 'on' : ''}"
+        aria-pressed="${a[field].includes(h)}" onclick="pgToggleHari(${h}, '${field}')">${NAMA_HARI_PENDEK[h]}</button>`).join('');
+    const hari = tombolHari('pagi_hari');
+    const hariSore = tombolHari('sore_hari');
+    const soreBelumSiap = pgKolomSore === false
+        ? '<div class="pg-sub pg-peringatan">Notifikasi rekap sore belum aktif di server: jalankan <code>supabase/03-rekap-sore.sql</code> dan pasang ulang Edge Function (lihat panduan 3.6). Rekap di aplikasi tetap jalan.</div>'
+        : '';
     const pesan = pgPesan ? `<div class="pg-pesan pg-pesan-${pgPesan.jenis}">${esc(pgPesan.teks)}</div>` : '';
 
     // Pertahankan fokus & posisi gulir saat digambar ulang
@@ -437,6 +465,22 @@ async function pgRender() {
             </div>
         </div>
         <div class="pg-bagian">
+            <div class="pg-baris">
+                <div><div class="pg-judul">🌇 Rekap sore</div>
+                <div class="pg-sub">Yang beres hari ini dan yang masih tersisa. Di aplikasi, kartu Bara berubah jadi rekap mulai jam ini.</div></div>
+                <label class="pg-saklar"><input type="checkbox" id="pgSoreOn" ${a.sore_on ? 'checked' : ''}
+                    onchange="pgUbahAtur('sore_on', this.checked)" aria-label="Notifikasi rekap sore"><span></span></label>
+            </div>
+            ${soreBelumSiap}
+            <div class="pg-dua">
+                <div class="form-group pg-isian"><label for="pgSoreJam">Jam</label>
+                    <input type="time" id="pgSoreJam" value="${esc(a.sore_jam)}"
+                        onchange="if (this.value) pgUbahAtur('sore_jam', this.value)"></div>
+                <div class="form-group pg-isian"><label>Hari</label>
+                    <div class="pg-hari">${hariSore}</div></div>
+            </div>
+        </div>
+        <div class="pg-bagian">
             <div class="pg-judul">📱 Perangkat yang menerima</div>
             <div class="pg-daftar">${pgHtmlPerangkat()}</div>
         </div>
@@ -447,12 +491,13 @@ async function pgRender() {
     if (fokus) { const el = document.getElementById(fokus); if (el) el.focus(); }
 }
 
-function pgToggleHari(h) {
+// field: 'pagi_hari' (ringkasan pagi) atau 'sore_hari' (rekap sore, 3.6)
+function pgToggleHari(h, field = 'pagi_hari') {
     const a = pgAtur();
-    if (!a.pagi_on) return;
-    const set = new Set(a.pagi_hari);
+    if (field === 'pagi_hari' && !a.pagi_on) return;
+    const set = new Set(a[field]);
     if (set.has(h)) { if (set.size === 1) return; set.delete(h); } else set.add(h);   // minimal satu hari
-    pgUbahAtur('pagi_hari', [...set].sort());
+    pgUbahAtur(field, [...set].sort());
 }
 
 // ---------- Form task: 🔔 per task ----------

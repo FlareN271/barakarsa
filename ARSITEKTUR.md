@@ -1,6 +1,6 @@
 # BARAKARSA — Arsitektur
 
-Peta kode Barakarsa mulai versi 3.2.1 (diperbarui untuk 3.5). Tanpa alat build: semua file langsung disajikan GitHub Pages.
+Peta kode Barakarsa mulai versi 3.2.1 (diperbarui untuk 3.6). Tanpa alat build: semua file langsung disajikan GitHub Pages.
 Rencana versi ada di `ROADMAP.md`, riwayat di `CHANGELOG.md`.
 
 ## Peta file
@@ -12,6 +12,8 @@ sw.js             service worker: cache dulu, perbarui di belakang, kabar versi 
                   notifikasi pengingat (push) dan klik notifikasi (3.4)
 icon-192.png, icon-512.png
 icon-badge.png    ikon kecil putih-transparan di bilah status Android (3.4)
+maskot/           8 pose Bara, .webp transparan 256 px (3.6): bara-{pagi,siap,semangat,rayakan,
+                  berpikir,waktu,ups,santai}.webp — semuanya terdaftar di ASSETS sw.js
 
 css/              dimuat berurutan; urutan ini penting
   tema.css        SEMUA warna: variabel gelap (:root) dan terang ([data-theme="light"])
@@ -21,6 +23,7 @@ css/              dimuat berurutan; urutan ini penting
   ckp.css         foto bukti dukung, IKI di form, hub CKP Triwulan
   pengingat.css   panel 🔔 Pengingat, pilihan 🔔 di form task (3.4)
   laporan.css     menu Reporting (3.5)
+  bara.css        Persona Bara: kartu, rekap, chip & ajakan Inbox, jejak, Bara bersorak, animasi (3.6)
   cetak.css       halaman Laporan PDF CKP — selalu putih, tidak memakai variabel tema
   hp.css          layar ≤768px (paling akhir supaya menang atas aturan dasar)
 
@@ -36,6 +39,8 @@ js/               skrip biasa dengan defer (bukan ES module), dijalankan berurut
   ekspor.js       backup JSON/CSV, import, stress test, Excel/PDF/Word CKP
   pengingat.js    pengingat: langganan push, pengaturan (sinkron), panel, 🔔 per task (3.4)
   laporan.js      menu Reporting: rentang, angka utama, grafik task selesai, project, lewat tanggal (3.5)
+  bara.js         Persona Bara: kalimat & pose, kartu Dashboard/Today, rekap sore, jejak + Batal,
+                  Bara bersorak, ajakan Inbox, percik, pergantian waktu (3.6)
   pwa.js          daftar service worker, "Pasang aplikasi", kabar versi baru, ?quick=1, ?task=, ?view=today
   main.js         menu ⋯, event umum, urutan inisialisasi
 ```
@@ -43,9 +48,12 @@ js/               skrip biasa dengan defer (bukan ES module), dijalankan berurut
 supabase/         TIDAK dimuat aplikasi; berkas untuk dipasang sendiri di Supabase (3.4)
   01-tabel-pengingat.sql        3 tabel baru + RLS
   02-penjadwal.sql              pg_cron tiap menit → Edge Function (rahasia diisi saat dijalankan)
-  functions/pengingat/index.ts  Edge Function: penjadwal, info, daftar/lepas perangkat, uji
+  03-rekap-sore.sql             3 kolom rekap sore di barakarsa_pengingat (3.6)
+  functions/pengingat/index.ts  Edge Function: penjadwal (pengingat task, ringkasan pagi, rekap sore),
+                                info, daftar/lepas perangkat, uji
   buat-kunci.html               pembuat kunci VAPID & rahasia penjadwal (di browser)
-  PANDUAN-PASANG-3.4.md         langkah pemasangan & pemeriksaan
+  PANDUAN-PASANG-3.4.md         langkah pemasangan & pemeriksaan pengingat
+  PANDUAN-PASANG-3.6.md         langkah tambahan untuk rekap sore
 
 Karena bukan module, semua fungsi dan variabel tingkat atas berbagi satu ruang global.
 Itu yang membuat `onclick="saveTask(event)"` di HTML tetap bekerja. Konsekuensinya: nama
@@ -72,10 +80,11 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 | localStorage | `barakarsa_stress_backup` | cadangan sementara selama stress test |
 | localStorage | `barakarsa_laporan` | rentang Reporting terakhir (`minggu`/`bulan`/`triwulan`); per perangkat (3.5) |
 | localStorage | `barakarsa_pengingat` | per perangkat (3.4): `{ uid, atur: { data, updatedAt }, endpoint, vapid, terdaftar }` |
+| localStorage | `barakarsa_bara` | per perangkat (3.6): `{ akhir: [3 kalimat perayaan terakhir], inboxTutup: 'YYYY-MM-DD', tuntas: 'YYYY-MM-DD' }` |
 | IndexedDB | `barakarsa_photos` (`blobs`, `thumbs`) | foto penuh yang belum terunggah, thumbnail |
 | Supabase | tabel `barakarsa_items` | satu baris per task/project/label: `user_id, id, kind, data, deleted, updated_at` |
 | Supabase | tabel `barakarsa_settings` | satu baris per bagian CKP: `user_id, id, data, updated_at` |
-| Supabase | tabel `barakarsa_pengingat` (3.4) | satu baris per akun: `task_on, task_menit, pagi_on, pagi_jam, pagi_hari, zona, updated_at` |
+| Supabase | tabel `barakarsa_pengingat` (3.4) | satu baris per akun: `task_on, task_menit, pagi_on, pagi_jam, pagi_hari, zona, updated_at`; sejak 3.6 juga `sore_on, sore_jam, sore_hari` (bawaan true, '15:55', {1..5}) |
 | Supabase | tabel `barakarsa_push_langganan` (3.4) | satu baris per perangkat: `endpoint, user_id, p256dh, auth, perangkat, dibuat, terakhir_ok, gagal`; ditulis hanya oleh Edge Function |
 | Supabase | tabel `barakarsa_push_log` (3.4) | `user_id, kunci, dikirim_at` — pesan yang sudah terkirim (anti-dobel); hanya server |
 | Supabase | bucket `bukti-dukung` (privat) | `{user}/{taskId}/{fotoId}.jpg`, foto solusi di `{user}/ckp/{periode}/{iki}/…` |
@@ -195,6 +204,38 @@ render() → lpRender()          laporan.js, saat menu Reporting aktif (tidak me
   lpKartu…                      HTML biasa; batang dengan CSS (tanpa pustaka grafik)
 ```
 
+## Persona Bara (3.6)
+
+```
+render() → baraRender()             bara.js, di akhir render()
+  baraKeadaan(now, view)            situasi → { pose, salam, sub, kunci, rekapAda, d }
+    baraData(now)                   hariIni (date = hari ini, bukan Cancelled), sisa, beresToday,
+                                    beres (completedAt lokal = hari ini, task apa pun), lewat, besok, inbox, berikut
+    urutan situasi                  tuntas → rekap sore (jam rekap … +150 menit) → Today kosong → malam → pagi → siang/sore
+    baraPilih(kunci, daftar)        satu variasi per situasi, tetap selama sesi (tidak berganti tiap render)
+  #baraDash / #baraToday            kartu (Dashboard: tidak tampil saat filter project)
+  #todayList .empty-state           → Bara bersorak bila semua task Today beres
+  #baraInbox                        ajakan memilah bila Inbox ≥ BARA_INBOX_MIN
+  baraPasangJejak()                 baris hijau di tempat task tadi (sebelum task tetangga berikutnya)
+
+toggleStatus(id) / saveTask()       form-task.js
+  posisi = baraCatatPosisi(id)      SEBELUM status berubah: menu, id task berikutnya, kotak centang
+  saveData()
+  baraSetelahUbah(id, statusLama, posisi)
+    hanya bila status → completed   kalimat (khusus dulu, lalu acak tanpa 3 terakhir), percik,
+                                    jejak 5 detik, tuntas → barakarsa_bara.tuntas (sorak sekali per hari)
+    true → kartu diberi .bara-pergi, render ditunda 280 ms
+baraBatal()                         status kembali ke statusLama, saveData(), jejak "ups" 2,5 detik
+setupBara()                         setInterval 60 detik + visibilitychange → render bila tanda waktu berubah
+                                    (tanggal, bagian hari, mulai rekap, akhir kalimat rekap)
+```
+
+- Kalimat hanya dari data di perangkat. Sinkron dari perangkat lain **tidak** memicu perayaan (hanya `toggleStatus` dan `saveTask` yang memanggil Bara).
+- Jam & hari rekap dibaca dari `pgAtur()` (pengingat.js): `sore_jam`, `sore_hari`. Bawaan di `PENGINGAT_BAWAAN`.
+- Semua gerakan lewat kelas CSS di `bara.css` dan dimatikan oleh `prefers-reduced-motion`; `baraGerakBoleh()` juga melewati percik dan penundaan render.
+- Rekap sore push: `rekapJatuhTempo` + `susunRekap` di Edge Function. Kunci anti-dobel `s:{tanggal}`, diklaim pada menit pertama; tidak dikirim bila tidak ada apa-apa hari itu. Task yang dicentang hari ini diambil dengan `data->>status = completed` dan `data->>completedAt ≥ sekarang − 26 jam`, lalu disaring per tanggal lokal zona akun. URL `./?view=today&rekap=1` → `baraBukaRekap()` (perangkat 3.5 membuka Today biasa).
+- `pgSyncAtur`: bila server belum punya kolom `sore_*` (SQL 3.6 belum dijalankan), `pgKolomSore = false` dan baris disimpan tanpa kolom itu; panel 🔔 memberi tahu.
+
 ## Aturan menambah kode
 
 - Warna baru: tambahkan variabel di `css/tema.css` (versi gelap **dan** terang), lalu pakai `var(--…)`.
@@ -210,4 +251,6 @@ render() → lpRender()          laporan.js, saat menu Reporting aktif (tidak me
 - Jangan menulis properti turunan (cache) ke objek di `ckpStore`; pakai `WeakMap` (lihat `ckpKwCache`, `ckpSearchCache`).
 - Field task baru: pastikan form membawa field lama (`...task lama`) dan duplikat ikut menyalinnya bila perlu (contoh `ingat`: `pgMuatForm`, `pgTerapkanKeTask`).
 - Tanggal dari waktu ISO (mis. completedAt) diubah ke tanggal lokal (`lpIsoLokal()` di laporan.js), bukan `.slice(0, 10)`.
-- File baru yang diperlukan service worker (mis. `icon-badge.png`) juga masuk `ASSETS`; satu file hilang membuat cache baru gagal terpasang.
+- File baru yang diperlukan service worker (mis. `icon-badge.png`, gambar di `maskot/`) juga masuk `ASSETS`; satu file hilang membuat cache baru gagal terpasang.
+- Kalimat Bara baru: tambahkan ke daftar variasi di `bara.js` (bukan di tempat lain), pakai `{n}`-style isian lewat `baraIsi`, dan teks dari pengguna (judul task) lewat `esc()`.
+- Kolom baru di `barakarsa_pengingat`: tambahkan ke `PENGINGAT_FIELD` dan `PENGINGAT_BAWAAN`, buat file SQL `add column if not exists … default …`, dan pastikan aplikasi tetap menyimpan bila kolom belum ada (contoh `pgKolomSore`).

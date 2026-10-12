@@ -50,6 +50,7 @@
     <link rel="stylesheet" href="./css/ckp.css">
     <link rel="stylesheet" href="./css/pengingat.css">
     <link rel="stylesheet" href="./css/laporan.css">
+    <link rel="stylesheet" href="./css/bara.css">
     <link rel="stylesheet" href="./css/cetak.css">
     <link rel="stylesheet" href="./css/hp.css">
 
@@ -66,6 +67,7 @@
     <script defer src="./js/ekspor.js"></script>
     <script defer src="./js/pengingat.js"></script>
     <script defer src="./js/laporan.js"></script>
+    <script defer src="./js/bara.js"></script>
     <script defer src="./js/pwa.js"></script>
     <script defer src="./js/main.js"></script>
 </head>
@@ -211,6 +213,8 @@
             <div class="content" id="content">
                 <!-- Dashboard -->
                 <div id="dashboardView" class="view" style="display: block;">
+                    <!-- Kartu Bara: sapaan, rekap sore, chip Inbox (diisi oleh baraRender, 3.6) -->
+                    <div id="baraDash" class="bara-slot"></div>
                     <div class="stats">
                         <div class="stat-card">
                             <div class="stat-number" id="statTotal">0</div>
@@ -242,11 +246,14 @@
                         <input type="text" class="quick-input" id="quickInput" placeholder="💡 Task title only... (press Enter to add, edit later for details)">
                         <button class="btn btn-primary" id="quickAddBtn">Add</button>
                     </div>
+                    <!-- Ajakan memilah bila Inbox menumpuk (3.6) -->
+                    <div id="baraInbox" class="bara-inbox" hidden></div>
                     <div id="inboxList"></div>
                 </div>
 
                 <!-- Today -->
                 <div id="todayView" class="view" style="display: none;">
+                    <div id="baraToday" class="bara-slot"></div>
                     <div class="search-container">
                         <input type="text" class="search-input" id="todaySearch" placeholder="🔍 Search tasks...">
                         <button class="filter-btn" id="todayFilterBtn">🔽 Filter</button>
@@ -570,6 +577,9 @@
 
                     <p><strong>Reporting</strong><br>
                     Pilih Minggu ini, Bulan ini, atau Triwulan ini. Task selesai dihitung menurut waktu dicentang; <em>tepat waktu</em> berarti selesai paling lambat pada tanggal task (atau <em>Sampai tanggal</em>). Task yang selesai sebelum 8 Oktober 2026 tidak punya catatan waktu selesai, jadi tidak dinilai tepat waktu atau terlambat. Ketuk <em>Lewat tanggal</em> untuk melihat task yang tertinggal.</p>
+
+                    <p><strong>Bara</strong><br>
+                    Bara menyapa di Dashboard dan Today sesuai waktu, ikut senang saat task dicentang (salah centang? ketuk <em>↶ Batal</em> di baris hijau), dan bersorak saat semua task hari ini beres. Mulai jam rekap sore (bawaan Senin–Jumat 15.55) kartunya berisi rekap; di Today ketuk <em>Lihat rekap ▾</em> untuk melihat yang beres dan yang tersisa. Rekap sore juga dikirim sebagai notifikasi (atur di 🔔 Pengaturan pengingat). Ketuk Bara untuk kalimat lain.</p>
 
                     <p><strong>Tampilan</strong><br>
                     Menu ⋯ → Tampilan: <em>Otomatis</em> mengikuti mode gelap/terang perangkat, atau pilih Terang/Gelap. Pilihan disimpan per perangkat. Laporan PDF CKP selalu putih apa pun temanya.</p>

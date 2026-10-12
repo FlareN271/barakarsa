@@ -1,10 +1,12 @@
 // ============================================================
-// Edge Function "pengingat" — Barakarsa 3.4
+// Edge Function "pengingat" — Barakarsa 3.4 (+ rekap sore 3.6)
 //
 // Dipanggil dua cara:
 //   1) Penjadwal (pg_cron) tiap menit, dengan header x-cron-secret.
 //      Membaca task yang sudah tersinkron di barakarsa_items, lalu
-//      mengirim pengingat task dan ringkasan pagi lewat Web Push.
+//      mengirim pengingat task, ringkasan pagi, dan rekap sore (3.6) lewat Web Push.
+//      Kolom rekap sore (03-rekap-sore.sql) belum ada → rekap sore dilewati,
+//      pengingat lain tetap jalan.
 //   2) Aplikasi (pengguna yang sudah masuk), dengan token login:
 //      info (kunci publik), daftar / lepas perangkat, kirim notifikasi uji.
 //
@@ -21,7 +23,7 @@
 
 import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
-const VERSI = '3.4';
+const VERSI = '3.6';
 const env = (k: string) => (Deno.env.get(k) || '').trim();
 
 const CORS = {
@@ -210,11 +212,13 @@ const SELESAI = ['completed', 'cancelled'];
 export type Atur = {
   user_id: string; task_on: boolean; task_menit: number;
   pagi_on: boolean; pagi_jam: string; pagi_hari: number[]; zona: string;
+  sore_on?: boolean; sore_jam?: string; sore_hari?: number[];       // 3.6; tidak ada bila SQL 3.6 belum dijalankan
 };
-type Task = { id: string; title?: string; date?: string; time?: string; status?: string; ingat?: number; project?: string | null; quadrant?: string; order?: number };
+type Task = { id: string; title?: string; date?: string; time?: string; status?: string; ingat?: number; project?: string | null; quadrant?: string; order?: number; completedAt?: string | null };
 
 const JENDELA_SETELAH = 10;      // pengingat masih dikirim sampai 10 menit setelah jam task
 const JENDELA_PAGI = 240;        // ringkasan pagi masih dikirim sampai 4 jam setelah jamnya
+const JENDELA_SORE = 120;        // rekap sore masih dikirim sampai 2 jam setelah jamnya
 
 export function pengingatJatuhTempo(atur: Atur, daftar: Task[], nowMenit: number) {
   if (!atur.task_on) return [];
@@ -244,6 +248,39 @@ export function ringkasanJatuhTempo(atur: Atur, now: { tanggal: string; menit: n
   const w = menitDinding(now.tanggal, atur.pagi_jam || '07:30');
   if (w === null || now.menit < w || now.menit >= w + JENDELA_PAGI) return null;
   return { kunci: `p:${now.tanggal}`, ttl: (w + JENDELA_PAGI - now.menit) * 60 };
+}
+
+// Rekap sore (3.6): hanya bila kolomnya ada dan sore_on = true
+export function rekapJatuhTempo(atur: Atur, now: { tanggal: string; menit: number; hari: number }) {
+  if (atur.sore_on !== true) return null;
+  const hari = Array.isArray(atur.sore_hari) ? atur.sore_hari : [1, 2, 3, 4, 5];
+  if (!hari.includes(now.hari)) return null;
+  const w = menitDinding(now.tanggal, atur.sore_jam || '15:55');
+  if (w === null || now.menit < w || now.menit >= w + JENDELA_SORE) return null;
+  return { kunci: `s:${now.tanggal}`, ttl: (w + JENDELA_SORE - now.menit) * 60 };
+}
+
+const urutJam = (a: Task, b: Task) => {
+  const ja = a.time || '', jb = b.time || '';
+  if (ja && jb && ja !== jb) return ja < jb ? -1 : 1;
+  if (ja && !jb) return -1;
+  if (!ja && jb) return 1;
+  return (a.order ?? 0) - (b.order ?? 0);
+};
+
+// Rekap sore: yang beres hari ini (dicentang hari ini, termasuk task lama) dan
+// yang tersisa di Today. null = tidak ada apa-apa hari ini (tidak dikirim).
+export function susunRekap(daftar: Task[], selesai: Task[], tanggal: string): Pesan | null {
+  const sisa = daftar.filter((t) => t && t.date === tanggal && !SELESAI.includes(String(t.status))).sort(urutJam);
+  const b = selesai.length, s = sisa.length;
+  if (!b && !s) return null;
+  const MAKS = 5;
+  const baris = sisa.slice(0, MAKS).map((t) => (t.time ? `○ ${jamTitik(t.time)}  ` : '○  ') + (t.title || '(tanpa judul)'));
+  if (s > MAKS) baris.push(`+ ${s - MAKS} task lainnya`);
+  const dasar = { tag: 'sore', url: './?view=today&rekap=1', jenis: 'sore' };
+  if (!s) return { ...dasar, judul: `🌇 Rekap sore · ${b} beres, tidak ada yang tersisa`, isi: 'Mantap! 🔥 Ketuk untuk melihat rekapnya.' };
+  if (!b) return { ...dasar, judul: `🌇 Rekap sore · ${s} task belum dicentang`, isi: baris.join('\n') };
+  return { ...dasar, judul: `🌇 Rekap sore · ${b} beres, ${s} tersisa`, isi: baris.join('\n') };
 }
 
 // Ringkasan pagi = Today (task bertanggal hari ini), tanpa Completed dan Cancelled.
@@ -298,6 +335,20 @@ async function klaim(db: SupabaseClient, user_id: string, kunci: string): Promis
   return Array.isArray(data) && data.length > 0;
 }
 
+// Task yang dicentang hari ini (zona akun), apa pun tanggal task-nya.
+// completedAt disimpan sebagai ISO UTC, jadi ambil 26 jam terakhir lalu saring per tanggal lokal.
+async function selesaiHariIni(db: SupabaseClient, atur: Atur, tanggal: string, now: Date): Promise<Task[]> {
+  const batas = new Date(now.getTime() - 26 * 3600000).toISOString();
+  const { data, error } = await db.from('barakarsa_items')
+    .select('id,data')
+    .eq('user_id', atur.user_id).eq('kind', 'task').eq('deleted', false)
+    .eq('data->>status', 'completed').gte('data->>completedAt', batas);
+  if (error) throw error;
+  return ((data || []) as { id: string; data: Task }[])
+    .map((r) => ({ ...r.data, id: String(r.id) }))
+    .filter((t) => t.completedAt && sekarangDi(atur.zona || 'Asia/Makassar', new Date(t.completedAt)).tanggal === tanggal);
+}
+
 async function jalankanPenjadwal(db: SupabaseClient, now = new Date()) {
   const { data: semuaAtur, error: e1 } = await db.from('barakarsa_pengingat').select('*');
   if (e1) throw e1;
@@ -313,7 +364,7 @@ async function jalankanPenjadwal(db: SupabaseClient, now = new Date()) {
   const laporan: unknown[] = [];
   for (const atur of (semuaAtur || []) as Atur[]) {
     const subs = subPer.get(atur.user_id);
-    if (!subs || !subs.length || (!atur.task_on && !atur.pagi_on)) continue;
+    if (!subs || !subs.length || (!atur.task_on && !atur.pagi_on && atur.sore_on !== true)) continue;
     const kini = sekarangDi(atur.zona || 'Asia/Makassar', now);
 
     const tanggalDicari = [geserTanggal(kini.tanggal, -1), kini.tanggal, geserTanggal(kini.tanggal, 1)];
@@ -343,6 +394,18 @@ async function jalankanPenjadwal(db: SupabaseClient, now = new Date()) {
     if (pagi && (await klaim(db, atur.user_id, pagi.kunci))) {
       const hasil = await kirimKeSemua(db, subs, susunRingkasan(daftar, kini.tanggal, kini.hari), pagi.ttl, false);
       laporan.push({ kunci: pagi.kunci, hasil });
+    }
+
+    // Rekap sore (3.6). Diklaim sekali per hari pada menit pertama jatuh tempo, supaya
+    // task yang dicentang belakangan tidak memicu rekap yang terlambat.
+    const sore = rekapJatuhTempo(atur, kini);
+    if (sore && (await klaim(db, atur.user_id, sore.kunci))) {
+      const selesai = await selesaiHariIni(db, atur, kini.tanggal, now);
+      const pesan = susunRekap(daftar, selesai, kini.tanggal);
+      if (pesan) {
+        const hasil = await kirimKeSemua(db, subs, pesan, sore.ttl, false);
+        laporan.push({ kunci: sore.kunci, hasil });
+      }
     }
   }
 
