@@ -320,9 +320,7 @@
    Menu baru (3.7)
    ============================================================ */
 
-/* Sidebar: Labels di bawah, angka lewat tanggal */
-.sidebar-bawah { margin-top: auto; }
-.sidebar-item-kecil { min-height: 38px; padding: 0.55rem 1rem; font-size: 0.88rem; color: var(--text-secondary); }
+/* Sidebar: angka lewat tanggal */
 .sidebar-item-count.count-lewat {
     padding: 0.05rem 0.5rem; color: var(--warn); background: var(--warn-bg); border: 1px solid var(--warn-border);
 }
@@ -347,6 +345,22 @@
     color: var(--text-primary); background: var(--hover); border: 1px solid var(--border-color); border-radius: 7px; cursor: pointer;
 }
 .pilah-btn:hover { border-color: var(--accent); color: var(--accent-text); }
+
+/* Pilihan saat mencentang task yang belum dimulai (3.7.1) */
+.tc-lapis { position: fixed; inset: 0; z-index: 1500; }
+.tc-kotak {
+    position: fixed;
+    width: min(300px, calc(100vw - 16px));
+    padding: 0.7rem 0.8rem 0.8rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+}
+.tc-ket { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.6rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-judul { color: var(--text-primary); font-weight: 600; }
+.tc-tombol { display: flex; gap: 0.5rem; }
+.tc-tombol .btn { flex: 1; padding: 0.5rem 0.6rem; }
 
 /* Bilah bawah HP: hanya ≤768px (lihat hp.css) */
 .bilah-bawah { display: none; }

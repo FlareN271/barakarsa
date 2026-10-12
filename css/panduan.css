@@ -1,0 +1,60 @@
+/* ============================================================
+   panduan.css — 📖 Cara Kerja Barakarsa (3.7.2)
+   Bagian bisa dilipat (details). Aturan HP (baris bertumpuk) ada di hp.css.
+   ============================================================ */
+
+#panduanModal .modal-content { max-width: 680px; }
+
+.pd-buka { display: flex; gap: 0.9rem; align-items: flex-start; margin: 0.75rem 0 1.1rem; }
+.pd-buka img { width: 72px; height: 72px; flex: 0 0 72px; object-fit: contain; }
+.pd-buka p { margin: 0; color: var(--text-secondary); font-size: 0.92rem; line-height: 1.55; }
+.pd-buka .pd-lead { color: var(--text-primary); font-size: 1rem; margin-bottom: 0.3rem; }
+
+.pd-bagian { border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 0.6rem; background: var(--surface); }
+.pd-bagian > summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 0.8rem 1rem;
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.pd-bagian > summary::-webkit-details-marker { display: none; }
+.pd-bagian > summary::after { content: '▾'; color: var(--text-faint); transition: transform 0.2s ease; }
+.pd-bagian[open] > summary::after { transform: rotate(180deg); }
+.pd-bagian > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 12px; }
+.pd-badan { padding: 0 1rem 0.9rem; font-size: 0.9rem; line-height: 1.55; color: var(--text-primary); }
+.pd-badan p { margin: 0 0 0.6rem; }
+.pd-badan b { font-weight: 700; }
+
+.pd-daftar { margin: 0 0 0.4rem; padding-left: 1.2rem; display: grid; gap: 0.45rem; }
+.pd-cek { list-style: none; margin: 0 0 0.6rem; padding: 0; display: grid; gap: 0.45rem; }
+.pd-cek li { position: relative; padding-left: 1.6rem; }
+.pd-cek li::before {
+    content: ''; position: absolute; left: 0; top: 0.2rem; width: 1rem; height: 1rem;
+    border: 1.5px solid var(--text-faint); border-radius: 4px;
+}
+
+.pd-tabel { list-style: none; margin: 0 0 0.6rem; padding: 0; }
+.pd-baris {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    padding: 0.55rem 0;
+    border-top: 1px solid var(--border-color);
+    align-items: baseline;
+}
+.pd-baris:first-child { border-top: 0; }
+.pd-kiri { font-weight: 700; color: var(--text-primary); }
+.pd-isi { min-width: 0; color: var(--text-primary); }
+.pd-kanan { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; text-align: right; }
+.pd-catatan { font-size: 0.85rem; color: var(--text-secondary); }
+.pd-catatan b { color: var(--text-primary); }
+.pd-tutup { text-align: center; margin: 1rem 0 0.2rem; color: var(--text-secondary); font-size: 0.9rem; }
+
+/* Tombol di Help */
+.help-panduan { width: 100%; margin: 0.5rem 0 1rem; }

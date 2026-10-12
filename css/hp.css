@@ -337,3 +337,12 @@
     .cp-x { width: 1.6rem; height: 1.6rem; }
     .cp-tombol .btn { padding: 0.6rem 1rem; }
 }
+
+/* Cara Kerja (3.7.2): baris bertumpuk */
+@media (max-width: 768px) {
+    .pd-baris { grid-template-columns: minmax(0, 1fr) auto; gap: 0.15rem 0.75rem; }
+    .pd-kiri { grid-column: 1; }
+    .pd-kanan { grid-column: 2; grid-row: 1; }
+    .pd-isi { grid-column: 1 / -1; }
+    .pd-buka img { width: 56px; height: 56px; flex-basis: 56px; }
+}

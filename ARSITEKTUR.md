@@ -29,6 +29,7 @@ css/              dimuat berurutan; urutan ini penting
   beranda.css     Beranda: sampul, widget, Atur Beranda, foto album; kelompok Belum selesai,
                   tombol pilah, sidebar bawah, bilah bawah HP (3.7)
   cepat.css       Tambah cepat: kotak satu baris + chip, bilah ⚡ di Belum selesai (3.7)
+  panduan.css     📖 Cara Kerja: bagian yang bisa dilipat, baris berlabel (3.7.2)
   cetak.css       halaman Laporan PDF CKP — selalu putih, tidak memakai variabel tema
   hp.css          layar ≤768px (paling akhir supaya menang atas aturan dasar)
 
@@ -50,6 +51,8 @@ js/               skrip biasa dengan defer (bukan ES module), dijalankan berurut
   beranda.js      Beranda: sampul, widget Hari ini/Jam/Kalender/7 hari/CKP/Kutipan/Album,
                   Atur Beranda, IndexedDB barakarsa_beranda (3.7)
   cepat.js        Tambah cepat: pengurai satu kalimat (cpUrai), kotak, simpan, Detail… (3.7)
+  panduan.js      📖 Cara Kerja Barakarsa: isi panduan (panduanHTML), buka/tutup, tampil sekali
+                  untuk pengguna baru (3.7.2)
   pwa.js          daftar service worker, "Pasang aplikasi", kabar versi baru, ?quick=1, ?task=, ?view=today
   main.js         menu ⋯, event umum, urutan inisialisasi
 ```
@@ -92,6 +95,7 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 | localStorage | `barakarsa_pengingat` | per perangkat (3.4): `{ uid, atur: { data, updatedAt }, endpoint, vapid, terdaftar }` |
 | localStorage | `barakarsa_beranda` | per perangkat (3.7), tidak tersinkron: `{ sampul: 'waktu'\|'pagi'\|'siang'\|'sore'\|'malam'\|'unggah', posisi, jam: 'analog'\|'digital', detik, widget: { hariini, jam, kalender, pekan, ckp, kutipan, album }, album: [{ id, dibuat }] }` |
 | IndexedDB | `barakarsa_beranda` (`gambar`) | per perangkat (3.7): `sampul` dan `album:{id}` (Blob JPEG). Terpisah dari foto bukti dukung |
+| localStorage | `barakarsa_panduan` | per perangkat (3.7.2): `'1'` = Cara Kerja sudah pernah dibuka (tidak tampil otomatis lagi) |
 | localStorage | `barakarsa_bara` | per perangkat (3.6): `{ akhir: [3 kalimat perayaan terakhir], inboxTutup: 'YYYY-MM-DD', tuntas: 'YYYY-MM-DD', profil: { data: { nama }, updatedAt } }` (profil sejak 3.6.1, tersinkron) |
 | IndexedDB | `barakarsa_photos` (`blobs`, `thumbs`) | foto bukti dukung penuh yang belum terunggah, thumbnail |
 | Supabase | tabel `barakarsa_items` | satu baris per task/project/label: `user_id, id, kind, data, deleted, updated_at` |
@@ -104,6 +108,7 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 Bentuk task (field yang dipakai):
 `id, title, description, date, dateEnd, time, quadrant (do/schedule/delegate = P1–P3; kosong atau eliminate = tanpa prioritas sejak 3.7), project (teks id), labels (angka id), attachment, status, isInbox, createdAt, completedAt, order, iki, photos[], ingat, updatedAt`.
 `isInbox: true` = 📥 Belum dipilah (dulu Inbox): diisi Tambah cepat bila tanpa tanggal dan project; jadi `false` saat disimpan dari form atau dipilah (`pilahKe`).
+`statusLama` (3.7.1): status sebelum task dicentang/disimpan Completed; hanya ada selama Completed, dibuang saat centang dihapus (`toggleStatus`) atau ↶ Batal (`baraBatal`). Hapus centang → `statusLama` bila valid, selain itu In Progress.
 `attachment` (Google Drive link) tidak lagi ditampilkan di form kecuali sudah terisi (3.7); tetap dibawa, ditampilkan sebagai badge 🔗, dan ikut ekspor CSV.
 `ingat` (3.4): menit sebelum jam task; tidak ada = ikut bawaan, `0` = saat waktunya, `-1` = tanpa pengingat.
 Versi lama tidak mengenalnya tetapi tidak membuangnya (`saveTask` membawa field lama dengan `...task lama`).
@@ -280,10 +285,17 @@ Gambar            evLoadBitmap/evDraw (bukti.js) → Blob JPEG → IndexedDB bar
 cpUrai(teks, hariIni, abaikan)   cepat.js, fungsi murni → { judul, token[], date, time, project, quadrant, labels }
   urutan: tanggal → jam → #project → !prioritas → @label; satu token per jenis (label boleh banyak)
   ✕ chip → jenis:teks masuk cpAbaikan → kata itu tetap jadi judul
-simpanCepat()     task baru (status in-progress, isInbox bila tanpa tanggal & project) → saveData()
+simpanCepat()     task baru (status not-started sejak 3.7.1, isInbox bila tanpa tanggal & project) → saveData()
+
+toggleStatus(id, pilihan)   form-task.js, dipanggil kotak centang di semua daftar
+  Completed        → status = statusLama (atau in-progress), statusLama dibuang
+  In Progress      → completed (+ statusLama), perayaan Bara
+  Not Started / On Hold / Cancelled tanpa pilihan → tanyaCentang(id): lapisan .tc-lapis di dekat kotak
+                     → pilihCentang('completed' | 'in-progress') → toggleStatus(id, pilihan)
 cepatKeDetail()   openTaskModal() lalu isi field + event change/input (kolom IKI, 🔔 per task)
 ```
 
+- Sidebar: Beranda · Belum selesai · Kalender · Selesai · Reporting · Labels, lalu My Projects (Labels di menu utama sejak 3.7.1). Menu Selesai punya kotak cari `#selesaiCari` (dibaca `render()`).
 - Prioritas yang ditampilkan: `prioAktif(q)` (tampilan.js). Jangan menampilkan badge untuk `eliminate`.
 - Widget Beranda baru: tambahkan ke `BR_WIDGET` dan `BR_BAWAAN.widget`, buat fungsi `br…HTML(now)` yang mengembalikan `<section class="br-w br-w-{k}">`, panggil di `brRender()`, dan hitung dari data di perangkat (tanpa internet).
 - Gambar Beranda tidak boleh disimpan di `barakarsa_photos` atau bucket `bukti-dukung`.

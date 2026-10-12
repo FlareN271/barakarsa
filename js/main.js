@@ -8,7 +8,7 @@
      3) load (+50 ms)     : sinkron Supabase (tidak menahan tampilan)
    ============================================================ */
 
-const APP_VERSION = '3.7';
+const APP_VERSION = '3.7.2';
 const NARALOKA_URL = 'https://flaren271.github.io/naraloka/';
 
 // ---------- Menu ⋯ ----------
@@ -32,7 +32,7 @@ function toolsAction(action) {
     else if (action === 'json') exportToJSON();
     else if (action === 'csv') exportToCSV();
     else if (action === 'import') openPasteImportModal();
-    else if (action === 'stress') openStressTestModal();
+    else if (action === 'panduan') openPanduan();
     else if (action === 'help') openHelpModal();
     else if (action.indexOf('theme-') === 0) setThemePref(action.slice(6));
     else if (action === 'naraloka') window.open(NARALOKA_URL, '_blank', 'noopener');
@@ -68,6 +68,7 @@ function setupEventListeners() {
         performGlobalSearch(e.target.value.trim().toLowerCase());
     });
     document.getElementById('searchInput').addEventListener('input', () => performSearch());
+    document.getElementById('selesaiCari').addEventListener('input', () => debouncedRender());
     document.getElementById('allFilterBtn').addEventListener('click', () => toggleFilterPanel('all'));
 
     // Klik di luar menu menutup menu ⋯ dan menu project
@@ -138,6 +139,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sortSelect').style.display = 'none';   // Beranda: tanpa pilihan urutan
     render();
     handleLaunchParams();
+    panduanPertamaKali();               // pengguna baru: Cara Kerja tampil sekali (3.7.2)
 });
 
 // ---------- Setelah semua termuat ----------

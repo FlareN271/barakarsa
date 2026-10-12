@@ -53,6 +53,7 @@
     <link rel="stylesheet" href="./css/bara.css">
     <link rel="stylesheet" href="./css/beranda.css">
     <link rel="stylesheet" href="./css/cepat.css">
+    <link rel="stylesheet" href="./css/panduan.css">
     <link rel="stylesheet" href="./css/cetak.css">
     <link rel="stylesheet" href="./css/hp.css">
 
@@ -72,6 +73,7 @@
     <script defer src="./js/bara.js"></script>
     <script defer src="./js/beranda.js"></script>
     <script defer src="./js/cepat.js"></script>
+    <script defer src="./js/panduan.js"></script>
     <script defer src="./js/pwa.js"></script>
     <script defer src="./js/main.js"></script>
 </head>
@@ -127,6 +129,13 @@
                         <span class="sidebar-item-text">Reporting</span>
                     </div>
                 </div>
+
+                <div class="sidebar-item" data-view="filters" onclick="switchView('filters')">
+                    <div class="sidebar-item-left">
+                        <span class="sidebar-item-icon">🏷️</span>
+                        <span class="sidebar-item-text">Labels</span>
+                    </div>
+                </div>
             </nav>
 
             <div class="sidebar-section">
@@ -136,15 +145,6 @@
                 </div>
                 <div class="project-items" id="projectsList"></div>
             </div>
-
-            <nav class="sidebar-nav sidebar-bawah">
-                <div class="sidebar-item sidebar-item-kecil" data-view="filters" onclick="switchView('filters')">
-                    <div class="sidebar-item-left">
-                        <span class="sidebar-item-icon">🏷️</span>
-                        <span class="sidebar-item-text">Labels</span>
-                    </div>
-                </div>
-            </nav>
 
             <input type="file" id="importFile" accept=".json,.csv" hidden />
         </div>
@@ -193,7 +193,7 @@
                             <div class="tools-menu-title">Lainnya</div>
                             <div class="tools-menu-item" onclick="toolsAction('naraloka')">🌐 Buka Naraloka ↗</div>
                             <div class="tools-menu-item" id="installMenuItem" style="display: none;" onclick="toolsAction('install')">📲 Pasang aplikasi</div>
-                            <div class="tools-menu-item" onclick="toolsAction('stress')">🧪 Stress Test</div>
+                            <div class="tools-menu-item" onclick="toolsAction('panduan')">📖 Cara kerja Barakarsa</div>
                             <div class="tools-menu-item" onclick="toolsAction('help')">❓ Help &amp; resources</div>
 
                             <div class="tools-menu-title">Akun</div>
@@ -249,6 +249,10 @@
                 <div id="completedView" class="view" style="display: none;">
                     <!-- Muncul saat menampilkan "kegiatan CKP tanpa bukti dukung" -->
                     <div id="evChip" class="ev-banner" style="display: none;"></div>
+                    <!-- Cari di task selesai (3.7.1) -->
+                    <div class="search-container">
+                        <input type="search" class="search-input" id="selesaiCari" placeholder="🔍 Cari task selesai..." autocomplete="off">
+                    </div>
                     <div id="completedList"></div>
                 </div>
 
@@ -548,6 +552,7 @@
             <div class="modal-body">
                 <button class="modal-close" onclick="closeHelpModal()">✕</button>
                 <h2 class="modal-title">❓ Panduan Singkat</h2>
+                <button type="button" class="btn btn-secondary help-panduan" onclick="closeHelpModal(); openPanduan()">📖 Baca Cara Kerja Barakarsa: kapan mencatat, kapan meninjau</button>
                 <div class="help-body">
                     <p><strong>Projects vs Labels</strong><br>
                     Project adalah folder — satu task hanya masuk satu project (KipApp, Kerja, Personal). Ubah nama, warna, atau penanda CKP lewat ⋯ di samping nama project. Label adalah penanda tambahan — satu task boleh punya beberapa label (Urgent, Review).</p>
@@ -556,7 +561,10 @@
                     🏠 <em>Beranda</em> tempat memulai hari: sampul, Bara, jam, task hari ini, dan widget. 📋 <em>Belum selesai</em> berisi semua task yang belum dicentang, dikelompokkan: Belum dipilah, Lewat tanggal, Hari ini, Besok, 7 hari ke depan, Nanti. 📅 <em>Kalender</em>, ✅ <em>Selesai</em>, dan 📈 <em>Reporting</em> tetap seperti sebelumnya. Di HP, menu ada di bilah bawah; ☰ <em>Lainnya</em> membuka project, label, dan menu lain. Beranda diatur lewat 🎨 <em>Atur Beranda</em> (tombol di sampul atau ⋯ → Tampilan); sampul unggahan dan album disimpan di perangkat ini saja.</p>
 
                     <p><strong>Tambah cepat</strong><br>
-                    Tombol ➕, tombol Q, atau tekan lama ikon aplikasi. Ketik satu kalimat, mis. <em>Rapat SE2026 besok 13.30 #kerja !1</em>: tanggal (hari ini, besok, lusa, nama hari, 15 okt, tgl 15), jam (13.30, jam 9), <em>#project</em>, <em>!1–!3</em> atau <em>p1–p3</em> untuk prioritas, dan <em>@label</em> dikenali langsung. Ketuk ✕ di chip bila salah tebak. Enter menyimpan; <em>Detail…</em> membuka form lengkap. Task tanpa tanggal dan project masuk <em>📥 Belum dipilah</em>.</p>
+                    Tombol ➕, tombol Q, atau tekan lama ikon aplikasi. Ketik satu kalimat, mis. <em>Rapat SE2026 besok 13.30 #kerja !1</em>: tanggal (hari ini, besok, lusa, nama hari, 15 okt, tgl 15), jam (13.30, jam 9), <em>#project</em>, <em>!1–!3</em> atau <em>p1–p3</em> untuk prioritas, dan <em>@label</em> dikenali langsung. Ketuk ✕ di chip bila salah tebak. Enter menyimpan; <em>Detail…</em> membuka form lengkap. Task tanpa tanggal dan project masuk <em>📥 Belum dipilah</em>. Task dari Tambah cepat berstatus Not Started.</p>
+
+                    <p><strong>Mencentang task</strong><br>
+                    Task In Progress langsung selesai. Task Not Started, On Hold, atau Cancelled menanyakan dulu: <em>✓ Selesai</em> atau <em>▶ Mulai kerjakan</em>. Menghapus centang mengembalikan task ke status sebelum dicentang. Di menu ✅ Selesai ada kotak cari untuk menemukan task yang sudah selesai.</p>
 
                     <p><strong>Priority</strong><br>
                     Bawaan: tanpa prioritas. Pilih Priority 1–3 hanya bila memang perlu ditandai; badge ⚑ hanya muncul untuk P1–P3. Pakai urutan ⇅ Prioritas untuk menampilkan P1 paling atas.</p>
@@ -678,6 +686,17 @@
                     <button type="button" class="btn btn-secondary btn-sm" onclick="cepatKeDetail()">Detail…</button>
                     <button type="button" class="btn btn-primary btn-sm" id="cepatSimpanBtn" onclick="simpanCepat()">Simpan ↵</button>
                 </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cara Kerja Barakarsa (3.7.2): isi digambar oleh panduanHTML() di panduan.js -->
+    <div class="modal" id="panduanModal" onclick="if (event.target === this) closePanduan()">
+        <div class="modal-content modal-simple">
+            <div class="modal-body">
+                <button class="modal-close" onclick="closePanduan()">✕</button>
+                <h2 class="modal-title">📖 Cara Kerja Barakarsa</h2>
+                <div id="panduanIsi"></div>
             </div>
         </div>
     </div>

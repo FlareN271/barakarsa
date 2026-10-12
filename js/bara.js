@@ -475,7 +475,11 @@ function baraBatal() {
     if (!j || j.batal) return;
     const task = tasks.find(t => t.id === j.id);
     if (!task) return;
-    tasks = tasks.map(t => t.id === j.id ? { ...t, status: j.statusLama || 'in-progress' } : t);
+    tasks = tasks.map(t => {
+        if (t.id !== j.id) return t;
+        const { statusLama, ...sisa } = t;
+        return { ...sisa, status: j.statusLama || 'in-progress' };
+    });
     saveData();
     const today = todayISO();
     if (baraStore.tuntas === today && tasks.some(t => t.date === today && t.status !== 'completed' && t.status !== 'cancelled')) {

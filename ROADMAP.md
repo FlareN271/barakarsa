@@ -25,7 +25,9 @@ Setiap versi dikerjakan di chat terpisah dalam projek ini. Riwayat perubahan ada
 | 3.6 | Persona Bara | Maskot Bara, sapaan, perayaan, rekap sore (+ push), dorongan Inbox | ✅ Selesai (12 Okt 2026), menunggu SQL 3.6 & uji di HP |
 | 3.6.1 | Nama Panggilan | Nama sapaan Bara bisa diatur (bawaan tanpa nama), tersinkron | ✅ Selesai (12 Okt 2026) |
 | 3.7 | Personalisasi | Beranda (sampul, jam, widget, album), menu baru, Tambah cepat, prioritas opsional | ✅ Selesai (12 Okt 2026), menunggu uji di HP |
-| 3.7.1 | Hasil uji coba 3.7 | Temuan 3.7 + keputusan centang Not Started | 🔜 Bila diperlukan |
+| 3.7.1 | Centang & kenyamanan | Centang bertanya untuk task belum dimulai, hapus centang ke status sebelumnya, cari di Selesai, Labels di menu utama | ✅ Selesai (12 Okt 2026) |
+| 3.7.2 | Cara Kerja | Panduan pemakaian di dalam aplikasi, Stress Test dihapus dari menu | ✅ Selesai (12 Okt 2026) |
+| 3.7.3 | Hasil uji coba 3.7 | Temuan Beranda, menu baru, Tambah cepat, pilihan centang di HP asli | 🔜 Bila diperlukan |
 | 3.4.x | Pengingat CKP | Kegiatan tanpa bukti dukung menjelang akhir triwulan | Ditunda ke versi lain, target sebelum 31 Des 2026 |
 | 4.0 | Teman | Tonggak: persona, personalisasi, AI terasa utuh | Perlu diskusi |
 
@@ -349,9 +351,30 @@ Penomoran: fitur baru yang tidak mengganggu data dan perangkat lama → rilis mi
 - Kolom Tambah cepat satu baris; kalimat panjang menggulir ke samping. Bila terasa sempit di HP, bisa diganti kotak yang memanjang.
 - Ide lanjutan: sinkron sampul/album lewat Supabase Storage (bucket terpisah) bila nanti ingin sama di semua perangkat; pose Bara khusus akhir pekan; widget cuaca (perlu internet, dibahas dulu); streak hari aktif (4.0).
 
-## v3.7.1 — Hasil uji coba 3.7 (bila diperlukan)
-- Temuan uji coba Beranda, menu baru, dan Tambah cepat.
-- Keputusan **centang task Not Started**: langsung Completed (hapus centang mengembalikan status sebelumnya), atau tetap seperti sekarang.
+## v3.7.1 — Centang & kenyamanan ✅
+Temuan Naufal setelah mencoba 3.7 (12 Okt 2026), dikerjakan hari yang sama:
+1. Task Tambah cepat jangan langsung In Progress → kini **Not Started**; Belum dipilah tetap untuk task tanpa tanggal & project (dipilih dari tiga pilihan).
+2. **Cari di menu Selesai.**
+3. **Description lebih kecil** dari judul.
+4. **Labels** pindah ke menu utama (di bawah Reporting).
+5. **Centang task Not Started/On Hold/Cancelled → tanya** ✓ Selesai / ▶ Mulai kerjakan (dipilih dari: langsung Completed, tetap dua tahap, tanya). **Hapus centang → status sebelum dicentang** (field `statusLama`).
+
+### Checklist uji di HP asli
+1. Help menampilkan 3.7.1.
+2. Tambah cepat *Beli tinta* → muncul di Belum dipilah sebagai Not Started; centang → pilihan muncul di dekat kotak; ✓ Selesai → baris hijau + ↶ Batal.
+3. Centang task In Progress → langsung selesai tanpa pilihan.
+4. Di ✅ Selesai: cari judul task, lalu hapus centangnya → kembali ke status semula.
+5. Description di kartu task terlihat lebih kecil dari judul; 🏷️ Labels ada di bawah Reporting.
+
+## v3.7.2 — Cara Kerja ✅
+- Naufal meminta panduan pemakaian (kapan mencatat, kapan meninjau, perlu Reporting tiap minggu atau tidak). Disusun sebagai dokumen *Cara Kerja dengan Barakarsa* (nada santai-akrab, sejalan dengan Bara), lalu dimasukkan ke aplikasi supaya orang baru langsung terarah.
+- Isi: pegangan, ritme harian (ringkasan pagi 5 menit, tangkap 10 detik, centang + foto, rekap sore 5 menit), Jumat sore 20 menit (Reporting, Lewat tanggal & Belum dipilah jadi nol, kalender minggu depan, CKP, backup), akhir bulan & triwulan, kebiasaan mengisi task, contekan Tambah cepat, tanda bahaya.
+- Stress Test dihapus dari menu ⋯ (kode tetap ada).
+- Bila isi panduan berubah (mis. fitur baru), perbarui `js/panduan.js` dan dokumen Cara Kerja bersamaan.
+
+## v3.7.3 — Hasil uji coba 3.7 (bila diperlukan)
+- Temuan uji coba Beranda, menu baru, Tambah cepat, dan pilihan centang di HP asli.
+- Kandidat dari catatan 3.7: angka di samping nama project, kotak Tambah cepat yang memanjang di HP, "P4" di notifikasi pengingat task (Edge Function).
 
 ## v4.0 — Teman (perlu diskusi)
 Disimpan sebagai **tonggak**: dipakai saat tema "Teman" terasa utuh (persona 3.6 + personalisasi 3.7 + AI), atau bila ada perubahan yang mewajibkan semua perangkat diperbarui (mis. bentuk data/sinkron berubah).

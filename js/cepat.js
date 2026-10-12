@@ -238,7 +238,7 @@ function simpanCepat() {
         project: r.project,
         labels: r.labels,
         attachment: '',
-        status: 'in-progress',          // sama dengan bawaan form task
+        status: 'not-started',          // 3.7.1: belum dimulai; dicentang → ditanya Selesai/Mulai
         isInbox: inbox,
         createdAt: new Date().toISOString()
     });

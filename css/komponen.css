@@ -152,10 +152,12 @@
     color: var(--text-secondary);
 }
 
+/* 3.7.1: lebih kecil dari judul supaya keduanya mudah dibedakan */
 .task-description {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
     color: var(--text-secondary);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.6rem;
     word-break: break-word;
 }
 

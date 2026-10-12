@@ -7,6 +7,54 @@ Format setiap rilis: **Baru** (fitur baru), **Diubah** (perilaku yang berubah), 
 
 ---
 
+## [3.7.2] — Cara Kerja (12 Oktober 2026)
+
+File yang berubah: `index.html`, `sw.js` (cache `barakarsa-v3.7.2`), `js/main.js` (nomor versi, menu ⋯), `css/hp.css`, `ARSITEKTUR.md`, `CHANGELOG.md`, `ROADMAP.md`.
+File baru: `js/panduan.js`, `css/panduan.css`.
+Supabase: tidak ada perubahan.
+
+### Baru
+- **📖 Cara Kerja Barakarsa** di dalam aplikasi: pegangan, ritme harian (pagi, saat ada tugas, setiap beres, sore, malam), Jumat sore, akhir bulan & triwulan, kebiasaan mengisi task, contekan Tambah cepat, dan tanda bahaya. Bagian bisa dilipat; jam pagi dan sore mengikuti pengaturan 🔔. Ada tombol *⚡ Coba Tambah cepat*.
+- Dibuka dari **⋯ → Lainnya → 📖 Cara kerja Barakarsa** dan tombol di atas Help. Di perangkat yang belum punya task (pengguna baru), panduan tampil **sekali** saat aplikasi pertama dibuka.
+
+### Diubah
+- **🧪 Stress Test** dihapus dari menu ⋯ (alat uji pengembangan, tidak dipakai sehari-hari). Kodenya tetap ada dan bisa dibuka lewat konsol browser (`openStressTestModal()`) bila suatu saat diperlukan.
+
+### Catatan kompatibilitas
+- Satu kunci localStorage per perangkat: `barakarsa_panduan` (`'1'` = panduan sudah pernah dibuka). Tidak ada perubahan data task atau sinkron.
+
+### Diuji
+- 36 pemeriksaan × desktop/HP × gelap/terang: panduan tampil sekali untuk pengguna baru dan tidak muncul lagi; tidak muncul sendiri bila sudah ada task; Stress Test hilang dari menu; tombol di Help; jam ikut pengaturan; semua bagian dibuka tanpa luberan; tombol Coba Tambah cepat; tanpa error.
+- Uji alur 3.7 (104) dan 3.7.1 (92) tetap lulus.
+
+---
+
+## [3.7.1] — Centang & kenyamanan (12 Oktober 2026)
+
+File yang berubah: `index.html`, `sw.js` (cache `barakarsa-v3.7.1`), `js/main.js` (nomor versi), `js/form-task.js`, `js/cepat.js`, `js/bara.js`, `js/tampilan.js`, `css/komponen.css`, `css/beranda.css`, `ARSITEKTUR.md`, `CHANGELOG.md`, `ROADMAP.md`.
+Supabase: tidak ada perubahan.
+
+### Baru
+- **Mencentang task Not Started, On Hold, atau Cancelled** memunculkan pilihan kecil di dekat kotak centang: **✓ Selesai** atau **▶ Mulai kerjakan** (*Kerjakan lagi* untuk On Hold/Cancelled). Esc atau ketuk di luar = batal. Task In Progress tetap langsung selesai dengan satu centang. Berlaku di Belum selesai, kotak Hari ini, dan Selesai.
+- **Hapus centang** mengembalikan task ke **status sebelum dicentang** (Not Started tetap Not Started, On Hold tetap On Hold). Task yang selesai sebelum 3.7.1 kembali ke In Progress seperti dulu.
+- **🔍 Cari di menu Selesai** (judul dan description).
+
+### Diubah
+- Task dari **Tambah cepat** kini berstatus **Not Started** (sebelumnya In Progress). Masuk 📥 Belum dipilah bila tanpa tanggal dan project, seperti 3.7.
+- **Description di kartu task lebih kecil** (0,8 rem; judul tetap 1,05 rem), supaya judul dan description mudah dibedakan.
+- **Labels** pindah ke menu utama sidebar, tepat di bawah Reporting (sebelumnya di dasar sidebar, perlu menggulir bila project banyak).
+- Menyimpan task menjadi Completed dari form juga mencatat status sebelumnya.
+
+### Catatan kompatibilitas
+- Satu field task baru, **`statusLama`**: status sebelum dicentang, hanya ada selama task Completed (dibuang saat centang dihapus atau ↶ Batal). Perangkat lama membawanya apa adanya (`...task lama`) dan tetap sinkron; di perangkat lama, hapus centang tetap mengembalikan ke In Progress.
+
+### Diuji
+- 92 pemeriksaan 3.7.1 × desktop/HP × gelap/terang: Tambah cepat → Not Started; pilihan muncul, kotak centang kembali kosong, pilihan selalu di dalam layar, Esc; Mulai kerjakan tanpa perayaan; Selesai + perayaan + ↶ Batal; In Progress langsung; On Hold "Kerjakan lagi"; hapus centang kembali ke On Hold / In Progress / task lama; form → Completed; kotak Hari ini di Beranda; cari di Selesai (ada hasil / tanpa hasil); ukuran description; urutan sidebar; tanpa luberan dan error.
+- 104 langkah uji alur 3.7 tetap lulus.
+- Tangkapan layar 3.7 vs 3.7.1: Reporting, Labels, Kalender, Board, hub CKP, panel 🔔, Nama panggilan, form task identik per piksel; Selesai berbeda karena kotak cari baru.
+
+---
+
 ## [3.7] — Personalisasi (12 Oktober 2026)
 
 File yang berubah: `index.html`, `sw.js` (cache `barakarsa-v3.7`), `manifest.json` (teks shortcut), `js/main.js` (nomor versi, menu), `js/tampilan.js`, `js/form-task.js`, `js/pwa.js`, `js/bara.js`, `js/pengingat.js` (dua kalimat panel), `css/komponen.css`, `css/bara.css`, `css/hp.css`, `ARSITEKTUR.md`, `CHANGELOG.md`, `ROADMAP.md`.

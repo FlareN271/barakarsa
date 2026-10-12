@@ -146,6 +146,12 @@ function saveTask(e) {
         isInbox: false,
         createdAt: before ? before.createdAt : new Date().toISOString()
     };
+    // Status sebelum Completed, untuk hapus centang (3.7.1)
+    if (task.status === 'completed') {
+        if (before && before.status !== 'completed') task.statusLama = before.status;
+    } else {
+        delete task.statusLama;
+    }
     ckpApplyToTask(task);                              // IKI & "Sampai tanggal"
     pgTerapkanKeTask(task);                            // 🔔 pengingat per task (3.4)
     evCommit(task, before ? evPhotos(before) : []);    // foto bukti dukung
@@ -253,18 +259,97 @@ function deleteTask(id) {
 
 // ---------- Centang selesai ----------
 
-function toggleStatus(id) {
+// Centang (3.7.1):
+//   In Progress           → langsung Completed
+//   Not Started / On Hold / Cancelled → tanya dulu: ✓ Selesai atau ▶ Mulai kerjakan
+//   Completed (hapus centang) → kembali ke status sebelum dicentang (task.statusLama),
+//                           atau In Progress bila tidak tercatat (task dari versi lama)
+const STATUS_TANYA = ['not-started', 'on-hold', 'cancelled'];
+const STATUS_BOLEH_KEMBALI = ['not-started', 'in-progress', 'on-hold', 'cancelled'];
+
+function toggleStatus(id, pilihan) {
     const lama = tasks.find(t => t.id === id);
-    const statusLama = lama ? lama.status : null;
+    if (!lama) return;
+    const sebelum = lama.status;
+
+    if (sebelum === 'completed') {
+        const kembali = STATUS_BOLEH_KEMBALI.includes(lama.statusLama) ? lama.statusLama : 'in-progress';
+        tasks = tasks.map(t => {
+            if (t.id !== id) return t;
+            const { statusLama, ...sisa } = t;
+            return { ...sisa, status: kembali };
+        });
+        saveData();
+        debouncedRender();
+        return;
+    }
+
+    if (!pilihan && STATUS_TANYA.includes(sebelum)) { tanyaCentang(id); return; }
+
+    const baru = pilihan || 'completed';
+    if (baru === sebelum) { debouncedRender(); return; }
     const posisi = baraCatatPosisi(id);                 // tempat jejak Bara (3.6)
     tasks = tasks.map(t => t.id === id
-        ? { ...t, status: t.status === 'in-progress' ? 'completed' : 'in-progress' }
+        ? (baru === 'completed' ? { ...t, status: baru, statusLama: sebelum } : { ...t, status: baru })
         : t);
     saveData();
     // Bara: perayaan bila task jadi Completed; kartu digeser keluar dulu (±0,3 detik)
-    if (baraSetelahUbah(id, statusLama, posisi)) setTimeout(debouncedRender, 280);
+    if (baraSetelahUbah(id, sebelum, posisi)) setTimeout(debouncedRender, 280);
     else debouncedRender();
 }
+
+// ---------- Pilihan saat mencentang task yang belum dimulai (3.7.1) ----------
+
+let tanyaCentangId = null;
+
+function tanyaCentang(id) {
+    tutupTanyaCentang();
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    // Kotak centang dikembalikan dulu (statusnya belum berubah)
+    const kotak = Array.from(document.querySelectorAll(`.task-item[data-task-id="${id}"] .task-checkbox`))
+        .find(el => el.offsetParent !== null);
+    if (kotak) kotak.checked = false;
+    tanyaCentangId = id;
+
+    const ket = { 'not-started': 'Belum dimulai', 'on-hold': 'Sedang ditunda', 'cancelled': 'Dibatalkan' }[task.status] || '';
+    const lapis = document.createElement('div');
+    lapis.className = 'tc-lapis';
+    lapis.onclick = (e) => { if (e.target === lapis) tutupTanyaCentang(); };
+    lapis.innerHTML = `<div class="tc-kotak" role="dialog" aria-modal="true" aria-label="Tandai task">
+        <div class="tc-ket">${esc(ket)} · <span class="tc-judul">${esc(task.title)}</span></div>
+        <div class="tc-tombol">
+            <button type="button" class="btn btn-primary btn-sm" onclick="pilihCentang('completed')">✓ Selesai</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="pilihCentang('in-progress')">▶ ${task.status === 'not-started' ? 'Mulai kerjakan' : 'Kerjakan lagi'}</button>
+        </div></div>`;
+    document.body.appendChild(lapis);
+
+    // Letakkan di dekat kotak centang (di bawahnya; di atasnya bila tidak muat)
+    const el = lapis.querySelector('.tc-kotak');
+    const r = kotak ? kotak.getBoundingClientRect() : { left: innerWidth / 2 - 130, bottom: innerHeight / 2, top: innerHeight / 2 };
+    const w = el.offsetWidth, h = el.offsetHeight;
+    const x = Math.max(8, Math.min(r.left - 8, innerWidth - w - 8));
+    let y = r.bottom + 6;
+    if (y + h > innerHeight - 8) y = Math.max(8, r.top - h - 6);
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.querySelector('button').focus();
+}
+
+function pilihCentang(status) {
+    const id = tanyaCentangId;
+    tutupTanyaCentang();
+    if (id != null) toggleStatus(id, status);
+}
+
+function tutupTanyaCentang() {
+    tanyaCentangId = null;
+    document.querySelectorAll('.tc-lapis').forEach(el => el.remove());
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && tanyaCentangId != null) tutupTanyaCentang();
+});
 
 // ---------- Dialog konfirmasi hapus (task, project, label) ----------
 

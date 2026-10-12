@@ -612,7 +612,12 @@ function render() {
     } else if (currentView === 'kalender') {
         renderCalendarView(document.getElementById('kalenderList'), []);
     } else if (currentView === 'completed') {
-        renderTaskList(document.getElementById('completedList'), getFilteredTasks(tasks.filter(t => t.status === 'completed')));
+        const q = document.getElementById('selesaiCari').value.trim().toLowerCase();
+        const cocok = t => !q || (t.title || '').toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q);
+        const list = getFilteredTasks(tasks.filter(t => t.status === 'completed' && cocok(t)));
+        const wadah = document.getElementById('completedList');
+        if (q && !list.length) wadah.innerHTML = emptyState('🔍', `Tidak ada task selesai yang cocok dengan "${esc(q)}".`);
+        else renderTaskList(wadah, list);
     } else if (currentView === 'filters') {
         document.getElementById('filtersList').innerHTML = labels.length ? labels.map(label => `
             <div class="label-row">
