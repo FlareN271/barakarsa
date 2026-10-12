@@ -19,12 +19,16 @@
      baraBukaRekap()         ?rekap=1 dari notifikasi rekap sore (pwa.js)
 
    Tidak ada field task atau tabel baru. Satu kunci per perangkat:
-   barakarsa_bara = { akhir: [3 kalimat terakhir], inboxTutup: tanggal, tuntas: tanggal }.
+   barakarsa_bara = { akhir: [3 kalimat terakhir], inboxTutup: tanggal, tuntas: tanggal,
+                      profil: { data: { nama }, updatedAt } }.
+   Nama panggilan (3.6.1): ⋯ → 👤 Nama panggilan. Kosong = sapaan netral ("Selamat pagi ☀️").
+   Tersinkron lewat barakarsa_settings baris id 'bara' (perangkat lama mengabaikan baris ini).
+   Kalimat memakai {nama}; baraSapa() mengisinya atau membuangnya bila nama kosong.
    Jam & hari rekap sore dibaca dari pengaturan pengingat (pgAtur, pengingat.js).
    ============================================================ */
 
-const BARA_NAMA = 'Nopal';
 const BARA_KEY = 'barakarsa_bara';
+const BARA_NAMA_MAKS = 20;           // panjang nama panggilan
 const BARA_INBOX_MIN = 5;            // dorongan Inbox mulai dari jumlah ini
 const BARA_JEJAK_MS = 5000;          // lama baris jejak tampil
 const BARA_REKAP_KALIMAT = 150;      // menit kalimat rekap tampil sejak jam rekap
@@ -47,6 +51,75 @@ function baraMuat() {
 }
 function baraSimpan() {
     try { localStorage.setItem(BARA_KEY, JSON.stringify(baraStore)); } catch (e) { /* penuh/diblokir: abaikan */ }
+}
+
+// ---------- Nama panggilan (3.6.1) ----------
+
+function baraNama() {
+    const p = baraStore.profil;
+    return p && p.data && typeof p.data.nama === 'string' ? p.data.nama.trim() : '';
+}
+
+// Isi {nama}. Nama kosong: "Selamat pagi, {nama} ☀️" → "Selamat pagi ☀️", "Pagi, {nama}!" → "Pagi!"
+function baraSapa(teks, html) {
+    const nama = baraNama();
+    if (!nama) return String(teks).replace(/,?\s*\{nama\}/g, '');
+    return String(teks).replace(/\{nama\}/g, html ? esc(nama) : nama);
+}
+
+function baraRapikanNama(s) {
+    return String(s || '').replace(/\s+/g, ' ').trim().slice(0, BARA_NAMA_MAKS);
+}
+
+function openNamaModal() {
+    const input = document.getElementById('baraNamaInput');
+    input.value = baraNama();
+    baraPratinjauNama();
+    document.getElementById('namaModal').classList.add('active');
+    if (window.innerWidth > 768) setTimeout(() => input.focus(), 50);
+}
+
+function closeNamaModal() {
+    document.getElementById('namaModal').classList.remove('active');
+}
+
+function baraPratinjauNama() {
+    const nama = baraRapikanNama(document.getElementById('baraNamaInput').value);
+    document.getElementById('baraNamaContoh').textContent = nama ? `"Selamat pagi, ${nama} ☀️"` : '"Selamat pagi ☀️" (tanpa nama)';
+}
+
+function simpanNama(e, kosongkan) {
+    if (e) e.preventDefault();
+    const nama = kosongkan ? '' : baraRapikanNama(document.getElementById('baraNamaInput').value);
+    baraStore.profil = { data: { nama }, updatedAt: new Date().toISOString() };
+    baraSimpan();
+    closeNamaModal();
+    render();
+    baraSyncProfil();
+    evToast(nama ? `Bara akan memanggilmu ${nama}.` : 'Nama dikosongkan. Bara menyapa tanpa nama.');
+}
+
+// Sinkron nama lewat barakarsa_settings (baris id 'bara'); updated_at terbaru menang.
+// Dipanggil dari syncNow() (sinkron.js).
+async function baraSyncProfil() {
+    if (!sb || !currentUser || !navigator.onLine || (typeof ckpSettingsUnavailable !== 'undefined' && ckpSettingsUnavailable)) return;
+    try {
+        const { data: rows, error } = await sb.from(CKP_SETTINGS_TABLE).select('id,data,updated_at').eq('id', 'bara');
+        if (error) { console.warn('Sinkron nama Bara gagal:', error.message); return; }
+        const r = rows && rows[0];
+        const l = baraStore.profil;
+        const lt = l ? Date.parse(l.updatedAt) : 0;
+        const rt = r ? Date.parse(r.updated_at) : 0;
+        if (r && rt > lt) {
+            baraStore.profil = { data: { nama: baraRapikanNama(r.data && r.data.nama) }, updatedAt: r.updated_at };
+            baraSimpan();
+            render();
+        } else if (l && lt > rt) {
+            const { error: e2 } = await sb.from(CKP_SETTINGS_TABLE)
+                .upsert({ user_id: currentUser.id, id: 'bara', data: l.data, updated_at: l.updatedAt }, { onConflict: 'user_id,id' });
+            if (e2) console.warn('Simpan nama Bara gagal:', e2.message);
+        }
+    } catch (err) { console.warn('Sinkron nama Bara error:', err); }
 }
 
 function baraGerakBoleh() {
@@ -120,19 +193,19 @@ function baraPilih(kunci, daftar) {
 const baraIsi = (s, v) => s.replace(/\{(\w+)\}/g, (m, k) => (v[k] ?? m));
 
 const BARA_SALAM = {
-    pagi: [`Selamat pagi, ${BARA_NAMA} ☀️`, `Pagi, ${BARA_NAMA}!`, `Selamat pagi, ${BARA_NAMA}`],
-    siang: [`Selamat siang, ${BARA_NAMA}`, `Siang, ${BARA_NAMA}!`],
-    sore: [`Selamat sore, ${BARA_NAMA} 🌇`, `Sore, ${BARA_NAMA}!`],
-    malam: [`Selamat malam, ${BARA_NAMA} 🌙`, `Malam, ${BARA_NAMA}.`]
+    pagi: [`Selamat pagi, {nama} ☀️`, `Pagi, {nama}!`, `Selamat pagi, {nama}`],
+    siang: [`Selamat siang, {nama}`, `Siang, {nama}!`],
+    sore: [`Selamat sore, {nama} 🌇`, `Sore, {nama}!`],
+    malam: [`Selamat malam, {nama} 🌙`, `Malam, {nama}.`]
 };
-const BARA_TUNTAS_SALAM = ['Semua task hari ini beres! 🎉', `Bersih, ${BARA_NAMA}! 🎉`, 'Hari ini tuntas! 🎉'];
+const BARA_TUNTAS_SALAM = ['Semua task hari ini beres! 🎉', `Bersih, {nama}! 🎉`, 'Hari ini tuntas! 🎉'];
 const BARA_TUNTAS_SUB = {
     siang: ['{t} dari {t} tuntas. Mantap!', 'Semua {t} task hari ini sudah dicentang. Bara bangga 🔥', 'Today bersih. Sisa hari bisa buat yang lain.'],
     malam: ['Hari ini {t} beres semua. Istirahat yang enak ya.', 'Tuntas semua. Waktunya rehat 🔥']
 };
 // Ketuk maskot: kalimat tambahan di luar situasi
 const BARA_KETUK = [
-    `Semangat, ${BARA_NAMA} 🔥`, 'Satu-satu, pasti beres.', `Jangan lupa minum air, ${BARA_NAMA}.`,
+    `Semangat, {nama} 🔥`, 'Satu-satu, pasti beres.', `Jangan lupa minum air, {nama}.`,
     'Bara di sini, nemenin.', 'Tarik napas dulu. Lanjut pelan-pelan.', 'Hehe, geli 😆'
 ];
 
@@ -182,7 +255,7 @@ function baraKeadaan(now, view) {
         salam = baraPilih('salam-malam', BARA_SALAM.malam);
         sub = baraIsi(baraPilih(kunci, x
             ? ['Hari ini {x} beres. {s} sisanya bisa lanjut besok — istirahat dulu.', '{x} beres hari ini. Sisanya besok juga tidak apa-apa.']
-            : ['{s} task hari ini belum tersentuh. Besok lagi juga tidak apa-apa.', 'Lembur, ' + BARA_NAMA + '? Jangan lupa istirahat.']), v);
+            : ['{s} task hari ini belum tersentuh. Besok lagi juga tidak apa-apa.', 'Lembur, {nama}? Jangan lupa istirahat.']), v);
     } else if (w === 'pagi') {
         kunci = 'pagi-' + (x ? 'ada' : 'nol');
         pose = 'pagi';
@@ -202,7 +275,7 @@ function baraKeadaan(now, view) {
     }
     // Hasil ketukan maskot menggantikan baris keadaan sampai situasinya berubah
     const k = baraPilihan.__ketuk;
-    if (k && k.kunci === kunci) sub = esc(k.teks);
+    if (k && k.kunci === kunci) sub = esc(baraSapa(k.teks));
     return { pose, salam, sub, kunci, rekapAda, d };
 }
 
@@ -224,8 +297,8 @@ function baraKartuHTML(view, now) {
     return `<div class="bara-kartu">
         <button type="button" class="bara-ava${loncat}" onclick="baraKetuk()" title="Ketuk Bara" aria-label="Bara — ketuk untuk kalimat lain">${baraImg(k.pose)}</button>
         <div class="bara-teks" aria-live="polite">
-            <div class="bara-salam">${esc(k.salam)}</div>
-            <div class="bara-sub">${k.sub}</div>
+            <div class="bara-salam">${esc(baraSapa(k.salam))}</div>
+            <div class="bara-sub">${baraSapa(k.sub, true)}</div>
             ${baris}
             ${k.rekapAda && view === 'today' && baraRekapBuka ? baraRekapHTML(k.d) : ''}
         </div>
@@ -248,14 +321,14 @@ function baraTuntasHTML(d) {
     const akhir = d.beres.length ? new Date(d.beres[d.beres.length - 1].completedAt) : null;
     const jam = akhir ? `${String(akhir.getHours()).padStart(2, '0')}.${String(akhir.getMinutes()).padStart(2, '0')}` : '';
     const malam = baraWaktu(new Date()) === 'malam';
-    const t1 = baraPilih('tuntas-t1', [`Bersih, ${BARA_NAMA}!`, 'Today tuntas!', 'Semua beres!']);
+    const t1 = baraPilih('tuntas-t1', [`Bersih, {nama}!`, 'Today tuntas!', 'Semua beres!']);
     const t2 = malam ? 'Semua task hari ini tuntas. Istirahat yang enak ya.'
         : baraPilih('tuntas-t2', ['Semua task hari ini tuntas. Bara bangga 🔥', 'Tidak ada yang tersisa hari ini. Mantap!']);
     const sorak = baraSorak && baraGerakBoleh() ? ' bara-sorak' : '';
     return `<div class="bara-tuntas${sorak}">
         ${baraImg('rayakan')}
-        <div class="bara-t1">${t1}</div>
-        <div class="bara-t2">${t2}</div>
+        <div class="bara-t1">${baraSapa(t1, true)}</div>
+        <div class="bara-t2">${baraSapa(t2, true)}</div>
         <div class="bara-stat"><span>✓ ${d.beresToday} beres</span>${jam ? `<span>terakhir ${jam}</span>` : ''}</div>
     </div>`;
 }
@@ -356,15 +429,15 @@ function baraSetelahUbah(id, statusLama, pos) {
 
 function baraKalimatSelesai(task, d, tuntasBaru, now) {
     const s = d.sisa.length;
-    if (tuntasBaru) return baraAcak(['Itu yang terakhir hari ini! 🎉', 'Centang terakhir hari ini ✓ 🎉', `Yang terakhir beres, ${BARA_NAMA}! 🎉`]);
+    if (tuntasBaru) return baraAcak(['Itu yang terakhir hari ini! 🎉', 'Centang terakhir hari ini ✓ 🎉', `Yang terakhir beres, {nama}! 🎉`]);
     if (baraSelesaiBaru.length >= 3) return `${baraSelesaiBaru.length} beres sekaligus! 🔥`;
-    if (task.date === d.today && s === 1) return baraAcak(['Tinggal satu lagi, hampir!', `Satu lagi, ${BARA_NAMA}!`]);
+    if (task.date === d.today && s === 1) return baraAcak(['Tinggal satu lagi, hampir!', `Satu lagi, {nama}!`]);
     if (typeof evIsMissing === 'function' && evIsMissing(task)) return 'Beres! Jangan lupa foto bukti dukungnya 📷';
     const tenggat = task.dateEnd && task.dateEnd > task.date ? task.dateEnd : task.date;
     if (tenggat && tenggat < d.today) return `Akhirnya! Yang tertunda sejak ${lpPendek(tenggat)} beres juga.`;
     if (task.quadrant === 'do') return 'P1 beres — yang paling berat sudah lewat.';
     if (baraWaktu(now) === 'malam') return 'Lembur ya? Satu beres, jangan lupa istirahat.';
-    const pool = ['Mantap, satu beres! 🔥', 'Satu lagi tumbang 💪', 'Rapi. Lanjut?', `Gas terus, ${BARA_NAMA}!`, 'Beres! Satu langkah lebih ringan.', 'Centang yang memuaskan ✓'];
+    const pool = ['Mantap, satu beres! 🔥', 'Satu lagi tumbang 💪', 'Rapi. Lanjut?', `Gas terus, {nama}!`, 'Beres! Satu langkah lebih ringan.', 'Centang yang memuaskan ✓'];
     if (task.date === d.today && s > 1) pool.push(`Sip! Sisa ${s} hari ini.`);
     return baraAcak(pool);
 }
@@ -416,7 +489,7 @@ function baraPasangJejak() {
         <span class="bara-ok">${j.batal ? '↶' : '✓'}</span>
         <span class="bara-jj">${esc(j.judul)}</span>
         ${j.batal ? '' : '<button type="button" class="bara-batal" onclick="baraBatal()">↶ Batal</button>'}
-        <span class="bara-kk">${esc(j.kalimat)}</span>
+        <span class="bara-kk">${esc(baraSapa(j.kalimat))}</span>
     </div>`;
     if (anchor) anchor.insertAdjacentHTML('beforebegin', html);
     else wadah.insertAdjacentHTML('beforeend', html);

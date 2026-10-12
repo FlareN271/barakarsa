@@ -191,6 +191,9 @@
                             <div class="tools-menu-title">Pengingat</div>
                             <div class="tools-menu-item" onclick="toolsAction('pengingat')">🔔 Pengaturan pengingat</div>
 
+                            <div class="tools-menu-title">Bara</div>
+                            <div class="tools-menu-item" onclick="toolsAction('nama')">👤 Nama panggilan</div>
+
                             <div class="tools-menu-title">Tampilan</div>
                             <div class="tools-menu-item theme-option" data-theme-pref="auto" onclick="toolsAction('theme-auto')">🖥️ Otomatis (ikut perangkat)</div>
                             <div class="tools-menu-item theme-option" data-theme-pref="light" onclick="toolsAction('theme-light')">☀️ Terang</div>
@@ -510,6 +513,28 @@
         </div>
     </div>
 
+    <!-- Nama panggilan untuk sapaan Bara (3.6.1) -->
+    <div class="modal" id="namaModal" onclick="if (event.target === this) closeNamaModal()">
+        <div class="modal-content modal-simple">
+            <div class="modal-body">
+                <button class="modal-close" onclick="closeNamaModal()">✕</button>
+                <h2 class="modal-title">👤 Nama panggilan</h2>
+                <form onsubmit="simpanNama(event)">
+                    <div class="form-group">
+                        <label for="baraNamaInput">Bara memanggilmu…</label>
+                        <input type="text" id="baraNamaInput" maxlength="20" placeholder="mis. Nopal" autocomplete="nickname" oninput="baraPratinjauNama()">
+                        <p class="modal-note bara-nama-contoh">Contoh sapaan: <span id="baraNamaContoh"></span></p>
+                        <p class="modal-note">Kosongkan bila tidak ingin dipanggil nama. Tersinkron ke perangkat lain setelah masuk akun.</p>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <button type="button" class="btn btn-secondary" onclick="simpanNama(null, true)">Kosongkan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Masuk (sinkron) -->
     <div class="modal" id="authModal">
         <div class="modal-content modal-simple">
@@ -579,7 +604,7 @@
                     Pilih Minggu ini, Bulan ini, atau Triwulan ini. Task selesai dihitung menurut waktu dicentang; <em>tepat waktu</em> berarti selesai paling lambat pada tanggal task (atau <em>Sampai tanggal</em>). Task yang selesai sebelum 8 Oktober 2026 tidak punya catatan waktu selesai, jadi tidak dinilai tepat waktu atau terlambat. Ketuk <em>Lewat tanggal</em> untuk melihat task yang tertinggal.</p>
 
                     <p><strong>Bara</strong><br>
-                    Bara menyapa di Dashboard dan Today sesuai waktu, ikut senang saat task dicentang (salah centang? ketuk <em>↶ Batal</em> di baris hijau), dan bersorak saat semua task hari ini beres. Mulai jam rekap sore (bawaan Senin–Jumat 15.55) kartunya berisi rekap; di Today ketuk <em>Lihat rekap ▾</em> untuk melihat yang beres dan yang tersisa. Rekap sore juga dikirim sebagai notifikasi (atur di 🔔 Pengaturan pengingat). Ketuk Bara untuk kalimat lain.</p>
+                    Bara menyapa di Dashboard dan Today sesuai waktu, ikut senang saat task dicentang (salah centang? ketuk <em>↶ Batal</em> di baris hijau), dan bersorak saat semua task hari ini beres. Mulai jam rekap sore (bawaan Senin–Jumat 15.55) kartunya berisi rekap; di Today ketuk <em>Lihat rekap ▾</em> untuk melihat yang beres dan yang tersisa. Rekap sore juga dikirim sebagai notifikasi (atur di 🔔 Pengaturan pengingat). Ketuk Bara untuk kalimat lain. Nama yang dipakai Bara diatur di ⋯ → 👤 Nama panggilan (kosong = sapaan tanpa nama).</p>
 
                     <p><strong>Tampilan</strong><br>
                     Menu ⋯ → Tampilan: <em>Otomatis</em> mengikuti mode gelap/terang perangkat, atau pilih Terang/Gelap. Pilihan disimpan per perangkat. Laporan PDF CKP selalu putih apa pun temanya.</p>

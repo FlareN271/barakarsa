@@ -194,6 +194,7 @@ function setAuthBusy(busy) {
 function translateAuthError(msg) {
     const m = (msg || '').toLowerCase();
     if (m.includes('invalid login')) return 'Email atau password salah.';
+    if (m.includes('signup') && (m.includes('not allowed') || m.includes('disabled'))) return 'Pendaftaran akun baru sedang ditutup.';
     if (m.includes('already registered')) return 'Email ini sudah terdaftar. Silakan masuk.';
     if (m.includes('password')) return 'Password minimal 6 karakter.';
     if (m.includes('email')) return 'Format email tidak valid.';
@@ -227,6 +228,7 @@ async function syncNow(showBusy) {
     evProcessQueue();
     ckpSyncSettings();
     pengingatSync();                       // pengingat.js: pengaturan & langganan push (3.4)
+    baraSyncProfil();                      // bara.js: nama panggilan (3.6.1)
     const migrated = migrate31();
     if (migrated || hasMissingOrder()) { saveData(); debouncedRender(); }
 }

@@ -8,7 +8,7 @@
      3) load (+50 ms)     : sinkron Supabase (tidak menahan tampilan)
    ============================================================ */
 
-const APP_VERSION = '3.6';
+const APP_VERSION = '3.6.1';
 const NARALOKA_URL = 'https://flaren271.github.io/naraloka/';
 
 // ---------- Menu ⋯ ----------
@@ -27,6 +27,7 @@ function toolsAction(action) {
     closeToolsMenu();
     if (action === 'ckp') openCkpHub();
     else if (action === 'pengingat') openPengingatModal();
+    else if (action === 'nama') openNamaModal();
     else if (action === 'json') exportToJSON();
     else if (action === 'csv') exportToCSV();
     else if (action === 'import') openPasteImportModal();

@@ -7,6 +7,27 @@ Format setiap rilis: **Baru** (fitur baru), **Diubah** (perilaku yang berubah), 
 
 ---
 
+## [3.6.1] — Nama Panggilan (12 Oktober 2026)
+
+File yang berubah: `index.html`, `sw.js` (cache `barakarsa-v3.6.1`), `js/main.js` (nomor versi, menu), `js/bara.js`, `js/sinkron.js`, `css/bara.css`, `ARSITEKTUR.md`, `CHANGELOG.md`, `ROADMAP.md`.
+Supabase: tidak ada perubahan (nama memakai tabel `barakarsa_settings` yang sudah ada).
+
+### Baru
+- **⋯ → 👤 Nama panggilan**: nama yang dipakai Bara untuk menyapa, maksimal 20 huruf, dengan contoh sapaan langsung di kotak isian. **Kosongkan** → sapaan tanpa nama.
+- Nama **tersinkron** ke perangkat lain setelah masuk akun (baris `id = 'bara'` di `barakarsa_settings`; yang terakhir diubah menang).
+
+### Diubah
+- Bila pendaftaran akun baru dimatikan di Supabase, tombol *Daftar akun baru* kini menampilkan "Pendaftaran akun baru sedang ditutup." (sebelumnya pesan Inggris dari server).
+- **Bawaan kini tanpa nama.** Sebelumnya "Nopal" tertulis tetap di kode, sehingga siapa pun yang membuka Barakarsa disapa "Nopal". Kini sapaan netral ("Pagi!", "Selamat sore 🌇", "Gas terus!") sampai nama diisi. Di perangkatmu, isi sekali saja; perangkat lain mengikuti setelah sinkron.
+
+### Catatan kompatibilitas
+- Perangkat 3.6 dan lebih lama mengabaikan baris `bara` di `barakarsa_settings` (hanya membaca katalog, profil, catatan), jadi tetap sinkron seperti biasa. Perangkat 3.6 tetap menyapa "Nopal" sampai diperbarui.
+
+### Diuji
+- Tanpa nama, isi nama (spasi dirapikan), muat ulang, kosongkan, nama berisi `<b>` (tampil apa adanya), sinkron tarik/kirim dengan server tiruan; perayaan, Batal, dan offline tetap jalan.
+
+---
+
 ## [3.6] — Persona Bara (12 Oktober 2026)
 
 File yang berubah: `index.html`, `sw.js` (cache `barakarsa-v3.6`), `js/main.js` (nomor versi), `js/tampilan.js`, `js/form-task.js`, `js/pwa.js`, `js/pengingat.js`, `css/tema.css`, `css/hp.css`, `css/pengingat.css`, `supabase/functions/pengingat/index.ts`, `ARSITEKTUR.md`.

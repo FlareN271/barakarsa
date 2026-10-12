@@ -208,3 +208,6 @@
     .bara-ava.bara-loncat img, .bara-tuntas.bara-sorak img { animation: none; }
     .bara-percik { display: none; }
 }
+
+/* Nama panggilan (3.6.1) */
+.bara-nama-contoh span { color: var(--text-primary); font-weight: 600; }

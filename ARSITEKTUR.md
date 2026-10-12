@@ -80,10 +80,10 @@ jalan saat dimuat; pemanggilan fungsi antarfile terjadi setelah semua file termu
 | localStorage | `barakarsa_stress_backup` | cadangan sementara selama stress test |
 | localStorage | `barakarsa_laporan` | rentang Reporting terakhir (`minggu`/`bulan`/`triwulan`); per perangkat (3.5) |
 | localStorage | `barakarsa_pengingat` | per perangkat (3.4): `{ uid, atur: { data, updatedAt }, endpoint, vapid, terdaftar }` |
-| localStorage | `barakarsa_bara` | per perangkat (3.6): `{ akhir: [3 kalimat perayaan terakhir], inboxTutup: 'YYYY-MM-DD', tuntas: 'YYYY-MM-DD' }` |
+| localStorage | `barakarsa_bara` | per perangkat (3.6): `{ akhir: [3 kalimat perayaan terakhir], inboxTutup: 'YYYY-MM-DD', tuntas: 'YYYY-MM-DD', profil: { data: { nama }, updatedAt } }` (profil sejak 3.6.1, tersinkron) |
 | IndexedDB | `barakarsa_photos` (`blobs`, `thumbs`) | foto penuh yang belum terunggah, thumbnail |
 | Supabase | tabel `barakarsa_items` | satu baris per task/project/label: `user_id, id, kind, data, deleted, updated_at` |
-| Supabase | tabel `barakarsa_settings` | satu baris per bagian CKP: `user_id, id, data, updated_at` |
+| Supabase | tabel `barakarsa_settings` | satu baris per bagian: `user_id, id, data, updated_at`; id `katalog`/`profil`/`catatan` (CKP) dan sejak 3.6.1 `bara` (`{ nama }`, nama panggilan) |
 | Supabase | tabel `barakarsa_pengingat` (3.4) | satu baris per akun: `task_on, task_menit, pagi_on, pagi_jam, pagi_hari, zona, updated_at`; sejak 3.6 juga `sore_on, sore_jam, sore_hari` (bawaan true, '15:55', {1..5}) |
 | Supabase | tabel `barakarsa_push_langganan` (3.4) | satu baris per perangkat: `endpoint, user_id, p256dh, auth, perangkat, dibuat, terakhir_ok, gagal`; ditulis hanya oleh Edge Function |
 | Supabase | tabel `barakarsa_push_log` (3.4) | `user_id, kunci, dikirim_at` — pesan yang sudah terkirim (anti-dobel); hanya server |
@@ -230,6 +230,7 @@ setupBara()                         setInterval 60 detik + visibilitychange → 
                                     (tanggal, bagian hari, mulai rekap, akhir kalimat rekap)
 ```
 
+- Nama panggilan (3.6.1): kalimat memakai `{nama}`; `baraSapa(teks, html)` mengisinya (lewat `esc()` untuk HTML) atau membuang ", {nama}" bila nama kosong. Jangan menulis nama langsung di kalimat. Sinkron: `baraSyncProfil()` dari `syncNow()`.
 - Kalimat hanya dari data di perangkat. Sinkron dari perangkat lain **tidak** memicu perayaan (hanya `toggleStatus` dan `saveTask` yang memanggil Bara).
 - Jam & hari rekap dibaca dari `pgAtur()` (pengingat.js): `sore_jam`, `sore_hari`. Bawaan di `PENGINGAT_BAWAAN`.
 - Semua gerakan lewat kelas CSS di `bara.css` dan dimatikan oleh `prefers-reduced-motion`; `baraGerakBoleh()` juga melewati percik dan penundaan render.

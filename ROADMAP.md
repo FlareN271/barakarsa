@@ -23,6 +23,7 @@ Setiap versi dikerjakan di chat terpisah dalam projek ini. Riwayat perubahan ada
 | 3.4 | Pengingat | Notifikasi push: pengingat task & ringkasan pagi | ✅ Selesai (9 Okt 2026), terpasang & berjalan baik di HP |
 | 3.5 | Reporting | Pola task selesai, tepat waktu, lewat tanggal, sebaran project | ✅ Selesai (9 Okt 2026), uji coba di HP berjalan |
 | 3.6 | Persona Bara | Maskot Bara, sapaan, perayaan, rekap sore (+ push), dorongan Inbox | ✅ Selesai (12 Okt 2026), menunggu SQL 3.6 & uji di HP |
+| 3.6.1 | Nama Panggilan | Nama sapaan Bara bisa diatur (bawaan tanpa nama), tersinkron | ✅ Selesai (12 Okt 2026) |
 | 3.7 | Personalisasi | Wallpaper, jam, foto, widget di Dashboard | 🔜 Berikutnya |
 | 3.4.x | Pengingat CKP | Kegiatan tanpa bukti dukung menjelang akhir triwulan | Ditunda ke versi lain, target sebelum 31 Des 2026 |
 | 4.0 | Teman | Tonggak: persona, personalisasi, AI terasa utuh | Perlu diskusi |
@@ -289,6 +290,11 @@ Penomoran: fitur baru yang tidak mengganggu data dan perangkat lama → rilis mi
 ### Catatan untuk versi berikutnya
 - Ambang dorongan Inbox (5) dievaluasi setelah dipakai beberapa minggu (`BARA_INBOX_MIN` di `js/bara.js`).
 - Ide lanjutan: streak hari produktif (4.0), Bara di ringkasan pagi push, pose tambahan (mis. akhir pekan), kalimat khusus akhir triwulan CKP (bisa bersama 3.4.x).
+
+## v3.6.1 — Nama Panggilan ✅
+- Ditanyakan setelah 3.6 dipasang: aplikasi yang dibuka orang lain (tanpa login) ikut menyapa "Nopal".
+- Diputuskan: nama diatur di **⋯ → 👤 Nama panggilan**, bawaan kosong (sapaan netral), tersinkron lewat `barakarsa_settings` (baris `bara`).
+- Keamanan akun (dibahas bersamaan): matikan pendaftaran akun baru di Supabase (*Authentication → Sign In / Providers → Allow new users to sign up*), dan pastikan RLS aktif di `barakarsa_items`, `barakarsa_settings`, dan bucket `bukti-dukung`.
 
 ## v3.7 — Personalisasi (rencana)
 
